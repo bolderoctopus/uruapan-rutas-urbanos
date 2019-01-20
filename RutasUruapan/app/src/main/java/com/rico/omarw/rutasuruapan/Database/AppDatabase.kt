@@ -5,8 +5,9 @@ import android.arch.persistence.room.Database
 import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
 import android.content.Context
+import com.huma.room_for_asset.RoomAsset
 
-@Database(entities = arrayOf(Routes::class, Points::class), version = 1)
+@Database(entities = [Routes::class, Points::class], version = 2)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun routesDAO(): RouteDAO
 
@@ -18,12 +19,7 @@ abstract class AppDatabase: RoomDatabase() {
         fun getInstance(context: Context): AppDatabase?{
             if(INSTANCE == null){
                 synchronized(AppDatabase::class){
-                    INSTANCE = Room.databaseBuilder(context.applicationContext,  AppDatabase::class.java, "routes.db")
-                            .addCallback(object: RoomDatabase.Callback(){
-                                override fun onCreate(db: SupportSQLiteDatabase) {
-
-                                }
-                            })
+                    INSTANCE = RoomAsset.databaseBuilder(context.applicationContext,  AppDatabase::class.java, "routes.db")
                             .build()
                 }
             }

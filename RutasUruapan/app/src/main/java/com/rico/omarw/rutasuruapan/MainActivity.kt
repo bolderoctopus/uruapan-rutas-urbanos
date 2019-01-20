@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, RouteListAdapter.L
     private lateinit var mMap: GoogleMap
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        InitDatabaseTask(WeakReference(applicationContext)).execute()
+        //InitDatabaseTask(WeakReference(applicationContext)).execute()
 
         super.onCreate(savedInstanceState)
 
@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, RouteListAdapter.L
             val routesDao = AppDatabase.getInstance(this)?.routesDAO()
             val dbRoutes = routesDao?.getRoutes()
             val adapterItems = arrayListOf<RouteModel>()
+            Log.d(DEBUG_TAG, "adapterIitems size: ${adapterItems.size}")
             dbRoutes?.forEach{
                 adapterItems.add(RouteModel(it))
             }

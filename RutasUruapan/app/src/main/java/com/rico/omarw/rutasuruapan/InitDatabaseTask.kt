@@ -15,8 +15,8 @@ class InitDatabaseTask(val contextReference: WeakReference<Context>) : AsyncTask
         val routesDao = AppDatabase.getInstance(contextReference.get()!!)?.routesDAO()
         routesDao?.deleteAllPoints()
         routesDao?.deleteAllRoutes()
-        Log.d(DEBUG_TAG, "routes and points deleted")
-
+//        //Log.d(DEBUG_TAG, "routes and points deleted")
+//
         val rID = routesDao?.insertRoute(Routes("21 LindaVista - Lomas UPN", "Azul", "#4286F4"))
         routesDao?.insertPoints(getPoints21(rID!!))
 
@@ -27,9 +27,9 @@ class InitDatabaseTask(val contextReference: WeakReference<Context>) : AsyncTask
         routesDao?.insertRoute(Routes("5 Calzonzint", "Azul", "#4286F4"))
         routesDao?.insertRoute(Routes("9 Arroyo Colorado", "Azul", "#4286F4"))
         routesDao?.insertRoute(Routes("20 Cuba - México", "Azul", "#4286F4"))
-
-
-        Log.d(DEBUG_TAG, "routes inserted")
+//
+//
+//        Log.d(DEBUG_TAG, "routes inserted")
         return
     }
 
