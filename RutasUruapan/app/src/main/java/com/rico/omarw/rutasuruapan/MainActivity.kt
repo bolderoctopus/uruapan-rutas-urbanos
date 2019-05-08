@@ -19,44 +19,40 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.rico.omarw.rutasuruapan.Database.AppDatabase
-import kotlinx.android.synthetic.main.activity_main.*
-import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, RouteListAdapter.ListCallback{
-    //TODO: if user location is outside bounds move the map
     private val LOCATION_PERMISSION_REQUEST = 32
     private val LINE_WIDTH = 15f
     private lateinit var mMap: GoogleMap
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //InitDatabaseTask(WeakReference(applicationContext)).execute()
 
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
         val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
+                .findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
-        recyclerView.post { fillList() }
+//
+//        recyclerView.post { fillList() }
     }
 
-    private fun fillList() {
-        AsyncTask.execute{
-            val routesDao = AppDatabase.getInstance(this)?.routesDAO()
-            val dbRoutes = routesDao?.getRoutes()
-            val adapterItems = arrayListOf<RouteModel>()
-            Log.d(DEBUG_TAG, "adapterIitems size: ${adapterItems.size}")
-            dbRoutes?.forEach{
-                adapterItems.add(RouteModel(it))
-            }
-
-            runOnUiThread {
-                recyclerView.layoutManager = LinearLayoutManager(this)
-                recyclerView.adapter = RouteListAdapter(adapterItems, this, this)
-            }
-        }
-    }
+//    private fun fillList() {
+//        AsyncTask.execute{
+//            val routesDao = AppDatabase.getInstance(this)?.routesDAO()
+//            val dbRoutes = routesDao?.getRoutes()
+//            val adapterItems = arrayListOf<RouteModel>()
+//            Log.d(DEBUG_TAG, "adapterIitems size: ${adapterItems.size}")
+//            dbRoutes?.forEach{
+//                adapterItems.add(RouteModel(it))
+//            }
+//
+//            runOnUiThread {
+//                recyclerView.layoutManager = LinearLayoutManager(this)
+//                recyclerView.adapter = RouteListAdapter(adapterItems, this, this)
+//            }
+//        }
+//    }
 
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
