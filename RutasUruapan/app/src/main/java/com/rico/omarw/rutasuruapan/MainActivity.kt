@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.util.Log
 import android.widget.Toast
 
@@ -24,6 +23,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, RouteListAdapter.L
     private val LOCATION_PERMISSION_REQUEST = 32
     private val LINE_WIDTH = 15f
     private lateinit var mMap: GoogleMap
+    private var mOrigin: Marker? = null
+    private var mDestination: Marker? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -57,12 +59,31 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, RouteListAdapter.L
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap.setOnMapLongClickListener(this::onMapLongClick)
+
         val uruapan = LatLng(19.411843, -102.051518)
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(uruapan, 13f))
         if (locationPermissionEnabled()){
             mMap.isMyLocationEnabled = true
         }else {
             askPermission()
+        }
+    }
+
+    private fun onMapLongClick(pos: LatLng){
+        when {
+            mOrigin == null ->
+                mOrigin = mMap.addMarker(MarkerOptions().title("Origin").position(pos))
+
+            mDestination == null ->
+                mDestination = mMap.addMarker(MarkerOptions().title("Destination").position(pos))
+
+            else -> {
+                mOrigin?.isVisible = false
+                mDestination?.isVisible = false
+                mOrigin = null
+                mDestination = null
+            }
         }
     }
 
