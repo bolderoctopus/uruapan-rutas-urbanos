@@ -8,7 +8,8 @@
     android:layout_height="match_parent"
     android:gravity="bottom"
     sothree:umanoPanelHeight="75dp"
-    sothree:umanoShadowHeight="4dp">
+    sothree:umanoShadowHeight="4dp"
+    sothree:umanoFadeColor="@android:color/transparent">
 
     <fragment
         android:id="@+id/map_fragment"
@@ -18,12 +19,13 @@
         android:gravity="center"
         tools:context=".MainActivity" />
 
-    <TextView
+    <fragment
+        android:id="@+id/fragment_control_panel"
         android:layout_width="match_parent"
-        android:layout_height="500dp"
+        android:layout_height="300dp"
         android:gravity="center|top"
-        android:text="The Awesome Sliding Up Panel"
-        android:textSize="16sp" />
+        android:name="com.rico.omarw.rutasuruapan.ControlPanel"
+         />
     <!--<androidx.recyclerview.widget.RecyclerView-->
         <!--android:id="@+id/recyclerView"-->
         <!--android:layout_width="0dp"-->

@@ -1,4 +1,4 @@
-package com.rico.omarw.rutasuruapan
+package com.rico.omarw.rutasuruapan.Database
 
 import android.content.Context
 import android.os.AsyncTask

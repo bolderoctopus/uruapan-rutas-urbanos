@@ -18,22 +18,25 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.rico.omarw.rutasuruapan.Database.AppDatabase
+import com.sothree.slidinguppanel.SlidingUpPanelLayout
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, RouteListAdapter.ListCallback{
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, RouteListAdapter.ListCallback, ControlPanel.OnFragmentInteractionListener{
     private val LOCATION_PERMISSION_REQUEST = 32
     private val LINE_WIDTH = 15f
+    private var originMarker: Marker? = null
+    private var destinationMarker: Marker? = null
+
     private lateinit var mMap: GoogleMap
-    private var mOrigin: Marker? = null
-    private var mDestination: Marker? = null
+    private lateinit var controlPanel: ControlPanel
+    private lateinit var slidingLayout: SlidingUpPanelLayout
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
-        val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map_fragment) as SupportMapFragment
+        controlPanel = supportFragmentManager.findFragmentById(R.id.fragment_control_panel) as ControlPanel
+        slidingLayout= findViewById(R.id.sliding_layout)
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 //
 //        recyclerView.post { fillList() }
@@ -72,19 +75,30 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, RouteListAdapter.L
 
     private fun onMapLongClick(pos: LatLng){
         when {
-            mOrigin == null ->
-                mOrigin = mMap.addMarker(MarkerOptions().title("Origin").position(pos))
+            originMarker == null ->
+                originMarker = mMap.addMarker(MarkerOptions().title("Origin").position(pos))
 
-            mDestination == null ->
-                mDestination = mMap.addMarker(MarkerOptions().title("Destination").position(pos))
+            destinationMarker == null ->
+                destinationMarker = mMap.addMarker(MarkerOptions().title("Destination").position(pos))
 
             else -> {
-                mOrigin?.isVisible = false
-                mDestination?.isVisible = false
-                mOrigin = null
-                mDestination = null
+                originMarker?.isVisible = false
+                destinationMarker?.isVisible = false
+                originMarker = null
+                destinationMarker = null
             }
         }
+        controlPanel.setOriginDestinationText(originMarker?.title, destinationMarker?.title)
+    }
+
+    override fun findRoute() {
+        if(originMarker == null && destinationMarker == null){
+            Toast.makeText(this, "You must select destination and origin", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+
+
     }
 
     override fun drawRoute(model: RouteModel) {
