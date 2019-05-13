@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.sothree.slidinguppanel.SlidingUpPanelLayout
-    xmlns:sothree="http://schemas.android.com/apk/res-auto"
+<com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:sothree="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/sliding_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="bottom"
+    android:fitsSystemWindows="false"
+    sothree:umanoScrollableView="@+id/recyclerView"
     sothree:umanoPanelHeight="75dp"
     sothree:umanoShadowHeight="4dp"
     sothree:umanoFadeColor="@android:color/transparent">
@@ -22,17 +23,9 @@
     <fragment
         android:id="@+id/fragment_control_panel"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="wrap_content"
         android:gravity="center|top"
         android:name="com.rico.omarw.rutasuruapan.ControlPanel"
-         />
-    <!--<androidx.recyclerview.widget.RecyclerView-->
-        <!--android:id="@+id/recyclerView"-->
-        <!--android:layout_width="0dp"-->
-        <!--android:layout_height="0dp"-->
-        <!--tools:itemCount="5"-->
-        <!--tools:listitem="@layout/route_list_item" />-->
-
-
+        />
 
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>

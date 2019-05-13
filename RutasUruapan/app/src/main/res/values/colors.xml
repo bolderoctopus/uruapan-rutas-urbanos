@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">@color/primaryDarkColor</color>
-    <color name="colorPrimaryDark">@color/primaryDarkColor</color>
+    <color name="colorPrimaryDark">@color/secondaryLightColor</color>
     <color name="colorAccent">@color/secondaryColor</color>
 
     <color name="primaryColor">#fafafa</color>
@@ -12,4 +12,5 @@
     <color name="secondaryDarkColor">#005b4f</color>
     <color name="primaryTextColor">#000000</color>
     <color name="secondaryTextColor">#e0f2f1</color>
+    <color name="uno">#20FF0000</color>
 </resources>

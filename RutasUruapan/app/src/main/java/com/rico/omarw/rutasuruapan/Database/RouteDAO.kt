@@ -27,4 +27,10 @@ interface RouteDAO{
 
     @Query("DELETE FROM Routes")
     fun deleteAllRoutes()
+
+    @Query("SELECT * FROM Routes " +
+            "INNER JOIN Points ON Routes.routeId = Points.routeId " +
+            "WHERE Points.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance) " +
+                "AND Points.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance)")
+    fun getRoutesIntercepting(distance: Double, latitude: Double, longitude: Double): List<Routes>
 }
