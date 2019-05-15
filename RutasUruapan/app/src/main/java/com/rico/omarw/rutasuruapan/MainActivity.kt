@@ -17,15 +17,14 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.rico.omarw.rutasuruapan.Database.AppDatabase
+import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
-import android.R.attr.top
 import android.graphics.Rect
 import android.util.Log
-import com.rico.omarw.rutasuruapan.Database.Points
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFragmentInteractionListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnMapLongClickListener {
+    private val INCREMENT: Double = 0.001
 
     private val LOCATION_PERMISSION_REQUEST = 32
     private val LINE_WIDTH = 15f
@@ -33,6 +32,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
     private var originMarker: Marker? = null
     private var destinationMarker: Marker? = null
     private var originSquare: Polygon? = null
+    private var destinationSquare: Polygon? = null
 
     //views
     private lateinit var map: GoogleMap
@@ -95,6 +95,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
                 destinationMarker?.isVisible = false
                 originMarker = null
                 destinationMarker = null
+                originSquare?.remove()
+                destinationSquare?.remove()
             }
         }
         controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
@@ -107,49 +109,82 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
 
     override fun findRoute() {
         originSquare?.remove()
+        destinationSquare?.remove()
         //map.clear()
 
-        if(originMarker == null){
-            Toast.makeText(this, "You must select an origin point", Toast.LENGTH_SHORT).show()
+        if(originMarker == null || destinationMarker == null){
+            Toast.makeText(this, "You must select an origin and destination point", Toast.LENGTH_SHORT).show()
             return
         }
-        if(controlPanel.getDistance() == null){
+
+        if(controlPanel.getWalkingDistance() == null){
             Toast.makeText(this, "You must enter distance tolerance", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val walkingDistance = controlPanel.getDistance()
+        var walkingDistance = controlPanel.getWalkingDistance()
 
         if(walkingDistance!! < 0){
             Toast.makeText(this, "distance can't be negative", Toast.LENGTH_SHORT).show()
             return
         }
-        //test 1, only with one point
-        // draw rect around origin point
-        originSquare = map.addPolygon(
-            PolygonOptions()
-                    .addAll(getSquareFrom(walkingDistance, originMarker!!.position))
-                    .strokeColor(Color.BLACK)
-                    .fillColor(Color.argb(100,100,100,100))
 
-        )
+        drawSquares(walkingDistance)
 
-        val originLat = originMarker!!.position.latitude
-        val originLng = originMarker!!.position.longitude
-        //find routes within rect
+        val originLatLng = originMarker!!.position
+        val destinationLatLng = destinationMarker!!.position
+        controlPanel.activateLoadingMode(true)
+
         AsyncTask.execute{
+            val routesDao = AppDatabase.getInstance(this)?.routesDAO()
+            var mutualRoutes: Set<Long>? = null
+            for(i in 0..500){
+                val routesNearOrigin = routesDao?.getRoutesIntercepting(walkingDistance, originLatLng.latitude, originLatLng.longitude)
+                val routesNearDest = routesDao?.getRoutesIntercepting(walkingDistance, destinationLatLng.latitude, destinationLatLng.longitude)
 
-            val routesList = AppDatabase.getInstance(this)?.routesDAO()?.getRoutesIntercepting(walkingDistance, originLat, originLng)
-            val adapterItems = arrayListOf<RouteModel>()
-            routesList?.forEach{
-                adapterItems.add(RouteModel(it))
+                if(routesNearDest.isNullOrEmpty() || routesNearOrigin.isNullOrEmpty()) continue
+
+                mutualRoutes = routesNearOrigin?.intersect(routesNearDest!!)
+
+                if(!mutualRoutes.isNullOrEmpty()) break
+                walkingDistance += INCREMENT
             }
-            runOnUiThread{controlPanel.setAdapterRoutes(adapterItems)}
+
+            if(mutualRoutes.isNullOrEmpty())
+                runOnUiThread{
+                    Toast.makeText(this, "no routes found, max iterations reached", Toast.LENGTH_SHORT).show()
+                    drawSquares(walkingDistance)
+                    controlPanel.activateLoadingMode(false)
+                }
+            else{
+                val routesInfo = routesDao?.getRoutes(mutualRoutes!!.toList())
+                val adapterItems = arrayListOf<RouteModel>()
+                routesInfo?.forEach{
+                    adapterItems.add(RouteModel(it))
+                }
+                runOnUiThread{
+                    controlPanel.setAdapterRoutes(adapterItems)
+                    controlPanel.setWalkingDistance(walkingDistance)
+                    controlPanel.activateLoadingMode(false)
+                    Toast.makeText(this, "route found", Toast.LENGTH_SHORT).show()
+                    drawSquares(walkingDistance)
+                }
+            }
         }
+    }
 
-        //display them on the recycler
-
-
+    private fun drawSquares(walkingDistance: Double){
+        originSquare?.remove()
+        destinationSquare?.remove()
+        
+        originSquare = map.addPolygon(PolygonOptions()
+                .addAll(getSquareFrom(walkingDistance, originMarker!!.position))
+                .strokeColor(Color.BLACK)
+                .fillColor(Color.argb(100,100,100,100)))
+        destinationSquare = map.addPolygon(PolygonOptions()
+                .addAll(getSquareFrom(walkingDistance, destinationMarker!!.position))
+                .strokeColor(Color.BLACK)
+                .fillColor(Color.argb(100,100,100,100)))
 
     }
 

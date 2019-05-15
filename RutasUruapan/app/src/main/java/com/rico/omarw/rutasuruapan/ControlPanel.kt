@@ -9,10 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.rico.omarw.rutasuruapan.Database.AppDatabase
+import com.rico.omarw.rutasuruapan.database.AppDatabase
+import kotlinx.android.synthetic.main.fragment_control_panel.*
 
 
 class ControlPanel : Fragment() {
@@ -22,6 +24,8 @@ class ControlPanel : Fragment() {
     private lateinit var destinationTextView: TextView
     private lateinit var distanceEditText: EditText
     private lateinit var recyclerView: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var  button: Button
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,19 +41,23 @@ class ControlPanel : Fragment() {
         destinationTextView = view.findViewById(R.id.textView_destination)
         distanceEditText = view.findViewById(R.id.editText_distance)
         recyclerView = view.findViewById(R.id.recyclerView)
+        progressBar = view.findViewById(R.id.progressBar)
+        button = view.findViewById(R.id.button_find_routes)
 
-        view.findViewById<Button>(R.id.button_find_routes).setOnClickListener { listener?.findRoute() }
+        button.setOnClickListener { listener?.findRoute() }
 
-        AsyncTask.execute{
-            if(context != null) {
-                val routesList = AppDatabase.getInstance(context!!)?.routesDAO()?.getRoutes()
-                val adapterItems = arrayListOf<RouteModel>()
-                routesList?.forEach{
-                    adapterItems.add(RouteModel(it))
-           }
-                activity?.runOnUiThread{setAdapterRoutes(adapterItems)}
-            }
-        }
+        activateLoadingMode(false)
+
+//        AsyncTask.execute{
+//            if(context != null) {
+//                val routesList = AppDatabase.getInstance(context!!)?.routesDAO()?.getRoutes()
+//                val adapterItems = arrayListOf<RouteModel>()
+//                routesList?.forEach{
+//                    adapterItems.add(RouteModel(it))
+//           }
+//                activity?.runOnUiThread{setAdapterRoutes(adapterItems)}
+//            }
+//        }
 
         return view
     }
@@ -79,8 +87,25 @@ class ControlPanel : Fragment() {
         destinationTextView.text = destination
     }
 
-    fun getDistance(): Double?{
+    fun getWalkingDistance(): Double?{
         return distanceEditText.text.toString().toDoubleOrNull()
+    }
+
+    fun setWalkingDistance(distance: Double){
+        distanceEditText.setText(distance.toString())
+    }
+
+    fun activateLoadingMode(activate: Boolean){
+        if(activate){
+            progressBar.visibility = View.VISIBLE
+            button.isEnabled = false
+            distanceEditText.isEnabled = false
+        }
+        else{
+            progressBar.visibility = View.GONE
+            button.isEnabled = true
+            distanceEditText.isEnabled = true
+        }
     }
 
     interface OnFragmentInteractionListener {

@@ -1,7 +1,7 @@
 package com.rico.omarw.rutasuruapan
 
 import com.google.android.gms.maps.model.Polyline
-import com.rico.omarw.rutasuruapan.Database.Routes
+import com.rico.omarw.rutasuruapan.database.Routes
 
 class RouteModel (private val routeDb : Routes){
     var isDrawed: Boolean = false

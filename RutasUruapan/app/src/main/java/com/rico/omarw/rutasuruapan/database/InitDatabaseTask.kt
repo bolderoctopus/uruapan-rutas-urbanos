@@ -1,11 +1,7 @@
-package com.rico.omarw.rutasuruapan.Database
+package com.rico.omarw.rutasuruapan.database
 
 import android.content.Context
 import android.os.AsyncTask
-import android.util.Log
-import com.rico.omarw.rutasuruapan.Database.AppDatabase
-import com.rico.omarw.rutasuruapan.Database.Points
-import com.rico.omarw.rutasuruapan.Database.Routes
 import java.lang.ref.WeakReference
 
 class InitDatabaseTask(val contextReference: WeakReference<Context>) : AsyncTask<Unit, Unit, Unit>() {

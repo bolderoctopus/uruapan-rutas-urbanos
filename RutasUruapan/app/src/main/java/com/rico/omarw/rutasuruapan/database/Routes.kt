@@ -1,7 +1,6 @@
-package com.rico.omarw.rutasuruapan.Database
+package com.rico.omarw.rutasuruapan.database
 
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 @Entity

@@ -1,4 +1,4 @@
-package com.rico.omarw.rutasuruapan.Database
+package com.rico.omarw.rutasuruapan.database
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -22,15 +22,18 @@ interface RouteDAO{
     @Query("SELECT * FROM  Routes")
     fun getRoutes(): List<Routes>
 
+    @Query("SELECT * FROM  Routes WHERE routeId IN (:routesIds)")
+    fun getRoutes(routesIds: List<Long>): List<Routes>
+
     @Query("DELETE FROM Points")
     fun deleteAllPoints()
 
     @Query("DELETE FROM Routes")
     fun deleteAllRoutes()
 
-    @Query("SELECT * FROM Routes " +
-            "INNER JOIN Points ON Routes.routeId = Points.routeId " +
+    @Query("SELECT distinct routeId FROM Points " +
+            //"INNER JOIN Points ON Routes.routeId = Points.routeId " +
             "WHERE Points.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance) " +
                 "AND Points.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance)")
-    fun getRoutesIntercepting(distance: Double, latitude: Double, longitude: Double): List<Routes>
+        fun getRoutesIntercepting(distance: Double, latitude: Double, longitude: Double): List<Long>
 }
