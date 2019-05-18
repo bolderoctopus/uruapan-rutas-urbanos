@@ -1,7 +1,6 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
-import android.os.AsyncTask
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,8 +12,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.rico.omarw.rutasuruapan.database.AppDatabase
-import kotlinx.android.synthetic.main.fragment_control_panel.*
 
 
 class ControlPanel : Fragment() {
@@ -25,7 +22,8 @@ class ControlPanel : Fragment() {
     private lateinit var distanceEditText: EditText
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
-    private lateinit var  button: Button
+    private lateinit var  buttonFindRoute: Button
+    private lateinit var  buttonClear: Button
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,9 +40,11 @@ class ControlPanel : Fragment() {
         distanceEditText = view.findViewById(R.id.editText_distance)
         recyclerView = view.findViewById(R.id.recyclerView)
         progressBar = view.findViewById(R.id.progressBar)
-        button = view.findViewById(R.id.button_find_routes)
+        buttonFindRoute = view.findViewById(R.id.button_find_routes)
+        buttonClear = view.findViewById(R.id.button_clear)
 
-        button.setOnClickListener { listener?.findRoute() }
+        buttonFindRoute.setOnClickListener { listener?.findRoute() }
+        buttonClear.setOnClickListener { listener?.clear() }
 
         activateLoadingMode(false)
 
@@ -98,12 +98,12 @@ class ControlPanel : Fragment() {
     fun activateLoadingMode(activate: Boolean){
         if(activate){
             progressBar.visibility = View.VISIBLE
-            button.isEnabled = false
+            buttonFindRoute.isEnabled = false
             distanceEditText.isEnabled = false
         }
         else{
             progressBar.visibility = View.GONE
-            button.isEnabled = true
+            buttonFindRoute.isEnabled = true
             distanceEditText.isEnabled = true
         }
     }
@@ -111,6 +111,7 @@ class ControlPanel : Fragment() {
     interface OnFragmentInteractionListener {
         fun findRoute()
         fun drawRoute(route: RouteModel)
+        fun clear()
     }
 
     companion object {

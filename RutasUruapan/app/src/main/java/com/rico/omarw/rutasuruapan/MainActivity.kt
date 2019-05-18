@@ -21,6 +21,7 @@ import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import android.graphics.Rect
 import android.util.Log
+import com.rico.omarw.rutasuruapan.database.Routes
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFragmentInteractionListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnMapLongClickListener {
@@ -97,9 +98,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
                 destinationMarker = null
                 originSquare?.remove()
                 destinationSquare?.remove()
+                controlPanel.setAdapterRoutes(List(0) {RouteModel(Routes("","", ""))})
             }
         }
         controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
+
     }
 
     private fun latLngToString(pos: LatLng?): String{
@@ -134,20 +137,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
         val originLatLng = originMarker!!.position
         val destinationLatLng = destinationMarker!!.position
         controlPanel.activateLoadingMode(true)
-
+        //todo: if the distance that you need to walk to the bus stop is greater or equal than the distance
+        //to the other point then maybe you should walk 
         AsyncTask.execute{
             val routesDao = AppDatabase.getInstance(this)?.routesDAO()
             var mutualRoutes: Set<Long>? = null
             for(i in 0..500){
+                Log.d("findRoute", "iteration: $i walkingDistance: $walkingDistance")
                 val routesNearOrigin = routesDao?.getRoutesIntercepting(walkingDistance, originLatLng.latitude, originLatLng.longitude)
                 val routesNearDest = routesDao?.getRoutesIntercepting(walkingDistance, destinationLatLng.latitude, destinationLatLng.longitude)
+                walkingDistance += INCREMENT
 
                 if(routesNearDest.isNullOrEmpty() || routesNearOrigin.isNullOrEmpty()) continue
-
-                mutualRoutes = routesNearOrigin?.intersect(routesNearDest!!)
-
-                if(!mutualRoutes.isNullOrEmpty()) break
-                walkingDistance += INCREMENT
+                mutualRoutes = routesNearOrigin.intersect(routesNearDest)
+                if(!mutualRoutes.isNullOrEmpty()) break //todo: dont break at the first result
             }
 
             if(mutualRoutes.isNullOrEmpty())
@@ -176,7 +179,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
     private fun drawSquares(walkingDistance: Double){
         originSquare?.remove()
         destinationSquare?.remove()
-        
+
         originSquare = map.addPolygon(PolygonOptions()
                 .addAll(getSquareFrom(walkingDistance, originMarker!!.position))
                 .strokeColor(Color.BLACK)
@@ -254,4 +257,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
     }
 
     override fun onMarkerDrag(p0: Marker?) {}
+
+    override fun clear() {
+        map.clear()
+        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
+        controlPanel.setWalkingDistance(0.001)
+        controlPanel.setAdapterRoutes(List(0) {RouteModel(Routes("","", ""))})
+    }
 }
