@@ -25,7 +25,7 @@ import com.rico.omarw.rutasuruapan.database.Routes
 
 //todo: see below
 /*
-* [] clear routes before search
+* [x] clear routes before search
 * [] add option to show all the routes
 * [] modify database, add direction data
 * [] draw routes with direction
@@ -33,7 +33,7 @@ import com.rico.omarw.rutasuruapan.database.Routes
 * [] if available, use current location as origin
 * [] improve function walkingDistanceToDest, take into consideration buildings
 *
-*
+* [] sort resulting routes
 * [] improve origin/destination looks
 * [] overall design
 * [] add settings
@@ -42,6 +42,7 @@ import com.rico.omarw.rutasuruapan.database.Routes
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFragmentInteractionListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnMapLongClickListener {
+    private val INITIAL_WALKING_DISTANCE_TOL = 0.001
     private val WALKING_DISTANCE_INCREMENT: Double = 0.001
     private val MAX_WALKING_DISTANCE = 0.05// should be configurable
     private val DEBUG_SQUARES = false
@@ -118,7 +119,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
                 destinationMarker = null
                 originSquare?.remove()
                 destinationSquare?.remove()
-                controlPanel.setAdapterRoutes(List(0) {RouteModel(Routes("","", ""))})
+                controlPanel.clearRoutes()
             }
         }
         controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
@@ -133,7 +134,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
     override fun findRoute() {
         originSquare?.remove()
         destinationSquare?.remove()
-        //map.clear()
+        controlPanel.setDistanceToBusStop(INITIAL_WALKING_DISTANCE_TOL)
+        controlPanel.clearRoutes()
 
         if(originMarker == null || destinationMarker == null){
             Toast.makeText(this, "You must select an origin and destination point", Toast.LENGTH_SHORT).show()
@@ -296,4 +298,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
         controlPanel.setDistanceToBusStop(0.001)
         controlPanel.setAdapterRoutes(List(0) {RouteModel(Routes("","", ""))})
     }
+
+
 }

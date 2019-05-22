@@ -8,6 +8,8 @@ import android.widget.CheckBox
 
 class RouteListAdapter  (private val items: List<RouteModel>, private val callback: ControlPanel.OnFragmentInteractionListener?): RecyclerView.Adapter<RouteListAdapter.MyViewHolder>(){
 
+    public fun getItems() = items
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val itemLayout = LayoutInflater.from(parent.context).inflate(R.layout.route_list_item, parent, false)
         return MyViewHolder(itemLayout)

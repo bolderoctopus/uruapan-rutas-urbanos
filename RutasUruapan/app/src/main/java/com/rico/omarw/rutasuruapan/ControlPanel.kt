@@ -108,6 +108,16 @@ class ControlPanel : Fragment() {
         }
     }
 
+    fun clearRoutes() {
+        if(recyclerView.adapter  == null) return
+
+        val currentItems = (recyclerView.adapter as RouteListAdapter).getItems()
+
+        for(r in currentItems){
+            r.polyline?.remove()
+        }
+    }
+
     interface OnFragmentInteractionListener {
         fun findRoute()
         fun drawRoute(route: RouteModel)
