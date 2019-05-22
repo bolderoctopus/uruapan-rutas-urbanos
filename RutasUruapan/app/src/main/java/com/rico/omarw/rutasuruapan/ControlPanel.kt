@@ -87,11 +87,11 @@ class ControlPanel : Fragment() {
         destinationTextView.text = destination
     }
 
-    fun getWalkingDistance(): Double?{
+    fun getDalkingDistTolerance(): Double?{
         return distanceEditText.text.toString().toDoubleOrNull()
     }
 
-    fun setWalkingDistance(distance: Double){
+    fun setDistanceToBusStop(distance: Double){
         distanceEditText.setText(distance.toString())
     }
 

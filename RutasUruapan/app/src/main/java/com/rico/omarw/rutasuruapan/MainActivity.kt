@@ -23,9 +23,29 @@ import android.graphics.Rect
 import android.util.Log
 import com.rico.omarw.rutasuruapan.database.Routes
 
+//todo: see below
+/*
+* [] clear routes before search
+* [] add option to show all the routes
+* [] modify database, add direction data
+* [] draw routes with direction
+* [] update algorithm, take into consideration direction
+* [] if available, use current location as origin
+* [] improve function walkingDistanceToDest, take into consideration buildings
+*
+*
+* [] improve origin/destination looks
+* [] overall design
+* [] add settings
+* */
+
+
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFragmentInteractionListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnMapLongClickListener {
-    private val INCREMENT: Double = 0.001
+    private val WALKING_DISTANCE_INCREMENT: Double = 0.001
+    private val MAX_WALKING_DISTANCE = 0.05// should be configurable
+    private val DEBUG_SQUARES = false
+    private val MAX_AMOUNT_ROUTES = 3
 
     private val LOCATION_PERMISSION_REQUEST = 32
     private val LINE_WIDTH = 15f
@@ -120,63 +140,75 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
             return
         }
 
-        if(controlPanel.getWalkingDistance() == null){
+        if(controlPanel.getDalkingDistTolerance() == null){
             Toast.makeText(this, "You must enter distance tolerance", Toast.LENGTH_SHORT).show()
             return
         }
 
-        var walkingDistance = controlPanel.getWalkingDistance()
+        var walkingDistanceTolerance = controlPanel.getDalkingDistTolerance()
 
-        if(walkingDistance!! < 0){
+        if(walkingDistanceTolerance!! < 0){
             Toast.makeText(this, "distance can't be negative", Toast.LENGTH_SHORT).show()
             return
         }
 
-        drawSquares(walkingDistance)
+        drawSquares(walkingDistanceTolerance)
 
         val originLatLng = originMarker!!.position
         val destinationLatLng = destinationMarker!!.position
+        val walkingDistToDest = walkingDistance(originLatLng, destinationLatLng)
+        Log.d("findRoute", "walkingDistToDest: $walkingDistToDest")
+        Log.d("findRoute", "walkingDistanceTolerance*2: $walkingDistanceTolerance*2")
         controlPanel.activateLoadingMode(true)
         //todo: if the distance that you need to walk to the bus stop is greater or equal than the distance
-        //to the other point then maybe you should walk 
+        //to the other point then maybe you should walk
         AsyncTask.execute{
             val routesDao = AppDatabase.getInstance(this)?.routesDAO()
             var mutualRoutes: Set<Long>? = null
-            for(i in 0..500){
-                Log.d("findRoute", "iteration: $i walkingDistance: $walkingDistance")
-                val routesNearOrigin = routesDao?.getRoutesIntercepting(walkingDistance, originLatLng.latitude, originLatLng.longitude)
-                val routesNearDest = routesDao?.getRoutesIntercepting(walkingDistance, destinationLatLng.latitude, destinationLatLng.longitude)
-                walkingDistance += INCREMENT
+            while(walkingDistToDest > walkingDistanceTolerance * 2){
+                Log.d("findRoute", "walkingDistToDest: $walkingDistToDest walkingDistanceTolerance: $walkingDistanceTolerance")
+                val routesNearOrigin = routesDao?.getRoutesIntercepting(walkingDistanceTolerance, originLatLng.latitude, originLatLng.longitude)
+                val routesNearDest = routesDao?.getRoutesIntercepting(walkingDistanceTolerance, destinationLatLng.latitude, destinationLatLng.longitude)
+                walkingDistanceTolerance += WALKING_DISTANCE_INCREMENT
 
                 if(routesNearDest.isNullOrEmpty() || routesNearOrigin.isNullOrEmpty()) continue
                 mutualRoutes = routesNearOrigin.intersect(routesNearDest)
-                if(!mutualRoutes.isNullOrEmpty()) break //todo: dont break at the first result
+                if(mutualRoutes.size > MAX_AMOUNT_ROUTES) break
             }
 
             if(mutualRoutes.isNullOrEmpty())
                 runOnUiThread{
-                    Toast.makeText(this, "no routes found, max iterations reached", Toast.LENGTH_SHORT).show()
-                    drawSquares(walkingDistance)
+                    Toast.makeText(this, "No routes found, maybe you should walk", Toast.LENGTH_SHORT).show()
+                    drawSquares(walkingDistanceTolerance)
                     controlPanel.activateLoadingMode(false)
                 }
             else{
-                val routesInfo = routesDao?.getRoutes(mutualRoutes!!.toList())
+                val routesInfo = routesDao?.getRoutes(mutualRoutes.toList())
                 val adapterItems = arrayListOf<RouteModel>()
                 routesInfo?.forEach{
                     adapterItems.add(RouteModel(it))
                 }
                 runOnUiThread{
                     controlPanel.setAdapterRoutes(adapterItems)
-                    controlPanel.setWalkingDistance(walkingDistance)
+                    controlPanel.setDistanceToBusStop(walkingDistanceTolerance)
                     controlPanel.activateLoadingMode(false)
                     Toast.makeText(this, "route found", Toast.LENGTH_SHORT).show()
-                    drawSquares(walkingDistance)
+                    drawSquares(walkingDistanceTolerance)
                 }
             }
         }
     }
 
+    //todo: take in consideration streets
+    private fun walkingDistance(from: LatLng, to: LatLng): Double {
+        val d1 = (from.latitude - to.latitude)
+        val d2 = (from.longitude - to.longitude)
+        return Math.sqrt(d1 * d1 + d2 * d2)
+    }
+
     private fun drawSquares(walkingDistance: Double){
+        if(!DEBUG_SQUARES) return
+
         originSquare?.remove()
         destinationSquare?.remove()
 
@@ -261,7 +293,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
     override fun clear() {
         map.clear()
         controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
-        controlPanel.setWalkingDistance(0.001)
+        controlPanel.setDistanceToBusStop(0.001)
         controlPanel.setAdapterRoutes(List(0) {RouteModel(Routes("","", ""))})
     }
 }
