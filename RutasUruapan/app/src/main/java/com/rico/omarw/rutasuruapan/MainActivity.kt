@@ -21,12 +21,15 @@ import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import android.graphics.Rect
 import android.util.Log
+import androidx.viewpager.widget.ViewPager
+import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.database.Routes
+import androidx.fragment.app.Fragment
 
 //todo: see below
 /*
 * [x] clear routes before search
-* [] add option to show all the routes
+* [x] add option to show all the routes
 * [] modify database, add direction data
 * [] draw routes with direction
 * [] update algorithm, take into consideration direction
@@ -41,7 +44,11 @@ import com.rico.omarw.rutasuruapan.database.Routes
 
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFragmentInteractionListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnMapLongClickListener {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback,
+        ControlPanelFragment.Listener,
+        GoogleMap.OnMarkerDragListener,
+        GoogleMap.OnMapLongClickListener,
+        RouteListAdapter.Listener{
     private val INITIAL_WALKING_DISTANCE_TOL = 0.001
     private val WALKING_DISTANCE_INCREMENT: Double = 0.001
     private val MAX_WALKING_DISTANCE = 0.05// should be configurable
@@ -58,18 +65,28 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
 
     //views
     private lateinit var map: GoogleMap
-    private lateinit var controlPanel: ControlPanel
+    private lateinit var controlPanel: ControlPanelFragment
     private lateinit var slidingLayout: SlidingUpPanelLayout
+    private lateinit var viewPager: ViewPager
+    private lateinit var tabLayout: TabLayout
 
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        controlPanel = supportFragmentManager.findFragmentById(R.id.fragment_control_panel) as ControlPanel
         slidingLayout= findViewById(R.id.sliding_layout)
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
+        viewPager = findViewById(R.id.viewpager)
+        tabLayout = findViewById(R.id.tablayout)
+        controlPanel = ControlPanelFragment.newInstance()
+
+        val fragments = ArrayList<Fragment>()
+        fragments.add(controlPanel)
+        fragments.add(AllRoutesFragment.newInstance())
+        viewPager.adapter = ViewPagerAdapter(supportFragmentManager, fragments)
+        tabLayout.setupWithViewPager(viewPager)
+
         mapFragment.getMapAsync(this)
 
     }
@@ -142,12 +159,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ControlPanel.OnFra
             return
         }
 
-        if(controlPanel.getDalkingDistTolerance() == null){
+        if(controlPanel.getWalkingDistTolerance() == null){
             Toast.makeText(this, "You must enter distance tolerance", Toast.LENGTH_SHORT).show()
             return
         }
 
-        var walkingDistanceTolerance = controlPanel.getDalkingDistTolerance()
+        var walkingDistanceTolerance = controlPanel.getWalkingDistTolerance()
 
         if(walkingDistanceTolerance!! < 0){
             Toast.makeText(this, "distance can't be negative", Toast.LENGTH_SHORT).show()

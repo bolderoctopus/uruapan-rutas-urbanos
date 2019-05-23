@@ -6,7 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 
-class RouteListAdapter  (private val items: List<RouteModel>, private val callback: ControlPanel.OnFragmentInteractionListener?): RecyclerView.Adapter<RouteListAdapter.MyViewHolder>(){
+class RouteListAdapter  (private val items: List<RouteModel>,
+                         private val callback: Listener?): RecyclerView.Adapter<RouteListAdapter.MyViewHolder>(){
 
     public fun getItems() = items
 
@@ -28,5 +29,9 @@ class RouteListAdapter  (private val items: List<RouteModel>, private val callba
 
     class  MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         var checkBox: CheckBox = itemView.findViewById(R.id.route_name)
+    }
+
+    interface Listener{
+        fun drawRoute(route: RouteModel)
     }
 }

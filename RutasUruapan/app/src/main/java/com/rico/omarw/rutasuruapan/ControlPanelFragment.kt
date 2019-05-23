@@ -14,9 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 
-class ControlPanel : Fragment() {
+class ControlPanelFragment : Fragment() {
 
-    private var listener: OnFragmentInteractionListener? = null
+    private var contolPanelListener: Listener? = null
+    private var routesAdapterListener: RouteListAdapter.Listener? = null
     private lateinit var originTextView: TextView
     private lateinit var destinationTextView: TextView
     private lateinit var distanceEditText: EditText
@@ -43,8 +44,8 @@ class ControlPanel : Fragment() {
         buttonFindRoute = view.findViewById(R.id.button_find_routes)
         buttonClear = view.findViewById(R.id.button_clear)
 
-        buttonFindRoute.setOnClickListener { listener?.findRoute() }
-        buttonClear.setOnClickListener { listener?.clear() }
+        buttonFindRoute.setOnClickListener { contolPanelListener?.findRoute() }
+        buttonClear.setOnClickListener { contolPanelListener?.clear() }
 
         activateLoadingMode(false)
 
@@ -65,21 +66,28 @@ class ControlPanel : Fragment() {
     fun setAdapterRoutes(data: List<RouteModel>){
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.adapter = RouteListAdapter(data, listener)
+        recyclerView.adapter = RouteListAdapter(data, routesAdapterListener)
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is OnFragmentInteractionListener) {
-            listener = context
+        if (context is Listener) {
+            contolPanelListener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
+            throw RuntimeException(context.toString() + " must implement Listener")
+        }
+
+        if (context is RouteListAdapter.Listener) {
+            routesAdapterListener = context
+        } else {
+            throw RuntimeException(context.toString() + " must implement routesAdapterListener")
         }
     }
 
     override fun onDetach() {
         super.onDetach()
-        listener = null
+        contolPanelListener = null
+        routesAdapterListener = null
     }
 
     fun setOriginDestinationText(origin: String?, destination: String?){
@@ -87,7 +95,7 @@ class ControlPanel : Fragment() {
         destinationTextView.text = destination
     }
 
-    fun getDalkingDistTolerance(): Double?{
+    fun getWalkingDistTolerance(): Double?{
         return distanceEditText.text.toString().toDoubleOrNull()
     }
 
@@ -118,16 +126,15 @@ class ControlPanel : Fragment() {
         }
     }
 
-    interface OnFragmentInteractionListener {
+    interface Listener {
         fun findRoute()
-        fun drawRoute(route: RouteModel)
         fun clear()
     }
 
     companion object {
         @JvmStatic
         fun newInstance() =
-                ControlPanel().apply {
+                ControlPanelFragment().apply {
                     arguments = Bundle().apply {
                     }
                 }
