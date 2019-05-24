@@ -25,6 +25,7 @@ import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.database.Routes
 import androidx.fragment.app.Fragment
+import kotlinx.android.synthetic.main.fragment_control_panel.*
 
 //todo: see below
 /*
@@ -48,7 +49,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ControlPanelFragment.Listener,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnMapLongClickListener,
-        RouteListAdapter.Listener{
+        RouteListAdapter.Listener, ViewPager.OnPageChangeListener {
+
     private val INITIAL_WALKING_DISTANCE_TOL = 0.001
     private val WALKING_DISTANCE_INCREMENT: Double = 0.001
     private val MAX_WALKING_DISTANCE = 0.05// should be configurable
@@ -66,6 +68,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     //views
     private lateinit var map: GoogleMap
     private lateinit var controlPanel: ControlPanelFragment
+    private lateinit var allRoutesFragment: AllRoutesFragment
     private lateinit var slidingLayout: SlidingUpPanelLayout
     private lateinit var viewPager: ViewPager
     private lateinit var tabLayout: TabLayout
@@ -76,19 +79,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         slidingLayout= findViewById(R.id.sliding_layout)
+
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
         viewPager = findViewById(R.id.viewpager)
         tabLayout = findViewById(R.id.tablayout)
         controlPanel = ControlPanelFragment.newInstance()
+        allRoutesFragment = AllRoutesFragment.newInstance()
 
         val fragments = ArrayList<Fragment>()
         fragments.add(controlPanel)
-        fragments.add(AllRoutesFragment.newInstance())
+        fragments.add(allRoutesFragment)
         viewPager.adapter = ViewPagerAdapter(supportFragmentManager, fragments)
+        viewPager.addOnPageChangeListener(this)
         tabLayout.setupWithViewPager(viewPager)
 
         mapFragment.getMapAsync(this)
-
     }
 
     @SuppressLint("MissingPermission")
@@ -316,5 +321,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         controlPanel.setAdapterRoutes(List(0) {RouteModel(Routes("","", ""))})
     }
 
+    override fun onPageSelected(position: Int) {
+        when(position){
+            0 -> slidingLayout.setScrollableView(controlPanel.recyclerView)
+            1 -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
+        }
+    }
 
+    override fun onPageScrollStateChanged(state: Int) {}
+    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
 }
