@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 class ControlPanelFragment : Fragment() {
 
     private var contolPanelListener: Listener? = null
-    private var routesAdapterListener: RouteListAdapter.Listener? = null
+    private var routesAdapterDrawRouteListener: RouteListAdapter.Listener? = null
     private lateinit var originTextView: TextView
     private lateinit var destinationTextView: TextView
     private lateinit var distanceEditText: EditText
@@ -66,7 +66,7 @@ class ControlPanelFragment : Fragment() {
     fun setAdapterRoutes(data: List<RouteModel>){
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.adapter = RouteListAdapter(data, routesAdapterListener)
+        recyclerView.adapter = RouteListAdapter(data, routesAdapterDrawRouteListener)
     }
 
     override fun onAttach(context: Context) {
@@ -74,20 +74,20 @@ class ControlPanelFragment : Fragment() {
         if (context is Listener) {
             contolPanelListener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement Listener")
+            throw RuntimeException(context.toString() + " must implement DrawRouteListener")
         }
 
         if (context is RouteListAdapter.Listener) {
-            routesAdapterListener = context
+            routesAdapterDrawRouteListener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement routesAdapterListener")
+            throw RuntimeException(context.toString() + " must implement routesAdapterDrawRouteListener")
         }
     }
 
     override fun onDetach() {
         super.onDetach()
         contolPanelListener = null
-        routesAdapterListener = null
+        routesAdapterDrawRouteListener = null
     }
 
     fun setOriginDestinationText(origin: String?, destination: String?){

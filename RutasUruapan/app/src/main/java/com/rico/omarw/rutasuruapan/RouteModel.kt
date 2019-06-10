@@ -16,4 +16,13 @@ class RouteModel (private val routeDb : Routes){
         id = routeDb.routeId
     }
 
+    override fun equals(other: Any?): Boolean {
+        if(this === other) return true
+        if(other == null || javaClass != other.javaClass) return false
+        val model = other as RouteModel
+
+        if(id != model.id) return false;
+        return name.equals(model.name) && color.equals(model.color)
+    }
+
 }

@@ -7,16 +7,35 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rico.omarw.rutasuruapan.database.AppDatabase
+import kotlin.Comparator
 
 
-class AllRoutesFragment : Fragment() {
+class AllRoutesFragment : Fragment(){
 
-//    private var listener: Listener? = null
+    private val comparator = Comparator<RouteModel>{ routeModel1: RouteModel, routeModel2: RouteModel ->
+        routeModel1.name.compareTo(routeModel2.name)
+    }
+    private val queryTextListener = object : SearchView.OnQueryTextListener{
+        override fun onQueryTextChange(query: String?): Boolean {
+            if(query != null) {
+                val filteredList = filter(routeModels, query)
+                adapter.replaceAll(filteredList)
+                recyclerView.scrollToPosition(0)
+            }
+            return true
+        }
+        override fun onQueryTextSubmit(p0: String?) = false
+    }
+
+    private lateinit var adapter: RouteListFilterableAdapter
+    private lateinit var routeModels: List<RouteModel>
     private lateinit var recyclerView: RecyclerView
-    private var adapterListener: RouteListAdapter.Listener? = null
+    private lateinit var searchView: SearchView
+    private var adapterDrawRouteListener: RouteListFilterableAdapter.DrawRouteListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +47,8 @@ class AllRoutesFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_all_routes, container, false)
 
         recyclerView = view.findViewById(R.id.recyclerView_all_routes)
+        searchView = view.findViewById(R.id.searchview)
+        searchView.setOnQueryTextListener(queryTextListener)
 
         AsyncTask.execute{
             if(context != null) {
@@ -43,24 +64,38 @@ class AllRoutesFragment : Fragment() {
         return view
     }
 
+    fun filter(models: List<RouteModel> ,query: String): List<RouteModel>{
+        val lowerCaseQuery = query.toLowerCase()
+        val filteredList = ArrayList<RouteModel>()
+        for(model in models){
+            val name = model.name.toLowerCase()
+            if(name.contains(lowerCaseQuery))
+                filteredList.add(model)
+        }
+
+        return filteredList
+    }
+
     fun setAdapterRoutes(data: List<RouteModel>){
+        routeModels = data
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.adapter = RouteListAdapter(data, adapterListener)
+        adapter = RouteListFilterableAdapter(adapterDrawRouteListener, comparator).apply { add(routeModels) }
+        recyclerView.adapter = adapter
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is RouteListAdapter.Listener) {
-            adapterListener = context
+        if (context is RouteListFilterableAdapter.DrawRouteListener) {
+            adapterDrawRouteListener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement RouteListAdapter.Listener")
+            throw RuntimeException(context.toString() + " must implement RouteListFilterableAdapter.DrawRouteListener")
         }
     }
 
     override fun onDetach() {
         super.onDetach()
-        adapterListener = null
+        adapterDrawRouteListener = null
     }
 
     companion object {

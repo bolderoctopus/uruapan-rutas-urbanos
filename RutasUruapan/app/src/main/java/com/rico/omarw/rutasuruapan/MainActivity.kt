@@ -36,6 +36,7 @@ import kotlinx.android.synthetic.main.fragment_control_panel.*
 * [] update algorithm, take into consideration direction
 * [] if available, use current location as origin
 * [] improve function walkingDistanceToDest, take into consideration buildings
+* [] filter bar for the all routes part
 *
 * [] sort resulting routes
 * [] improve origin/destination looks
@@ -49,7 +50,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ControlPanelFragment.Listener,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnMapLongClickListener,
-        RouteListAdapter.Listener, ViewPager.OnPageChangeListener {
+        RouteListAdapter.Listener,RouteListFilterableAdapter.DrawRouteListener, ViewPager.OnPageChangeListener {
 
     private val INITIAL_WALKING_DISTANCE_TOL = 0.001
     private val WALKING_DISTANCE_INCREMENT: Double = 0.001
