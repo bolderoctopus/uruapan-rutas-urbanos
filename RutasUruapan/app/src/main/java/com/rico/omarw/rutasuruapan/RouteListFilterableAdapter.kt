@@ -44,16 +44,18 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
     override fun getItemCount() = sortedList.size()
 
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
-        holder.checkBox.text = sortedList.get(p).name
-        holder.checkBox.isChecked = sortedList.get(p).isDrawed
+        holder.model = sortedList[p]
+        holder.checkBox.text = sortedList[p].name
+        holder.checkBox.isChecked = sortedList[p].isDrawed
 
         holder.checkBox.setOnClickListener {
-            callback?.drawRoute(sortedList.get(p))
+            callback?.drawRoute(holder.model)
         }
     }
 
     class  MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         var checkBox: CheckBox = itemView.findViewById(R.id.route_name)
+        lateinit var model: RouteModel
     }
 
     interface DrawRouteListener{
