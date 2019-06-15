@@ -31,13 +31,13 @@ import kotlinx.android.synthetic.main.fragment_control_panel.*
 /*
 * [x] clear routes before search
 * [x] add option to show all the routes
-* [] modify database, add direction data
+* [x] filter bar for the all routes part
 * [x] draw routes with direction
+* [] modify database, add direction data
 * [] update algorithm, take into consideration direction
-* [] if available, use current location as origin
 * [] improve function walkingDistanceToDest, take into consideration buildings
-* [] filter bar for the all routes part
 *
+* [] if available, use current location as origin
 * [] sort resulting routes
 * [] improve origin/destination looks
 * [] overall design
