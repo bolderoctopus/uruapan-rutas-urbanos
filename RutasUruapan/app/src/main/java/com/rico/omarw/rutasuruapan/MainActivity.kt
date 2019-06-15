@@ -3,7 +3,8 @@ package com.rico.omarw.rutasuruapan
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.graphics.Color
+import android.graphics.*
+import android.graphics.Bitmap.createBitmap
 import android.os.AsyncTask
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -19,12 +20,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
-import android.graphics.Rect
 import android.util.Log
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
-import com.rico.omarw.rutasuruapan.database.Routes
 import androidx.fragment.app.Fragment
+import com.rico.omarw.rutasuruapan.database.Routes
 import kotlinx.android.synthetic.main.fragment_control_panel.*
 
 //todo: see below
@@ -32,7 +32,7 @@ import kotlinx.android.synthetic.main.fragment_control_panel.*
 * [x] clear routes before search
 * [x] add option to show all the routes
 * [] modify database, add direction data
-* [] draw routes with direction
+* [x] draw routes with direction
 * [] update algorithm, take into consideration direction
 * [] if available, use current location as origin
 * [] improve function walkingDistanceToDest, take into consideration buildings
@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnMapLongClickListener,
         RouteListAdapter.Listener,RouteListFilterableAdapter.DrawRouteListener, ViewPager.OnPageChangeListener {
-
+    private val DIRECTIONAL_ARROWS_STEP = 7
     private val INITIAL_WALKING_DISTANCE_TOL = 0.001
     private val WALKING_DISTANCE_INCREMENT: Double = 0.001
     private val MAX_WALKING_DISTANCE = 0.05// should be configurable
@@ -259,26 +259,52 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return points
     }
 
+    //.endCap(CustomCap(getEndCapIcon(Color.parseColor("#82b1ff"))))
     override fun drawRoute(route: RouteModel) {
         if (route.polyline != null){
-            route.polyline?.isVisible = !route.isDrawed
-            route.isDrawed = route.isDrawed.not()
+            route.showLines(route.isDrawed.not())
 
         }else{
             AsyncTask.execute {
+                val color = Color.parseColor(route.color)
+                val arrowCap = getEndCapArrow(color)
                 val points = AppDatabase.getInstance(this)?.routesDAO()?.getPointsFrom( route.id)
                 val polylineOptions = PolylineOptions()
-                polylineOptions.color(Color.parseColor(route.color))
+                val arrowPolylineOptions = ArrayList<PolylineOptions>()
+
+                polylineOptions
+                        .color(color)
                         .width(LINE_WIDTH)
                         .jointType(JointType.ROUND)
 
-                points?.forEach{
-                    polylineOptions.add(LatLng(it.lat, it.lng))
+                var counter = 0
+                for(x in 0 until (points?.size ?: 0)){
+                    val point = points!![x]
+
+                    polylineOptions.add(LatLng(point.lat, point.lng))
+
+                    if(counter == 0 && arrowCap != null){
+                        counter = DIRECTIONAL_ARROWS_STEP
+                        if(x + 1 < points.size)
+                            arrowPolylineOptions.add(PolylineOptions()
+                                    .color(Color.TRANSPARENT)
+                                    .endCap(CustomCap(arrowCap))
+                                    .add(LatLng(point.lat, point.lng), LatLng(points[x+1].lat, points[x+1].lng)))
+
+                    }
+
+                    counter--
                 }
 
                 runOnUiThread{
                     route.polyline = map.addPolyline(polylineOptions)
+                    route.arrowPolylines = ArrayList<Polyline>()
+                    arrowPolylineOptions.forEach {
+                        route.arrowPolylines?.add(map.addPolyline(it))
+                    }
                     route.isDrawed = true
+
+                    Log.d(DEBUG_TAG, "\npoints in route: ${points?.size} \narrows drawn: ${arrowPolylineOptions.size}")
                 }
             }
         }
@@ -320,7 +346,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
         controlPanel.setDistanceToBusStop(0.001)
         controlPanel.setAdapterRoutes(List(0) {RouteModel(Routes("","", ""))})
+
     }
+
+    @SuppressLint("NewApi")
+    private fun getEndCapArrow(color: Int): BitmapDescriptor?{
+        val drawable = getDrawable(R.drawable.ic_arrow) ?: return null
+        drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
+        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight);
+        val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable.draw(canvas)
+
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+
 
     override fun onPageSelected(position: Int) {
         when(position){

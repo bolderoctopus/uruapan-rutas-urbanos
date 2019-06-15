@@ -5,15 +5,18 @@ import com.rico.omarw.rutasuruapan.database.Routes
 
 class RouteModel (private val routeDb : Routes){
     var isDrawed: Boolean = false
-    val name: String
-    val color: String
-    val id: Long
+    val name: String = routeDb.name
+    val color: String = routeDb.color
+    val id: Long = routeDb.routeId
     var polyline: Polyline? = null
+    var arrowPolylines: ArrayList<Polyline>? = null
 
-    init {
-        name = routeDb.name;
-        color = routeDb.color;
-        id = routeDb.routeId
+    public fun showLines(show: Boolean){
+        polyline?.isVisible = show
+        arrowPolylines?.forEach {
+            it.isVisible = show
+        }
+        isDrawed = show
     }
 
     override fun equals(other: Any?): Boolean {
