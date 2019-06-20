@@ -25,6 +25,8 @@ import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import androidx.fragment.app.Fragment
 import com.rico.omarw.rutasuruapan.database.Routes
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_all_routes.*
 import kotlinx.android.synthetic.main.fragment_control_panel.*
 
 //todo: see below
@@ -36,7 +38,9 @@ import kotlinx.android.synthetic.main.fragment_control_panel.*
 * [] modify database, add direction data
 * [] update algorithm, take into consideration direction
 * [] improve function walkingDistanceToDest, take into consideration buildings
+* [x] fix the nested scroll thing
 *
+* [] draw only the relevant part of the route?
 * [] if available, use current location as origin
 * [] sort resulting routes
 * [] improve origin/destination looks
@@ -94,6 +98,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         viewPager.addOnPageChangeListener(this)
         tabLayout.setupWithViewPager(viewPager)
 
+        viewPager.post{slidingLayout.setScrollableView(controlPanel.recyclerView)}
         mapFragment.getMapAsync(this)
     }
 
@@ -368,6 +373,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             0 -> slidingLayout.setScrollableView(controlPanel.recyclerView)
             1 -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
         }
+        slidingLayout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
     }
 
     override fun onPageScrollStateChanged(state: Int) {}

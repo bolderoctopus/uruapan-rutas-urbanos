@@ -33,7 +33,7 @@ class AllRoutesFragment : Fragment(){
 
     private lateinit var adapter: RouteListFilterableAdapter
     private lateinit var routeModels: List<RouteModel>
-    private lateinit var recyclerView: RecyclerView
+    lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
     private var adapterDrawRouteListener: RouteListFilterableAdapter.DrawRouteListener? = null
 

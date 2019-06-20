@@ -21,7 +21,7 @@ class ControlPanelFragment : Fragment() {
     private lateinit var originTextView: TextView
     private lateinit var destinationTextView: TextView
     private lateinit var distanceEditText: EditText
-    public lateinit var recyclerView: RecyclerView
+    lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var  buttonFindRoute: Button
     private lateinit var  buttonClear: Button
