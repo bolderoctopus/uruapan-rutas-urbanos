@@ -1,2 +1,2 @@
 # uruapan-rutas-urbanos
-Aplicación adroid con las rutas del transporte urbano.
+Aplicación android con las rutas del transporte urbano.
