@@ -2,13 +2,12 @@ package com.rico.omarw.rutasuruapan
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
-import android.os.AsyncTask
-import android.os.Build
+import android.os.*
 import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.widget.Toast
@@ -21,6 +20,7 @@ import com.google.android.gms.maps.model.*
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import android.util.Log
+import android.view.WindowManager
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import androidx.fragment.app.Fragment
@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private val MAX_WALKING_DISTANCE = 0.05// should be configurable
     private val DEBUG_SQUARES = false
     private val MAX_AMOUNT_ROUTES = 3
+    private val VIBRATION_DURATION: Long = 75
 
     private val LOCATION_PERMISSION_REQUEST = 32
     private val LINE_WIDTH = 15f
@@ -134,6 +135,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onMapLongClick(pos: LatLng){
+        vibrate()
         when {
             originMarker == null ->
                 originMarker = map.addMarker(MarkerOptions().title("Origin").position(pos).draggable(true))
@@ -365,6 +367,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         drawable.draw(canvas)
 
         return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    private fun vibrate(){
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if(!vibrator.hasVibrator()) return
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(VIBRATION_DURATION, VibrationEffect.DEFAULT_AMPLITUDE))
+        }else{
+            vibrator.vibrate(VIBRATION_DURATION)
+        }
     }
 
 
