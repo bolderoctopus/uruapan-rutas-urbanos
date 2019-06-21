@@ -40,6 +40,7 @@ import kotlinx.android.synthetic.main.fragment_control_panel.*
 * [] improve function walkingDistanceToDest, take into consideration buildings
 * [x] fix the nested scroll thing
 *
+* [] i think the app crashes if its starting but the screen is blocked
 * [] draw only the relevant part of the route?
 * [] if available, use current location as origin
 * [] sort resulting routes
