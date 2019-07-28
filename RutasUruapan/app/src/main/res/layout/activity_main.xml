@@ -6,10 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="bottom"
-    android:fitsSystemWindows="false"
     sothree:umanoScrollableView="@+id/recyclerView"
-    sothree:umanoPanelHeight="75dp"
     sothree:umanoShadowHeight="4dp"
+    sothree:umanoAnchorPoint="0.3"
     sothree:umanoFadeColor="@android:color/transparent">
 
     <fragment
@@ -20,16 +19,10 @@
         android:gravity="center"
         tools:context=".MainActivity" />
 
-    <!--<fragment-->
-        <!--android:id="@+id/fragment_control_panel"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:gravity="center|top"-->
-        <!--android:name="com.rico.omarw.rutasuruapan.ControlPanelFragmentFragment"-->
-        <!--/>-->
     <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="300dp"
+        android:id="@+id/root_layout_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical">
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tablayout"

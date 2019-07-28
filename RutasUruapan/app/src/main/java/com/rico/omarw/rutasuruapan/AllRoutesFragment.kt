@@ -35,7 +35,7 @@ class AllRoutesFragment : Fragment(){
     private lateinit var routeModels: List<RouteModel>
     lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
-    private var adapterDrawRouteListener: RouteListFilterableAdapter.DrawRouteListener? = null
+    private var interactionsListener: InteractionsInterface? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +49,12 @@ class AllRoutesFragment : Fragment(){
         recyclerView = view.findViewById(R.id.recyclerView_all_routes)
         searchView = view.findViewById(R.id.searchview)
         searchView.setOnQueryTextListener(queryTextListener)
+        searchView.setOnFocusChangeListener{ sender, hasFocus ->
+            run {
+                if (hasFocus)
+                    interactionsListener?.onSearchGotFocus()
+            }
+        }
 
         AsyncTask.execute{
             if(context != null) {
@@ -80,14 +86,14 @@ class AllRoutesFragment : Fragment(){
         routeModels = data
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        adapter = RouteListFilterableAdapter(adapterDrawRouteListener, comparator).apply { add(routeModels) }
+        adapter = RouteListFilterableAdapter(interactionsListener, comparator).apply { add(routeModels) }
         recyclerView.adapter = adapter
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is RouteListFilterableAdapter.DrawRouteListener) {
-            adapterDrawRouteListener = context
+            interactionsListener = context as InteractionsInterface
         } else {
             throw RuntimeException(context.toString() + " must implement RouteListFilterableAdapter.DrawRouteListener")
         }
@@ -95,7 +101,7 @@ class AllRoutesFragment : Fragment(){
 
     override fun onDetach() {
         super.onDetach()
-        adapterDrawRouteListener = null
+        interactionsListener = null
     }
 
     companion object {
@@ -106,4 +112,9 @@ class AllRoutesFragment : Fragment(){
                     }
                 }
     }
+
+    interface InteractionsInterface : RouteListFilterableAdapter.DrawRouteListener{
+        fun onSearchGotFocus()
+    }
+
 }

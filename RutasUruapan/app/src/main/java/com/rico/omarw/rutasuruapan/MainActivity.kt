@@ -7,27 +7,25 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
 import android.os.*
+import android.util.Log
+import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import android.widget.Toast
-
+import androidx.fragment.app.Fragment
+import androidx.viewpager.widget.ViewPager
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.rico.omarw.rutasuruapan.database.AppDatabase
-import com.sothree.slidinguppanel.SlidingUpPanelLayout
-import android.util.Log
-import android.view.WindowManager
-import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
-import androidx.fragment.app.Fragment
+import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Routes
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_all_routes.*
-import kotlinx.android.synthetic.main.fragment_control_panel.*
+import com.sothree.slidinguppanel.SlidingUpPanelLayout
 
 //todo: see below
 /*
@@ -55,7 +53,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ControlPanelFragment.Listener,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnMapLongClickListener,
-        RouteListAdapter.Listener,RouteListFilterableAdapter.DrawRouteListener, ViewPager.OnPageChangeListener {
+        RouteListAdapter.Listener,RouteListFilterableAdapter.DrawRouteListener,
+        AllRoutesFragment.InteractionsInterface, ViewPager.OnPageChangeListener {
+
     private val DIRECTIONAL_ARROWS_STEP = 7
     private val INITIAL_WALKING_DISTANCE_TOL = 0.001
     private val WALKING_DISTANCE_INCREMENT: Double = 0.001
@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var slidingLayout: SlidingUpPanelLayout
     private lateinit var viewPager: ViewPager
     private lateinit var tabLayout: TabLayout
+    private lateinit var linearlayoutTabs: LinearLayout
 
 
 
@@ -90,14 +91,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
         viewPager = findViewById(R.id.viewpager)
         tabLayout = findViewById(R.id.tablayout)
+
+        linearlayoutTabs = findViewById(R.id.root_layout_tabs)
+
+
         controlPanel = ControlPanelFragment.newInstance()
         allRoutesFragment = AllRoutesFragment.newInstance()
-
+        viewPager.addOnPageChangeListener(this)
         val fragments = ArrayList<Fragment>()
         fragments.add(controlPanel)
         fragments.add(allRoutesFragment)
         viewPager.adapter = ViewPagerAdapter(supportFragmentManager, fragments)
-        viewPager.addOnPageChangeListener(this)
         tabLayout.setupWithViewPager(viewPager)
 
         viewPager.post{slidingLayout.setScrollableView(controlPanel.recyclerView)}
@@ -110,10 +114,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map.setOnMapLongClickListener(this)
         map.setOnMarkerDragListener(this)
         slidingLayout.post{
+            slidingLayout.panelHeight = (tabLayout.height * 1.2).toInt()
+            linearlayoutTabs.layoutParams = SlidingUpPanelLayout.LayoutParams(linearlayoutTabs.layoutParams)
+                    .apply {this.topMargin = getStatusBarHeight()}
             map.setPadding(0,getStatusBarHeight(),0,0)
-            //todo: fix status bar color (currently not working:)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                window.statusBarColor = Color.parseColor("#20FF0000")
+
+//            //todo: fix status bar color (currently not working:)
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//                window.statusBarColor = Color.parseColor("#20FF0000")
         }
 
 
@@ -380,16 +388,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-
+    override fun onSearchGotFocus() {
+        slidingLayout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
+    }
 
     override fun onPageSelected(position: Int) {
-        when(position){
-            0 -> slidingLayout.setScrollableView(controlPanel.recyclerView)
-            1 -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
-        }
-        slidingLayout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
+        if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED)
+            slidingLayout.panelState = SlidingUpPanelLayout.PanelState.COLLAPSED
     }
 
     override fun onPageScrollStateChanged(state: Int) {}
     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+
 }
