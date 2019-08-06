@@ -84,7 +84,7 @@ class AllRoutesFragment : Fragment(){
 
     fun setAdapterRoutes(data: List<RouteModel>){
         routeModels = data
-        recyclerView.setHasFixedSize(true)
+        recyclerView.setHasFixedSize(false)
         recyclerView.layoutManager = LinearLayoutManager(context)
         adapter = RouteListFilterableAdapter(interactionsListener, comparator).apply { add(routeModels) }
         recyclerView.adapter = adapter

@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.slidingpanelayout.widget.SlidingPaneLayout
 import androidx.viewpager.widget.ViewPager
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -29,14 +30,9 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 
 //todo: see below
 /*
-* [x] clear routes before search
-* [x] add option to show all the routes
-* [x] filter bar for the all routes part
-* [x] draw routes with direction
 * [] modify database, add direction data
 * [] update algorithm, take into consideration direction
 * [] improve function walkingDistanceToDest, take into consideration buildings
-* [x] fix the nested scroll thing
 *
 * [] i think the app crashes if its starting but the screen is blocked
 * [] draw only the relevant part of the route?
@@ -45,6 +41,10 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 * [] improve origin/destination looks
 * [] overall design
 * [] add settings
+* [] add missing routes 176 y 45
+* [] settings: how many results to show?
+*
+* [] find methd to log gps data
 * */
 
 
@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnMapLongClickListener,
         RouteListAdapter.Listener,RouteListFilterableAdapter.DrawRouteListener,
-        AllRoutesFragment.InteractionsInterface, ViewPager.OnPageChangeListener {
+        AllRoutesFragment.InteractionsInterface, ViewPager.OnPageChangeListener, SlidingUpPanelLayout.PanelSlideListener {
 
     private val DIRECTIONAL_ARROWS_STEP = 7
     private val INITIAL_WALKING_DISTANCE_TOL = 0.001
@@ -106,6 +106,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         viewPager.post{slidingLayout.setScrollableView(controlPanel.recyclerView)}
         mapFragment.getMapAsync(this)
+
+        slidingLayout.addPanelSlideListener(this)
     }
 
     @SuppressLint("MissingPermission")
@@ -138,7 +140,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val rectangle = Rect()
         val window = window
         window.decorView.getWindowVisibleDisplayFrame(rectangle)
-        Log.d(DEBUG_TAG, "statusBarHeight: " + rectangle.top)
+        //Log.d(DEBUG_TAG, "statusBarHeight: " + rectangle.top)
         return rectangle.top
     }
 
@@ -393,11 +395,31 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onPageSelected(position: Int) {
+        when(position){
+            0 -> slidingLayout.setScrollableView(controlPanel.recyclerView)
+            1 -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
+        }
+
         if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED)
-            slidingLayout.panelState = SlidingUpPanelLayout.PanelState.COLLAPSED
+            slidingLayout.panelState = SlidingUpPanelLayout.PanelState.ANCHORED
     }
 
     override fun onPageScrollStateChanged(state: Int) {}
     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
+
+    override fun onPanelSlide(panel: View?, slideOffset: Float) {
+        //Log.d(DEBUG_TAG, "onPanelSlide, slideOffset: $slideOffset")
+    }
+
+    override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
+        when(newState){
+            SlidingUpPanelLayout.PanelState.ANCHORED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
+                height = 500
+            }
+            SlidingUpPanelLayout.PanelState.EXPANDED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
+                height = 1600
+            }
+        }
+    }
 
 }
