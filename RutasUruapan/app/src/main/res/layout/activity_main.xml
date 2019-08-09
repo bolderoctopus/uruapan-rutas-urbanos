@@ -8,7 +8,6 @@
     android:gravity="bottom"
     sothree:umanoScrollableView="@+id/recyclerView"
     sothree:umanoShadowHeight="4dp"
-    sothree:umanoAnchorPoint="0.3"
     sothree:umanoFadeColor="@android:color/transparent">
 
     <fragment
@@ -22,12 +21,14 @@
     <LinearLayout
         android:id="@+id/root_layout_tabs"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="250dp"
         android:orientation="vertical">
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tablayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content">
+            
+        </com.google.android.material.tabs.TabLayout>
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/viewpager"
             android:layout_width="match_parent"

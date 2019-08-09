@@ -13,4 +13,5 @@
     <color name="primaryTextColor">#000000</color>
     <color name="secondaryTextColor">#e0f2f1</color>
     <color name="uno">#20FF0000</color>
+    <color name="transparent">#00FFFFFF</color>
 </resources>

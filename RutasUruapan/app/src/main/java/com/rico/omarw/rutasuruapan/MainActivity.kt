@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.slidingpanelayout.widget.SlidingPaneLayout
 import androidx.viewpager.widget.ViewPager
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -38,8 +39,8 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 * [] draw only the relevant part of the route?
 * [] if available, use current location as origin
 * [] sort resulting routes
-* [] improve origin/destination looks
-* [] overall design
+* [...] improve origin/destination looks
+* [...] overall design
 * [] add settings
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
@@ -54,7 +55,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnMapLongClickListener,
         RouteListAdapter.Listener,RouteListFilterableAdapter.DrawRouteListener,
-        AllRoutesFragment.InteractionsInterface, ViewPager.OnPageChangeListener, SlidingUpPanelLayout.PanelSlideListener {
+        AllRoutesFragment.InteractionsInterface, ViewPager.OnPageChangeListener, SlidingUpPanelLayout.PanelSlideListener,
+        SearchFragment.OnFragmentInteractionListener,
+        ResultsFragment.OnFragmentInteractionListener{
 
     private val DIRECTIONAL_ARROWS_STEP = 7
     private val INITIAL_WALKING_DISTANCE_TOL = 0.001
@@ -75,11 +78,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     //views
     private lateinit var map: GoogleMap
     private lateinit var controlPanel: ControlPanelFragment
+    private lateinit var searchFragment: SearchFragment
     private lateinit var allRoutesFragment: AllRoutesFragment
     private lateinit var slidingLayout: SlidingUpPanelLayout
     private lateinit var viewPager: ViewPager
     private lateinit var tabLayout: TabLayout
     private lateinit var linearlayoutTabs: LinearLayout
+    private lateinit var viewPagerAdapter: ViewPagerAdapter
 
 
 
@@ -89,25 +94,41 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         slidingLayout= findViewById(R.id.sliding_layout)
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        viewPager = findViewById(R.id.viewpager)
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.root_layout_tabs, SearchFragment.newInstance())
+                .commit()
+
+
+        /*viewPager = findViewById(R.id.viewpager)
         tabLayout = findViewById(R.id.tablayout)
 
         linearlayoutTabs = findViewById(R.id.root_layout_tabs)
 
-
-        controlPanel = ControlPanelFragment.newInstance()
+        //controlPanel = ControlPanelFragment.newInstance()
+        searchFragment = SearchFragment.newInstance()
         allRoutesFragment = AllRoutesFragment.newInstance()
+
         viewPager.addOnPageChangeListener(this)
-        val fragments = ArrayList<Fragment>()
-        fragments.add(controlPanel)
-        fragments.add(allRoutesFragment)
-        viewPager.adapter = ViewPagerAdapter(supportFragmentManager, fragments)
+
+        val fragments = Array<Fragment>(2) {
+            when(it){
+                0 -> searchFragment
+                1 -> allRoutesFragment
+                else -> Fragment()
+            }
+        }
+//        fragments.add(controlPanel)
+//        fragments[0] = (searchFragment)
+//        fragments[1] = allRoutesFragment)
+
+        viewPagerAdapter = ViewPagerAdapter(supportFragmentManager, fragments)
+        viewPager.adapter = viewPagerAdapter
         tabLayout.setupWithViewPager(viewPager)
 
-        viewPager.post{slidingLayout.setScrollableView(controlPanel.recyclerView)}
-        mapFragment.getMapAsync(this)
+//        viewPager.post{slidingLayout.setScrollableView(controlPanel.recyclerView)}
 
-        slidingLayout.addPanelSlideListener(this)
+        slidingLayout.addPanelSlideListener(this)*/
+        mapFragment.getMapAsync(this)
     }
 
     @SuppressLint("MissingPermission")
@@ -116,14 +137,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map.setOnMapLongClickListener(this)
         map.setOnMarkerDragListener(this)
         slidingLayout.post{
-            slidingLayout.panelHeight = (tabLayout.height * 1.2).toInt()
-            linearlayoutTabs.layoutParams = SlidingUpPanelLayout.LayoutParams(linearlayoutTabs.layoutParams)
-                    .apply {this.topMargin = getStatusBarHeight()}
+//            slidingLayout.panelHeight = (tabLayout.height * 1.2).toInt()
+            // prevent slidingPanel to go behind status bar
+//            linearlayoutTabs.layoutParams = SlidingUpPanelLayout.LayoutParams(linearlayoutTabs.layoutParams)
+//                    .apply {this.topMargin = getStatusBarHeight()}
             map.setPadding(0,getStatusBarHeight(),0,0)
 
-//            //todo: fix status bar color (currently not working:)
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-//                window.statusBarColor = Color.parseColor("#20FF0000")
         }
 
 
@@ -396,8 +415,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onPageSelected(position: Int) {
         when(position){
-            0 -> slidingLayout.setScrollableView(controlPanel.recyclerView)
-            1 -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
+//            0 -> slidingLayout.setScrollableView(controlPanel.recyclerView)
+//            1 -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
         }
 
         if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED)
@@ -420,6 +439,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 height = 1600
             }
         }
+    }
+
+    override fun onSearch(){
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.root_layout_tabs,ResultsFragment.newInstance())
+                .addToBackStack("d")
+                .commit()
+    }
+
+    override fun onBack(){
+        supportFragmentManager.popBackStack()
     }
 
 }
