@@ -24,10 +24,13 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.bottomnavigation.BottomNavigationMenu
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Routes
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import kotlinx.android.synthetic.main.activity_main.view.*
 
 //todo: see below
 /*
@@ -47,6 +50,17 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 *
 * [] find methd to log gps data
 * */
+
+/*
+sub taks
+[] improve color pa;ette
+[] size of searcFragment, fab touches the destination
+[] add drag up indicator, (small view on top of the sliding panel)
+[...] fix menu selection thing
+[] set fragment transitions between seach and results
+[] code origyn & destination textBoxes
+
+ */
 
 
 
@@ -80,6 +94,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var controlPanel: ControlPanelFragment
     private lateinit var searchFragment: SearchFragment
     private lateinit var allRoutesFragment: AllRoutesFragment
+    private lateinit var resultsFragment: ResultsFragment
+
     private lateinit var slidingLayout: SlidingUpPanelLayout
     private lateinit var viewPager: ViewPager
     private lateinit var tabLayout: TabLayout
@@ -94,41 +110,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         slidingLayout= findViewById(R.id.sliding_layout)
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_navigation_slide_panel)
+
+
+        allRoutesFragment = AllRoutesFragment.newInstance()
+        searchFragment = SearchFragment.newInstance()
+        resultsFragment = ResultsFragment.newInstance()
+
+        bottomNavView.setOnNavigationItemSelectedListener {
+                    run{replaceFragment(it.itemId)}
+                    true
+                }
+
         supportFragmentManager.beginTransaction()
-                .replace(R.id.root_layout_tabs, SearchFragment.newInstance())
+                .add(R.id.fragment_container, searchFragment)
                 .commit()
 
-
-        /*viewPager = findViewById(R.id.viewpager)
-        tabLayout = findViewById(R.id.tablayout)
-
-        linearlayoutTabs = findViewById(R.id.root_layout_tabs)
-
-        //controlPanel = ControlPanelFragment.newInstance()
-        searchFragment = SearchFragment.newInstance()
-        allRoutesFragment = AllRoutesFragment.newInstance()
-
-        viewPager.addOnPageChangeListener(this)
-
-        val fragments = Array<Fragment>(2) {
-            when(it){
-                0 -> searchFragment
-                1 -> allRoutesFragment
-                else -> Fragment()
-            }
-        }
-//        fragments.add(controlPanel)
-//        fragments[0] = (searchFragment)
-//        fragments[1] = allRoutesFragment)
-
-        viewPagerAdapter = ViewPagerAdapter(supportFragmentManager, fragments)
-        viewPager.adapter = viewPagerAdapter
-        tabLayout.setupWithViewPager(viewPager)
-
-//        viewPager.post{slidingLayout.setScrollableView(controlPanel.recyclerView)}
-
-        slidingLayout.addPanelSlideListener(this)*/
+        slidingLayout.addPanelSlideListener(this)
         mapFragment.getMapAsync(this)
+    }
+
+    private fun replaceFragment(menuId: Int){
+        Log.d(DEBUG_TAG, "replaceFragmentCalled")
+        if(menuId == R.id.find_route_menu_item)
+            supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container,allRoutesFragment, "allRoutesFragment")
+                    .commit()
+        else
+            supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container,searchFragment, "searchFragment")
+                    .commit()
     }
 
     @SuppressLint("MissingPermission")
@@ -159,7 +170,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val rectangle = Rect()
         val window = window
         window.decorView.getWindowVisibleDisplayFrame(rectangle)
-        //Log.d(DEBUG_TAG, "statusBarHeight: " + rectangle.top)
         return rectangle.top
     }
 
@@ -431,20 +441,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
-        when(newState){
-            SlidingUpPanelLayout.PanelState.ANCHORED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
-                height = 500
-            }
-            SlidingUpPanelLayout.PanelState.EXPANDED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
-                height = 1600
-            }
-        }
+//        when(newState){
+//            SlidingUpPanelLayout.PanelState.ANCHORED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
+//                height = 500
+//            }
+//            SlidingUpPanelLayout.PanelState.EXPANDED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
+//                height = 1600
+//            }
+//        }
     }
 
     override fun onSearch(){
         supportFragmentManager.beginTransaction()
-                .replace(R.id.root_layout_tabs,ResultsFragment.newInstance())
-                .addToBackStack("d")
+                .replace(R.id.fragment_container,resultsFragment)
+                .addToBackStack("resultsFragment")
                 .commit()
     }
 
