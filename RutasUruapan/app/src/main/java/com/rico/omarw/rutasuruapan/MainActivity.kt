@@ -8,6 +8,7 @@ import android.graphics.*
 import android.graphics.Bitmap.createBitmap
 import android.os.*
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -54,12 +55,14 @@ import kotlinx.android.synthetic.main.activity_main.view.*
 /*
 sub taks
 [] improve color pa;ette
-[] size of searcFragment, fab touches the destination
-[] add drag up indicator, (small view on top of the sliding panel)
-[...] fix menu selection thing
+[x] size of searcFragment, fab touches the destination
+[] check the shadow of the fab
+[1/2] add drag up indicator, (small view on top of the sliding panel)
+[x] fix menu selection thing
 [] set fragment transitions between seach and results
 [] code origyn & destination textBoxes
-
+[] fragments lose state
+[] switch scroll view when the thing changes
  */
 
 
@@ -71,7 +74,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         RouteListAdapter.Listener,RouteListFilterableAdapter.DrawRouteListener,
         AllRoutesFragment.InteractionsInterface, ViewPager.OnPageChangeListener, SlidingUpPanelLayout.PanelSlideListener,
         SearchFragment.OnFragmentInteractionListener,
-        ResultsFragment.OnFragmentInteractionListener{
+        ResultsFragment.OnFragmentInteractionListener, BottomNavigationView.OnNavigationItemSelectedListener {
 
     private val DIRECTIONAL_ARROWS_STEP = 7
     private val INITIAL_WALKING_DISTANCE_TOL = 0.001
@@ -91,18 +94,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     //views
     private lateinit var map: GoogleMap
-    private lateinit var controlPanel: ControlPanelFragment
     private lateinit var searchFragment: SearchFragment
     private lateinit var allRoutesFragment: AllRoutesFragment
     private lateinit var resultsFragment: ResultsFragment
 
     private lateinit var slidingLayout: SlidingUpPanelLayout
-    private lateinit var viewPager: ViewPager
-    private lateinit var tabLayout: TabLayout
-    private lateinit var linearlayoutTabs: LinearLayout
-    private lateinit var viewPagerAdapter: ViewPagerAdapter
+    private var resultsFragmentActive = false
 
-
+    //todo: to delete
+    private lateinit var controlPanel: ControlPanelFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,14 +113,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_navigation_slide_panel)
 
 
-        allRoutesFragment = AllRoutesFragment.newInstance()
         searchFragment = SearchFragment.newInstance()
-        resultsFragment = ResultsFragment.newInstance()
 
-        bottomNavView.setOnNavigationItemSelectedListener {
-                    run{replaceFragment(it.itemId)}
-                    true
-                }
+        bottomNavView.setOnNavigationItemSelectedListener (this)
 
         supportFragmentManager.beginTransaction()
                 .add(R.id.fragment_container, searchFragment)
@@ -128,18 +123,28 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         slidingLayout.addPanelSlideListener(this)
         mapFragment.getMapAsync(this)
+        bottomNavView.post{
+            val height = if(searchFragment.view == null) 500 else searchFragment.view!!.height
+            allRoutesFragment = AllRoutesFragment.newInstance(height)
+            resultsFragment = ResultsFragment.newInstance(height)
+        }
     }
 
-    private fun replaceFragment(menuId: Int){
-        Log.d(DEBUG_TAG, "replaceFragmentCalled")
-        if(menuId == R.id.find_route_menu_item)
-            supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container,allRoutesFragment, "allRoutesFragment")
-                    .commit()
-        else
-            supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container,searchFragment, "searchFragment")
-                    .commit()
+    override fun onNavigationItemSelected(menuitem: MenuItem): Boolean {
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+
+        if(menuitem.itemId == R.id.menu_item_all_routes){
+            fragmentTransaction.replace(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG)
+        }
+        else if (menuitem.itemId == R.id.menu_item_find_route){
+            if(resultsFragmentActive)
+                fragmentTransaction.replace(R.id.fragment_container, resultsFragment, ResultsFragment.TAG)
+            else
+                fragmentTransaction.replace(R.id.fragment_container, searchFragment, SearchFragment.TAG)
+        }
+
+        fragmentTransaction.commit()
+        return true
     }
 
     @SuppressLint("MissingPermission")
@@ -452,14 +457,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onSearch(){
-        supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container,resultsFragment)
-                .addToBackStack("resultsFragment")
+        resultsFragmentActive = true
+        supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment_container,resultsFragment, ResultsFragment.TAG)
                 .commit()
     }
 
-    override fun onBack(){
-        supportFragmentManager.popBackStack()
+    override fun onBackFromResults(){
+        resultsFragmentActive = false
+        supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment_container,searchFragment, SearchFragment.TAG)
+                .commit()
     }
 
 }

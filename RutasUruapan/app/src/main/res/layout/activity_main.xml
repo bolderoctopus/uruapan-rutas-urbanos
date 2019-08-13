@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="bottom"
-    sothree:umanoScrollableView="@+id/recyclerView"
+    sothree:umanoPanelHeight="25dp"
     sothree:umanoShadowHeight="4dp"
     sothree:umanoFadeColor="@android:color/transparent">
 
@@ -22,8 +22,12 @@
     <LinearLayout
         android:id="@+id/sliding_panel_layout"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
+        <View
+            android:background="@color/divider"
+            android:layout_width="match_parent"
+            android:layout_height="25dp"/>
         <RelativeLayout
             android:id="@+id/fragment_container"
             android:layout_weight="1"

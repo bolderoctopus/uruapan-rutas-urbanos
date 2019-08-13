@@ -15,7 +15,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class SearchFragment : Fragment() {
     private var listener: OnFragmentInteractionListener? = null
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_search, container, false).apply {
             findViewById<FloatingActionButton>(R.id.fab_search).setOnClickListener{run{listener?.onSearch()}}
@@ -37,10 +36,11 @@ class SearchFragment : Fragment() {
     }
 
     interface OnFragmentInteractionListener {
+
         fun onSearch()
     }
-
     companion object {
+        val TAG = "SearchFragment"
         @JvmStatic
         fun newInstance() = SearchFragment().apply {
 //            enterTransition = androidx.transition.Explode()

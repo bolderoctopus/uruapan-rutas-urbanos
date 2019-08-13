@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,7 +16,6 @@ import kotlin.Comparator
 
 
 class AllRoutesFragment : Fragment(){
-
     private val comparator = Comparator<RouteModel>{ routeModel1: RouteModel, routeModel2: RouteModel ->
         routeModel1.name.compareTo(routeModel2.name)
     }
@@ -36,10 +36,12 @@ class AllRoutesFragment : Fragment(){
     lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
     private var interactionsListener: InteractionsInterface? = null
+    private var height: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
+            height = it.getInt(HEIGHT_KEY)
         }
     }
 
@@ -66,6 +68,8 @@ class AllRoutesFragment : Fragment(){
                 activity?.runOnUiThread{setAdapterRoutes(adapterItems)}
             }
         }
+
+        view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, if(height == null) ViewGroup.LayoutParams.MATCH_PARENT else height!!)
 
         return view
     }
@@ -105,10 +109,13 @@ class AllRoutesFragment : Fragment(){
     }
 
     companion object {
+        const val HEIGHT_KEY = "height"
+        val TAG = "AllRoutesFragment"
         @JvmStatic
-        fun newInstance() =
+        fun newInstance(height: Int) =
                 AllRoutesFragment().apply {
                     arguments = Bundle().apply {
+                        putInt(HEIGHT_KEY, height)
                     }
                 }
     }
