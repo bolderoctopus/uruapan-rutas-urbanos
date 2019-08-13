@@ -56,7 +56,7 @@ import kotlinx.android.synthetic.main.activity_main.view.*
 sub taks
 [] improve color pa;ette
 [x] size of searcFragment, fab touches the destination
-[] check the shadow of the fab
+[x] Next Task: check the shadow of the fab
 [1/2] add drag up indicator, (small view on top of the sliding panel)
 [x] fix menu selection thing
 [] set fragment transitions between seach and results
