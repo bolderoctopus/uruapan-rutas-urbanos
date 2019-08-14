@@ -36,7 +36,6 @@ class SearchFragment : Fragment() {
     }
 
     interface OnFragmentInteractionListener {
-
         fun onSearch()
     }
     companion object {

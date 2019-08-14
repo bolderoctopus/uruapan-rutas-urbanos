@@ -52,12 +52,6 @@ class AllRoutesFragment : Fragment(){
         recyclerView = view.findViewById(R.id.recyclerView_all_routes)
         searchView = view.findViewById(R.id.searchview)
         searchView.setOnQueryTextListener(queryTextListener)
-        searchView.setOnFocusChangeListener{ sender, hasFocus ->
-            run {
-                if (hasFocus)
-                    interactionsListener?.onSearchGotFocus()
-            }
-        }
 
         onViewCreated?.run()
         onViewCreated = null
@@ -125,7 +119,6 @@ class AllRoutesFragment : Fragment(){
     }
 
     interface InteractionsInterface : RouteListFilterableAdapter.DrawRouteListener{
-        fun onSearchGotFocus()
     }
 
 }

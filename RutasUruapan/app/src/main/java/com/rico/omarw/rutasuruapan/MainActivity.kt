@@ -61,13 +61,12 @@ sub taks
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
-        ControlPanelFragment.Listener,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnMapLongClickListener,
-        RouteListAdapter.Listener,RouteListFilterableAdapter.DrawRouteListener,
-        AllRoutesFragment.InteractionsInterface, ViewPager.OnPageChangeListener, SlidingUpPanelLayout.PanelSlideListener,
+        AllRoutesFragment.InteractionsInterface,
         SearchFragment.OnFragmentInteractionListener,
-        ResultsFragment.OnFragmentInteractionListener, BottomNavigationView.OnNavigationItemSelectedListener {
+        ResultsFragment.OnFragmentInteractionListener,
+        BottomNavigationView.OnNavigationItemSelectedListener {
 
     private val DIRECTIONAL_ARROWS_STEP = 7
     private val INITIAL_WALKING_DISTANCE_TOL = 0.001
@@ -114,7 +113,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .add(R.id.fragment_container, searchFragment)
                 .commit()
 
-        slidingLayout.addPanelSlideListener(this)
         mapFragment.getMapAsync(this)
         // when the bottomNavView first becomes visible, set the height of the other fragments
         // according to searchFragment's height
@@ -157,14 +155,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map.setOnMapLongClickListener(this)
         map.setOnMarkerDragListener(this)
         slidingLayout.post{
-//            slidingLayout.panelHeight = (tabLayout.height * 1.2).toInt()
-            // prevent slidingPanel to go behind status bar
-//            linearlayoutTabs.layoutParams = SlidingUpPanelLayout.LayoutParams(linearlayoutTabs.layoutParams)
-//                    .apply {this.topMargin = getStatusBarHeight()}
             map.setPadding(0,getStatusBarHeight(),0,0)
-
         }
-
 
         val uruapan = LatLng(19.411843, -102.051518)
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(uruapan, 13f))
@@ -210,7 +202,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return "%.5f,  %.5f".format(pos.latitude, pos.longitude) //.toString() + ", " + pos.longitude.toString()
     }
 
-    override fun findRoute() {
+    fun findRoute() {
         originSquare?.remove()
         destinationSquare?.remove()
         controlPanel.setDistanceToBusStop(INITIAL_WALKING_DISTANCE_TOL)
@@ -397,14 +389,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onMarkerDrag(p0: Marker?) {}
 
-    override fun clear() {
-        map.clear()
-        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
-        controlPanel.setDistanceToBusStop(0.001)
-        controlPanel.setAdapterRoutes(List(0) {RouteModel(Routes("","", ""))})
-
-    }
-
     @SuppressLint("NewApi")
     private fun getEndCapArrow(color: Int): BitmapDescriptor?{
         val drawable = getDrawable(R.drawable.ic_arrow) ?: return null
@@ -426,37 +410,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }else{
             vibrator.vibrate(VIBRATION_DURATION)
         }
-    }
-
-    override fun onSearchGotFocus() {
-        slidingLayout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
-    }
-
-    override fun onPageSelected(position: Int) {
-        when(position){
-
-        }
-
-        if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED)
-            slidingLayout.panelState = SlidingUpPanelLayout.PanelState.ANCHORED
-    }
-
-    override fun onPageScrollStateChanged(state: Int) {}
-    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
-
-    override fun onPanelSlide(panel: View?, slideOffset: Float) {
-        //Log.d(DEBUG_TAG, "onPanelSlide, slideOffset: $slideOffset")
-    }
-
-    override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
-//        when(newState){
-//            SlidingUpPanelLayout.PanelState.ANCHORED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
-//                height = 500
-//            }
-//            SlidingUpPanelLayout.PanelState.EXPANDED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
-//                height = 1600
-//            }
-//        }
     }
 
     override fun onSearch(){
