@@ -33,10 +33,11 @@ class AllRoutesFragment : Fragment(){
 
     private lateinit var adapter: RouteListFilterableAdapter
     private lateinit var routeModels: List<RouteModel>
-    lateinit var recyclerView: RecyclerView
+    public lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
     private var interactionsListener: InteractionsInterface? = null
     private var height: Int? = null
+    public var onViewCreated: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +58,9 @@ class AllRoutesFragment : Fragment(){
                     interactionsListener?.onSearchGotFocus()
             }
         }
+
+        onViewCreated?.run()
+        onViewCreated = null
 
         AsyncTask.execute{
             if(context != null) {

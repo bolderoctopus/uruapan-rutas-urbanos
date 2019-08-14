@@ -8,10 +8,14 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.RecyclerView
 
 class ResultsFragment : Fragment(){
+
+    lateinit var recyclerView: RecyclerView
     private var listener: OnFragmentInteractionListener? = null
     private var height: Int? = null
+    public var onViewCreated: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,9 +26,12 @@ class ResultsFragment : Fragment(){
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_results, container, false).also {
+            recyclerView = it.findViewById(R.id.recyclerView_results)
             it.findViewById<ImageButton>(R.id.imagebutton_back).setOnClickListener{run{listener?.onBackFromResults()}}
             it.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, if(this.height == null) ViewGroup.LayoutParams.MATCH_PARENT else this.height!!)
 
+            onViewCreated?.run()
+            onViewCreated = null
         }
     }
 

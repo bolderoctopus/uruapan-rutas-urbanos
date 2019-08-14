@@ -10,28 +10,21 @@ import android.os.*
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-import androidx.slidingpanelayout.widget.SlidingPaneLayout
 import androidx.viewpager.widget.ViewPager
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.material.bottomnavigation.BottomNavigationMenu
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Routes
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
-import kotlinx.android.synthetic.main.activity_main.view.*
 
 //todo: see below
 /*
@@ -55,14 +48,14 @@ import kotlinx.android.synthetic.main.activity_main.view.*
 /*
 sub taks
 [] improve color pa;ette
-[x] size of searcFragment, fab touches the destination
-[x] Next Task: check the shadow of the fab
+[x] size of searchFragment, fab touches the destination
+[x] check the shadow of the fab
 [1/2] add drag up indicator, (small view on top of the sliding panel)
 [x] fix menu selection thing
 [] set fragment transitions between seach and results
 [] code origyn & destination textBoxes
 [] fragments lose state
-[] switch scroll view when the thing changes
+[x] switch scroll view when the thing changes
  */
 
 
@@ -123,6 +116,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         slidingLayout.addPanelSlideListener(this)
         mapFragment.getMapAsync(this)
+        // when the bottomNavView first becomes visible, set the height of the other fragments
+        // according to searchFragment's height
         bottomNavView.post{
             val height = if(searchFragment.view == null) 500 else searchFragment.view!!.height
             allRoutesFragment = AllRoutesFragment.newInstance(height)
@@ -131,20 +126,29 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onNavigationItemSelected(menuitem: MenuItem): Boolean {
-        val fragmentTransaction = supportFragmentManager.beginTransaction()
+        when(menuitem.itemId){
+            R.id.menu_item_all_routes -> replaceFragment(allRoutesFragment, AllRoutesFragment.TAG)
 
-        if(menuitem.itemId == R.id.menu_item_all_routes){
-            fragmentTransaction.replace(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG)
-        }
-        else if (menuitem.itemId == R.id.menu_item_find_route){
-            if(resultsFragmentActive)
-                fragmentTransaction.replace(R.id.fragment_container, resultsFragment, ResultsFragment.TAG)
-            else
-                fragmentTransaction.replace(R.id.fragment_container, searchFragment, SearchFragment.TAG)
+            R.id.menu_item_find_route -> if(resultsFragmentActive)
+                                            replaceFragment(resultsFragment, ResultsFragment.TAG)
+                                        else
+                                            replaceFragment(searchFragment, SearchFragment.TAG)
         }
 
-        fragmentTransaction.commit()
         return true
+    }
+
+    private fun replaceFragment(newFragment: Fragment, tag: String){
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, newFragment, tag)
+            .commit()
+        // slidingPanel needs to know if it has a scrollable view in order to work the nested scrolling thing
+        // when the view is being created, its scrollView is set as the slidingPanel scrollableView
+        // other wise, causes not initialized view error
+        when(tag){
+            AllRoutesFragment.TAG -> allRoutesFragment.onViewCreated = Runnable{slidingLayout.setScrollableView(allRoutesFragment.recyclerView)}
+            ResultsFragment.TAG -> if(resultsFragmentActive) resultsFragment.onViewCreated = Runnable{slidingLayout.setScrollableView(resultsFragment.recyclerView)}
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -197,7 +201,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 controlPanel.clearRoutes()
             }
         }
-        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
+//        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
 
     }
 
@@ -430,8 +434,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onPageSelected(position: Int) {
         when(position){
-//            0 -> slidingLayout.setScrollableView(controlPanel.recyclerView)
-//            1 -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
+
         }
 
         if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED)
@@ -458,18 +461,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onSearch(){
         resultsFragmentActive = true
-        supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.fragment_container,resultsFragment, ResultsFragment.TAG)
-                .commit()
+        replaceFragment(resultsFragment, ResultsFragment.TAG)
     }
 
     override fun onBackFromResults(){
         resultsFragmentActive = false
-        supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.fragment_container,searchFragment, SearchFragment.TAG)
-                .commit()
+        replaceFragment(searchFragment, SearchFragment.TAG)
     }
 
 }
