@@ -54,6 +54,11 @@ sub taks
 [x] fix menu selection thing
 [] set fragment transitions between seach and results
 [] code origyn & destination textBoxes
+    [x] nextTask: design and choose functionality
+    [] clear button
+    [] google maps suggestions
+    [] use actual location in suggestions
+    [] create markers
 [] fragments lose state
 [x] switch scroll view when the thing changes
  */
