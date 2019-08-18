@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
 class AutoCompleteAdapter (context: Context,
                            private val placesClient: PlacesClient,
                            private val bounds: RectangularBounds)
-    : ArrayAdapter<AutocompletePrediction>(context, android.R.layout.simple_expandable_list_item_2, android.R.id.text1),
+    : ArrayAdapter<AutocompletePrediction>(context, R.layout.custom_expandable_list_item, android.R.id.text1),
     Filterable{
 // instead of a filter object
     // build the request
