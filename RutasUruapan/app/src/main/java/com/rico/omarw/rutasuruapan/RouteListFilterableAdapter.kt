@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import androidx.recyclerview.widget.SortedList
 import androidx.recyclerview.widget.SortedListAdapterCallback
+import com.rico.omarw.rutasuruapan.models.RouteModel
 
 class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
                                    private val comparator: Comparator<RouteModel>): RecyclerView.Adapter<RouteListFilterableAdapter.MyViewHolder>(){

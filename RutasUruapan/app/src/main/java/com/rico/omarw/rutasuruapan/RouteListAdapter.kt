@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import com.rico.omarw.rutasuruapan.models.RouteModel
 
 class RouteListAdapter  (private val items: List<RouteModel>,
                          private val callback: Listener?): RecyclerView.Adapter<RouteListAdapter.MyViewHolder>(){

@@ -12,6 +12,7 @@ import android.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rico.omarw.rutasuruapan.database.AppDatabase
+import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlin.Comparator
 
 
@@ -72,7 +73,7 @@ class AllRoutesFragment : Fragment(){
         return view
     }
 
-    fun filter(models: List<RouteModel> ,query: String): List<RouteModel>{
+    fun filter(models: List<RouteModel>, query: String): List<RouteModel>{
         val lowerCaseQuery = query.toLowerCase()
         val filteredList = ArrayList<RouteModel>()
         for(model in models){

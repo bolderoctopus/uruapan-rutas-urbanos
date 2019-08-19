@@ -16,4 +16,6 @@
     <color name="transparent">#00FFFFFF</color>
 
     <color name="divider">#aaaaaa</color>
+
+    <color name="gps_icon_tint">#292929</color>
 </resources>

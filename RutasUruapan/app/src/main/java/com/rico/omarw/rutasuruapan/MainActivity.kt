@@ -9,13 +9,11 @@ import android.graphics.Bitmap.createBitmap
 import android.os.*
 import android.util.Log
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.viewpager.widget.ViewPager
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -24,7 +22,7 @@ import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.database.AppDatabase
-import com.rico.omarw.rutasuruapan.database.Routes
+import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 
 //todo: see below
@@ -33,7 +31,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 * [] update algorithm, take into consideration direction
 * [] improve function walkingDistanceToDest, take into consideration buildings
 *
-* [] i think the app crashes if its starting but the screen is blocked
+* [] id think the app crashes if its starting but the screen is blocked
 * [] draw only the relevant part of the route?
 * [] if available, use current location as origin
 * [] sort resulting routes

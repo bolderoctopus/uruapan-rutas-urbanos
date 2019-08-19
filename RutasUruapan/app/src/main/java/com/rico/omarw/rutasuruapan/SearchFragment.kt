@@ -40,9 +40,12 @@ class SearchFragment : Fragment(){
         if(context != null){
             adapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds)
             autocompleteViewOrigin.setAdapter(adapter)
+            autocompleteViewOrigin.setOnClickListener {
+                autocompleteViewOrigin.showDropDown()
+            }
             autocompleteViewOrigin.setOnItemClickListener{ parent, view, position, id ->
                 val item = adapter.getItem(position)
-                autocompleteViewOrigin.setText(item.getPrimaryText(null))
+                autocompleteViewOrigin.setText(item.autocompletePrediction?.getPrimaryText(null) ?: item.primaryText)
             }
         }
         return view
