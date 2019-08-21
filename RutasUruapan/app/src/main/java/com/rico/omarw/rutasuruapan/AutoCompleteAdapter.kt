@@ -26,10 +26,13 @@ class AutoCompleteAdapter (context: Context,
     Filterable{
     /*next steps:
         [...] add powered by google
-        [...] add "Use current location" item
-        [] get latlng from palce
-        [] set threshold,
+        [x] add "Use current location" item
+        [] get latlng from place
+        [...] set threshold,
+            [] check double call
      */
+
+    //todo: nextTask: add Powered by google to the last result
 
     enum class ViewTypes(val id: Int){
         CurrentLocation (0),
@@ -53,31 +56,14 @@ class AutoCompleteAdapter (context: Context,
 //todo: re: use only one kind of view if things cause problems with some devices (like my huawaei)
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val prediction = getItem(position)
-        var row: View
-// new test code
-        row = super.getView(position, convertView, parent)
+        val row: View = super.getView(position, convertView, parent)
         row.findViewById<ImageView>(R.id.imageview_gps).visibility =
                 if(prediction.isCurrentLocation) View.VISIBLE
                 else View.GONE
-
         row.findViewById<TextView>(android.R.id.text1).text = prediction.autocompletePrediction?.getPrimaryText(characterStyle) ?: prediction.primaryText
         row.findViewById<TextView>(android.R.id.text2).text = prediction.autocompletePrediction?.getSecondaryText(characterStyle) ?: prediction.secondaryText
+        row.findViewById<TextView>(R.id.textview_google).visibility = if(position == 0 && count > 1) View.VISIBLE else View.GONE
 
-
-// previously working code
-//        if(prediction.isCurrentLocation){
-//            row = LayoutInflater.from(parent.context).inflate(R.layout.current_location_list_item, parent, false).apply {
-//                findViewById<TextView>(android.R.id.text1).text = prediction.primaryText
-//                findViewById<TextView>(android.R.id.text2).text = prediction.secondaryText
-//            }
-//
-//        }else{
-//            row = super.getView(position, convertView, parent)
-//            row.apply {
-//                findViewById<TextView>(android.R.id.text1).text = prediction.autocompletePrediction?.getPrimaryText(characterStyle)
-//                findViewById<TextView>(android.R.id.text2).text = prediction.autocompletePrediction?.getSecondaryText(characterStyle)
-//            }
-//        }
         return row
     }
 
