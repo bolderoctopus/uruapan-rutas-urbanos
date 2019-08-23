@@ -1,6 +1,7 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Typeface
 import android.text.style.StyleSpan
 import android.util.Log
@@ -8,31 +9,29 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.content.ContextCompat
 import com.google.android.gms.tasks.Tasks
-import com.google.android.libraries.places.api.model.AutocompletePrediction
-import com.google.android.libraries.places.api.model.AutocompleteSessionToken
-import com.google.android.libraries.places.api.model.RectangularBounds
-import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.api.model.*
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
 import java.lang.Exception
 import java.util.concurrent.TimeUnit
+import java.util.jar.Manifest
 
 class AutoCompleteAdapter (context: Context,
                            private val placesClient: PlacesClient,
                            private val bounds: RectangularBounds)
     : ArrayAdapter<AutocompleteItemModel>(context, R.layout.current_location_list_item, android.R.id.text1),
     Filterable{
-    /*next steps:
-        [...] add powered by google
+    /*todo:
+        [x] add powered by google
         [x] add "Use current location" item
-        [] get latlng from place
-        [...] set threshold,
-            [] check double call
+        [...] get latlng from place
+        [] check autocomplete threshold,
+        [] check double call
      */
-
-    //todo: nextTask: add Powered by google to the last result
 
     enum class ViewTypes(val id: Int){
         CurrentLocation (0),
@@ -43,7 +42,7 @@ class AutoCompleteAdapter (context: Context,
     private var resultsList: ArrayList<AutocompleteItemModel> = ArrayList()
 
     init {
-        resultsList.add(AutocompleteItemModel("Usar ubicación actual", "Ignacio Manuel Altamirano", true))
+        getCurrentPlace()
     }
 
     override fun getCount() =  resultsList.size
@@ -53,7 +52,7 @@ class AutoCompleteAdapter (context: Context,
             ViewTypes.CurrentLocation.id
         else
             ViewTypes.AutocompletePrediction.id
-//todo: re: use only one kind of view if things cause problems with some devices (like my huawaei)
+//re: use only one kind of view if things cause problems with some devices (like my huawaei)
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val prediction = getItem(position)
         val row: View = super.getView(position, convertView, parent)
@@ -115,12 +114,41 @@ class AutoCompleteAdapter (context: Context,
 
         return try {
             Tasks.await(results, 10, TimeUnit.SECONDS)
-//            arrayList.add(AutocompletePrediction.builder("").setPrimaryText("").setSecondaryText("Powered by Google").build())
             return results.result?.autocompletePredictions//?.forEach { arrayList.add(it) }
-//            arrayList.add(AutocompletePrediction.builder("").setFullText("full baby").setPrimaryText("Use current location").setSecondaryText("").build())
         }catch(error: Exception){
             null
         }
 
+    }
+
+    private fun getCurrentPlace(){
+        if(ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            return
+
+        val placeFields = arrayListOf<Place.Field>()
+        placeFields.add(Place.Field.ADDRESS)
+        placeFields.add(Place.Field.LAT_LNG)
+
+        val request = FindCurrentPlaceRequest.builder(placeFields).build()
+        placesClient.findCurrentPlace(request).addOnCompleteListener{
+            if(it.isSuccessful && it.result != null){
+                resultsList.add(0, AutocompleteItemModel("Usar ubicacion actual", it.result!!.placeLikelihoods[0].place))
+
+                Log.d(DEBUG_TAG, "success, ${it.result!!.placeLikelihoods.size} results")
+                for(p in it.result!!.placeLikelihoods){
+                    Log.d(DEBUG_TAG, "___")
+                    Log.d(DEBUG_TAG, "place: ${p.place.address}")
+                    Log.d(DEBUG_TAG, "likeLiehood: ${p.likelihood}")
+                    Log.d(DEBUG_TAG, "latLng: ${p.place.latLng?.toString()}")
+                    Log.d(DEBUG_TAG, "id: ${p.place.id}")
+                    Log.d(DEBUG_TAG, "address_components: ${p.place.addressComponents?.toString()}")
+                    Log.d(DEBUG_TAG, "___")
+                }
+            }else{
+                Log.d(DEBUG_TAG, "couldnt find current place")
+                if(it.exception != null)
+                    Log.d(DEBUG_TAG, "exception", it.exception)
+            }
+        }
     }
 }

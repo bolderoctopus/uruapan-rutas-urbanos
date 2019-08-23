@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
+import android.location.Location
 import android.os.*
 import android.util.Log
 import android.view.MenuItem
@@ -14,6 +15,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -88,13 +91,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var originSquare: Polygon? = null
     private var destinationSquare: Polygon? = null
 
-    //views
     private lateinit var map: GoogleMap
     private lateinit var searchFragment: SearchFragment
     private lateinit var allRoutesFragment: AllRoutesFragment
     private lateinit var resultsFragment: ResultsFragment
-
     private lateinit var slidingLayout: SlidingUpPanelLayout
+    private lateinit var locationClient: FusedLocationProviderClient
     private var resultsFragmentActive = false
 
     //todo: to delete
@@ -106,6 +108,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         if(!Places.isInitialized())
             Places.initialize(this, resources.getString(R.string.google_maps_key))
+
+        locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         slidingLayout= findViewById(R.id.sliding_layout)
 
@@ -423,6 +427,33 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onSearch(){
         resultsFragmentActive = true
         replaceFragment(resultsFragment, ResultsFragment.TAG)
+    }
+
+//    @SuppressLint("MissingPermission")
+//    override fun onGetCurLocation(onSuccess: (Location) -> Unit){
+//        try{
+//            if(locationPermissionEnabled()){
+//                locationClient.lastLocation.addOnCompleteListener {
+//                    if(it.isSuccessful && it.result != null){
+//                        onSuccess.invoke(it.result!!)
+//                    }else{
+//                        Log.d(DEBUG_TAG,"unable to find location")
+//                    }
+//                }
+//
+//            }else{
+//                Toast.makeText(this, "No location permission", Toast.LENGTH_SHORT).show()
+//            }
+//        }catch (excep: Exception){
+//            Log.d(DEBUG_TAG, "error while requesting current location",excep)
+//        }
+//    }
+
+    override fun drawMarker(position: LatLng, title: String, markerType: SearchFragment.MarkerType) {
+        if(markerType == SearchFragment.MarkerType.Origin)
+            originMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
+        else if(markerType == SearchFragment.MarkerType.Destination)
+            destinationMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
     }
 
     override fun onBackFromResults(){

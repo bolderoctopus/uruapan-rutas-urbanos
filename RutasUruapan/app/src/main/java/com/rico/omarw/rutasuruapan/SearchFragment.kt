@@ -1,18 +1,25 @@
 package com.rico.omarw.rutasuruapan
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AutoCompleteTextView
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-
+import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
+import java.util.*
 
 class SearchFragment : Fragment(){
 
@@ -28,6 +35,9 @@ class SearchFragment : Fragment(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if(context == null) return
+
+        //todo: nextTask: get current place
+        // use it to initialize the auto complete adapter
         placesClient = Places.createClient(context!!)
     }
 
@@ -40,18 +50,21 @@ class SearchFragment : Fragment(){
         if(context != null){
             adapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds)
             autocompleteViewOrigin.setAdapter(adapter)
+            autocompleteViewOrigin.setOnFocusChangeListener { view, hasFocus ->
+                if(hasFocus) autocompleteViewOrigin.showDropDown()
+            }
+
             autocompleteViewOrigin.setOnClickListener {
                 autocompleteViewOrigin.showDropDown()
             }
+
             autocompleteViewOrigin.setOnItemClickListener{ parent, view, position, id ->
                 val item = adapter.getItem(position)
-                autocompleteViewOrigin.setText(item.autocompletePrediction?.getPrimaryText(null) ?: item.primaryText)
+                autoCompleteItemClick(item)
             }
         }
         return view
     }
-
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -66,9 +79,31 @@ class SearchFragment : Fragment(){
         super.onDetach()
         listener = null
     }
+//todo:  Task: create marquers
+    // how to get the current place?
+    private fun autoCompleteItemClick(item: AutocompleteItemModel){
+        if(item.isCurrentLocation){
+            autocompleteViewOrigin.setText(item.currentPlace?.address)
+            listener?.drawMarker(item.currentPlace!!.latLng!!, "Origin", MarkerType.Origin)
+        }
+        else if(item.autocompletePrediction != null){
+            autocompleteViewOrigin.setText(item.autocompletePrediction?.getPrimaryText(null) ?: item.primaryText)
+
+            // request coordinates from place id
+            val placeId = item.autocompletePrediction.placeId
+            // 
+        }
+    }
+
+    enum class MarkerType {
+        Origin,
+        Destination
+    }
 
     interface OnFragmentInteractionListener {
         fun onSearch()
+//        fun onGetCurLocation(onSuccess: (Location) -> Unit)
+        fun drawMarker(position: LatLng, title: String, markerType: MarkerType)
     }
     companion object {
         const val TAG = "SearchFragment"
