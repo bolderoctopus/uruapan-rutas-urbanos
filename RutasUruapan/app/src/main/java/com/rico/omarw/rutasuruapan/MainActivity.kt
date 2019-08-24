@@ -17,10 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -450,8 +447,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 //    }
 
     override fun drawMarker(position: LatLng, title: String, markerType: SearchFragment.MarkerType) {
-        if(markerType == SearchFragment.MarkerType.Origin)
+        map.animateCamera(CameraUpdateFactory.newLatLng(position))
+
+        if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
+        }
         else if(markerType == SearchFragment.MarkerType.Destination)
             destinationMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
     }

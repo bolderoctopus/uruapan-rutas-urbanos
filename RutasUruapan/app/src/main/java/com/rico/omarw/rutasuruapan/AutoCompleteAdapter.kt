@@ -125,11 +125,7 @@ class AutoCompleteAdapter (context: Context,
         if(ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             return
 
-        val placeFields = arrayListOf<Place.Field>()
-        placeFields.add(Place.Field.ADDRESS)
-        placeFields.add(Place.Field.LAT_LNG)
-
-        val request = FindCurrentPlaceRequest.builder(placeFields).build()
+        val request = FindCurrentPlaceRequest.builder(SearchFragment.PlaceFields).build()
         placesClient.findCurrentPlace(request).addOnCompleteListener{
             if(it.isSuccessful && it.result != null){
                 resultsList.add(0, AutocompleteItemModel("Usar ubicacion actual", it.result!!.placeLikelihoods[0].place))

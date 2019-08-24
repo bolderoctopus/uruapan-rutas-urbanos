@@ -9,17 +9,21 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.AutoCompleteTextView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
 import java.util.*
+import kotlin.collections.ArrayList
 
 class SearchFragment : Fragment(){
 
@@ -87,12 +91,24 @@ class SearchFragment : Fragment(){
             listener?.drawMarker(item.currentPlace!!.latLng!!, "Origin", MarkerType.Origin)
         }
         else if(item.autocompletePrediction != null){
-            autocompleteViewOrigin.setText(item.autocompletePrediction?.getPrimaryText(null) ?: item.primaryText)
-
+            autocompleteViewOrigin.setText(item.autocompletePrediction.getPrimaryText(null) ?: item.primaryText)
             // request coordinates from place id
             val placeId = item.autocompletePrediction.placeId
-            // 
+            val fetchPlaceRequest = FetchPlaceRequest.builder(placeId, PlaceFields).setSessionToken(AutocompleteSessionToken.newInstance()).build()
+            placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
+                if(it.isSuccessful && it.result != null){
+                    Log.d(DEBUG_TAG, "SearchFragment, success")
+                    listener?.drawMarker(it.result!!.place.latLng!!, "Origin", MarkerType.Origin)
+
+                }else{
+                    Log.d(DEBUG_TAG, "couldnt find current place")
+                    if(it.exception != null)
+                        Log.d(DEBUG_TAG, "exception", it.exception)
+                }
+            }
         }
+    (context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(autocompleteViewOrigin.windowToken,0)
+
     }
 
     enum class MarkerType {
@@ -111,6 +127,11 @@ class SearchFragment : Fragment(){
         fun newInstance() = SearchFragment().apply {
 //            enterTransition = androidx.transition.Explode()
 //            exitTransition = androidx.transition.Explode()
+        }
+
+        val PlaceFields = ArrayList<Place.Field>().apply{
+            add(Place.Field.ADDRESS)
+            add(Place.Field.LAT_LNG)
         }
     }
 }
