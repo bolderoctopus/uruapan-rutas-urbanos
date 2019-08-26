@@ -22,13 +22,14 @@ import java.util.jar.Manifest
 
 class AutoCompleteAdapter (context: Context,
                            private val placesClient: PlacesClient,
-                           private val bounds: RectangularBounds)
+                           private val bounds: RectangularBounds,
+                           showCurrentLocation: Boolean = true)
     : ArrayAdapter<AutocompleteItemModel>(context, R.layout.current_location_list_item, android.R.id.text1),
     Filterable{
     /*todo:
         [x] add powered by google
         [x] add "Use current location" item
-        [...] get latlng from place
+        [x] get latlng from place
         [] check autocomplete threshold,
         [] check double call
      */
@@ -42,7 +43,8 @@ class AutoCompleteAdapter (context: Context,
     private var resultsList: ArrayList<AutocompleteItemModel> = ArrayList()
 
     init {
-        getCurrentPlace()
+        if(showCurrentLocation)
+            getCurrentPlace()
     }
 
     override fun getCount() =  resultsList.size
@@ -52,6 +54,7 @@ class AutoCompleteAdapter (context: Context,
             ViewTypes.CurrentLocation.id
         else
             ViewTypes.AutocompletePrediction.id
+
 //re: use only one kind of view if things cause problems with some devices (like my huawaei)
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val prediction = getItem(position)
@@ -128,18 +131,8 @@ class AutoCompleteAdapter (context: Context,
         val request = FindCurrentPlaceRequest.builder(SearchFragment.PlaceFields).build()
         placesClient.findCurrentPlace(request).addOnCompleteListener{
             if(it.isSuccessful && it.result != null){
-                resultsList.add(0, AutocompleteItemModel("Usar ubicacion actual", it.result!!.placeLikelihoods[0].place))
-
-                Log.d(DEBUG_TAG, "success, ${it.result!!.placeLikelihoods.size} results")
-                for(p in it.result!!.placeLikelihoods){
-                    Log.d(DEBUG_TAG, "___")
-                    Log.d(DEBUG_TAG, "place: ${p.place.address}")
-                    Log.d(DEBUG_TAG, "likeLiehood: ${p.likelihood}")
-                    Log.d(DEBUG_TAG, "latLng: ${p.place.latLng?.toString()}")
-                    Log.d(DEBUG_TAG, "id: ${p.place.id}")
-                    Log.d(DEBUG_TAG, "address_components: ${p.place.addressComponents?.toString()}")
-                    Log.d(DEBUG_TAG, "___")
-                }
+                resultsList.add(0, AutocompleteItemModel("Usar ubicación actual", it.result!!.placeLikelihoods[0].place))
+                notifyDataSetChanged()
             }else{
                 Log.d(DEBUG_TAG, "couldnt find current place")
                 if(it.exception != null)
@@ -147,4 +140,5 @@ class AutoCompleteAdapter (context: Context,
             }
         }
     }
+
 }
