@@ -1,11 +1,10 @@
-package com.rico.omarw.rutasuruapan
+package com.rico.omarw.rutasuruapan.adapters
 
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Typeface
 import android.text.style.StyleSpan
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -15,10 +14,12 @@ import com.google.android.libraries.places.api.model.*
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.rico.omarw.rutasuruapan.DEBUG_TAG
+import com.rico.omarw.rutasuruapan.R
+import com.rico.omarw.rutasuruapan.SearchFragment
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
 import java.lang.Exception
 import java.util.concurrent.TimeUnit
-import java.util.jar.Manifest
 
 class AutoCompleteAdapter (context: Context,
                            private val placesClient: PlacesClient,

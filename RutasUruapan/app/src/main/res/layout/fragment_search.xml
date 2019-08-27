@@ -6,6 +6,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".SearchFragment">
 
+    <!--todo: nextTask: add clear button-->
+
     <AutoCompleteTextView
         android:id="@+id/autocompletetextview_origin"
         android:layout_width="0dp"

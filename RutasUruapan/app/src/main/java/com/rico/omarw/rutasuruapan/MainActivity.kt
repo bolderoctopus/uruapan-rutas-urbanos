@@ -42,6 +42,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 * [] settings: how many results to show?
 *
 * [] find methd to log gps data
+* [] find a way to add an arbitrary marker for the destination, let the user drag it then, perhaps origin too?
 * */
 
 /*
