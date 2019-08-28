@@ -9,7 +9,8 @@
     android:gravity="bottom"
     sothree:umanoPanelHeight="25dp"
     sothree:umanoShadowHeight="4dp"
-    sothree:umanoFadeColor="@android:color/transparent">
+    sothree:umanoFadeColor="@android:color/transparent"
+    sothree:umanoInitialState="expanded">
 
     <fragment
         android:id="@+id/map_fragment"

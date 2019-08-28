@@ -53,12 +53,12 @@ sub taks
 [1/2] add drag up indicator, (small view on top of the sliding panel)
 [x] fix menu selection thing
 [] set fragment transitions between seach and results
-[] code origyn & destination textBoxes
-    [x] nextTask: design and choose functionality
-    [] clear button
-    [] google maps suggestions
-    [] use actual location in suggestions
-    [] create markers
+[x] code origyn & destination textBoxes
+    [x] design and choose functionality
+    [x] clear button
+    [x] google maps suggestions
+    [x] use actual location in suggestions
+    [x] create markers
 [] fragments lose state
 [x] switch scroll view when the thing changes
  */
@@ -423,8 +423,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onSearch(){
-        resultsFragmentActive = true
-        replaceFragment(resultsFragment, ResultsFragment.TAG)
+        originMarker?.remove()
+        destinationMarker?.remove()
+//        resultsFragmentActive = true
+//        replaceFragment(resultsFragment, ResultsFragment.TAG)
     }
 
 //    @SuppressLint("MissingPermission")
@@ -451,10 +453,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map.animateCamera(CameraUpdateFactory.newLatLng(position))
 
         if(markerType == SearchFragment.MarkerType.Origin) {
+            originMarker?.remove()
             originMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
         }
-        else if(markerType == SearchFragment.MarkerType.Destination)
+        else if(markerType == SearchFragment.MarkerType.Destination) {
+            destinationMarker?.remove()
             destinationMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
+        }
     }
 
     override fun clearMarker(markerType: SearchFragment.MarkerType) {

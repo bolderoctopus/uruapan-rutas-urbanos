@@ -50,6 +50,8 @@ class SearchFragment : Fragment(){
         origin = view.findViewById(R.id.custom_actv_origin)
         destination = view.findViewById(R.id.custom_actv_destination)
 
+        origin.autoCompleteTextView.tag = MarkerType.Origin
+        destination.autoCompleteTextView.tag = MarkerType.Destination
 
         origin.autoCompleteTextView.setOnFocusChangeListener { _, hasFocus ->
             if(hasFocus) origin.autoCompleteTextView.showDropDown()
@@ -104,12 +106,12 @@ class SearchFragment : Fragment(){
 
     //todo: format the address: looks different when is currentLocation, see note
     private fun autoCompleteItemClick(sender: AutoCompleteTextView, item: AutocompleteItemModel){
-        // todo: nextTask: find out how to know which textField is in order to remove the corresponding marker
-        val markerType = if (sender.id == R.id.custom_actv_origin) MarkerType.Origin else MarkerType.Destination
+        val markerType = sender.tag as MarkerType
+        val title = if(markerType == MarkerType.Origin) "Origin" else "Destination"
 
         if(item.isCurrentLocation){
             sender.setText(item.currentPlace?.address)
-            listener?.drawMarker(item.currentPlace!!.latLng!!, "Origin", markerType)
+            listener?.drawMarker(item.currentPlace!!.latLng!!, title, markerType)
         }
         else if(item.autocompletePrediction != null){
             sender.setText(item.autocompletePrediction.getPrimaryText(null) ?: item.primaryText)
@@ -119,7 +121,7 @@ class SearchFragment : Fragment(){
             placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
                 if(it.isSuccessful && it.result != null){
                     Log.d(DEBUG_TAG, "SearchFragment, success")
-                    listener?.drawMarker(it.result!!.place.latLng!!, "Origin", markerType)
+                    listener?.drawMarker(it.result!!.place.latLng!!, title, markerType)
 //                      note: shows a shit load of text for a split second
 //                    sender.setText(it.result!!.place.address!!)
 
