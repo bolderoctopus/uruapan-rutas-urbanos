@@ -20,7 +20,7 @@
         android:layout_marginBottom="15dp"
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true"
-        android:tint="@color/gps_icon_tint"/>
+        android:tint="@color/icon_tint"/>
 
     <TextView android:id="@android:id/text1"
         android:layout_width="match_parent"

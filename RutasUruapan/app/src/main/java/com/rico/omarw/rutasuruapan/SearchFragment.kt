@@ -25,8 +25,8 @@ import kotlin.collections.ArrayList
 class SearchFragment : Fragment(){
 
     private lateinit var placesClient: PlacesClient
-    private lateinit var origin: AutoCompleteTextView
-    private lateinit var destination: AutoCompleteTextView
+    private lateinit var origin: CustomAutocompleteTextView
+    private lateinit var destination: CustomAutocompleteTextView
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var originAdapter: AutoCompleteAdapter
     private lateinit var destinationAdapter: AutoCompleteAdapter
@@ -47,34 +47,45 @@ class SearchFragment : Fragment(){
                 //                run{listener?.onSearch()}
         }
 
-        origin = view.findViewById(R.id.autocompletetextview_origin)
-        destination = view.findViewById(R.id.autocompletetextview_destination)
+        origin = view.findViewById(R.id.custom_actv_origin)
+        destination = view.findViewById(R.id.custom_actv_destination)
 
 
-        origin.setOnFocusChangeListener { _, hasFocus ->
-            if(hasFocus) origin.showDropDown()
+        origin.autoCompleteTextView.setOnFocusChangeListener { _, hasFocus ->
+            if(hasFocus) origin.autoCompleteTextView.showDropDown()
         }
-        origin.setOnClickListener {origin.showDropDown()}
-        origin.setOnItemClickListener{ parent, _, position, id ->
+        origin.autoCompleteTextView.setOnClickListener {origin.autoCompleteTextView.showDropDown()}
+        origin.autoCompleteTextView.setOnItemClickListener{ parent, _, position, id ->
             val item = originAdapter.getItem(position)
-            autoCompleteItemClick(origin, item)
-            destination.requestFocus()
+            autoCompleteItemClick(origin.autoCompleteTextView, item)
+            destination.autoCompleteTextView.requestFocus()
         }
 
-        destination.setOnClickListener {destination.showDropDown()}
-        destination.setOnItemClickListener{ parent, _, position, id ->
+        destination.autoCompleteTextView.setOnClickListener {destination.autoCompleteTextView.showDropDown()}
+        destination.autoCompleteTextView.setOnItemClickListener{ parent, _, position, id ->
             val item = destinationAdapter.getItem(position)
-            autoCompleteItemClick(destination, item)
-            hideKeyboard(destination.windowToken)
+            autoCompleteItemClick(destination.autoCompleteTextView, item)
+            hideKeyboard(destination.autoCompleteTextView.windowToken)
         }
 
         if(context != null){
             originAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, showCurrentLocation = true)
             destinationAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, showCurrentLocation = false)
-            destination.setAdapter(destinationAdapter)
-            origin.setAdapter(originAdapter)
+            destination.autoCompleteTextView.setAdapter(destinationAdapter)
+            origin.autoCompleteTextView.setAdapter(originAdapter)
         }
+
+        origin.onClear = this::onTextViewClear
+        destination.onClear = this::onTextViewClear
+
         return view
+    }
+
+    private fun onTextViewClear(view: View){
+        when(view.id){
+            R.id.custom_actv_origin -> listener?.clearMarker(MarkerType.Origin)
+            R.id.custom_actv_destination -> listener?.clearMarker(MarkerType.Destination)
+        }
     }
 
     override fun onAttach(context: Context) {
@@ -93,9 +104,12 @@ class SearchFragment : Fragment(){
 
     //todo: format the address: looks different when is currentLocation, see note
     private fun autoCompleteItemClick(sender: AutoCompleteTextView, item: AutocompleteItemModel){
+        // todo: nextTask: find out how to know which textField is in order to remove the corresponding marker
+        val markerType = if (sender.id == R.id.custom_actv_origin) MarkerType.Origin else MarkerType.Destination
+
         if(item.isCurrentLocation){
             sender.setText(item.currentPlace?.address)
-            listener?.drawMarker(item.currentPlace!!.latLng!!, "Origin", MarkerType.Origin)
+            listener?.drawMarker(item.currentPlace!!.latLng!!, "Origin", markerType)
         }
         else if(item.autocompletePrediction != null){
             sender.setText(item.autocompletePrediction.getPrimaryText(null) ?: item.primaryText)
@@ -105,7 +119,7 @@ class SearchFragment : Fragment(){
             placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
                 if(it.isSuccessful && it.result != null){
                     Log.d(DEBUG_TAG, "SearchFragment, success")
-                    listener?.drawMarker(it.result!!.place.latLng!!, "Origin", MarkerType.Origin)
+                    listener?.drawMarker(it.result!!.place.latLng!!, "Origin", markerType)
 //                      note: shows a shit load of text for a split second
 //                    sender.setText(it.result!!.place.address!!)
 
@@ -132,6 +146,7 @@ class SearchFragment : Fragment(){
         fun onSearch()
 //        fun onGetCurLocation(onSuccess: (Location) -> Unit)
         fun drawMarker(position: LatLng, title: String, markerType: MarkerType)
+        fun clearMarker(markerType: MarkerType)
     }
     companion object {
         const val TAG = "SearchFragment"

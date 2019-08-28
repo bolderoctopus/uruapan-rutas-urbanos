@@ -17,5 +17,5 @@
 
     <color name="divider">#aaaaaa</color>
 
-    <color name="gps_icon_tint">#292929</color>
+    <color name="icon_tint">#292929</color>
 </resources>

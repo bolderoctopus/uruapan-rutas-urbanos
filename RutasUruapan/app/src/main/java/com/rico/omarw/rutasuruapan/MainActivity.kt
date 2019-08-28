@@ -457,6 +457,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             destinationMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
     }
 
+    override fun clearMarker(markerType: SearchFragment.MarkerType) {
+        when(markerType){
+            SearchFragment.MarkerType.Origin -> originMarker?.remove()
+            SearchFragment.MarkerType.Destination -> destinationMarker?.remove()
+        }
+    }
+
     override fun onBackFromResults(){
         resultsFragmentActive = false
         replaceFragment(searchFragment, SearchFragment.TAG)
