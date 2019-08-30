@@ -19,11 +19,13 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
+import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import kotlin.math.sqrt
 
 //todo: see below
 /*
@@ -33,21 +35,20 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 *
 * [] id think the app crashes if its starting but the screen is blocked
 * [] draw only the relevant part of the route?
-* [] if available, use current location as origin
+* [x] if available, use current location as origin
 * [] sort resulting routes
-* [...] improve origin/destination looks
+* [x] improve origin/destination looks
 * [...] overall design
 * [] add settings
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
 *
-* [] find methd to log gps data
 * [] find a way to add an arbitrary marker for the destination, let the user drag it then, perhaps origin too?
 * */
 
 /*
 sub taks
-[] improve color pa;ette
+[] improve color palette
 [x] size of searchFragment, fab touches the destination
 [x] check the shadow of the fab
 [1/2] add drag up indicator, (small view on top of the sliding panel)
@@ -61,6 +62,14 @@ sub taks
     [x] create markers
 [] fragments lose state
 [x] switch scroll view when the thing changes
+[] fix issues when keyboard is shown
+    [] it hides the reciclerview from allRoutesFragment
+    [] more space between the dropdwn in the autocompleteTextView and the editTExt
+[] implement ResultsFragment
+    [x] validate before search that markers exist
+    [x] pass info to onSearch
+    [] decide where to find route
+    [] display results in resultsFragment
  */
 
 
@@ -74,11 +83,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         BottomNavigationView.OnNavigationItemSelectedListener {
 
     private val DIRECTIONAL_ARROWS_STEP = 7
-    private val INITIAL_WALKING_DISTANCE_TOL = 0.001
-    private val WALKING_DISTANCE_INCREMENT: Double = 0.001
-    private val MAX_WALKING_DISTANCE = 0.05// should be configurable
+
     private val DEBUG_SQUARES = false
-    private val MAX_AMOUNT_ROUTES = 3
     private val VIBRATION_DURATION: Long = 75
 
     private val LOCATION_PERMISSION_REQUEST = 32
@@ -92,7 +98,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var map: GoogleMap
     private lateinit var searchFragment: SearchFragment
     private lateinit var allRoutesFragment: AllRoutesFragment
-    private lateinit var resultsFragment: ResultsFragment
+    private var resultsFragment: ResultsFragment? = null
     private lateinit var slidingLayout: SlidingUpPanelLayout
     private lateinit var locationClient: FusedLocationProviderClient
     private var resultsFragmentActive = false
@@ -127,18 +133,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         // when the bottomNavView first becomes visible, set the height of the other fragments
         // according to searchFragment's height
         bottomNavView.post{
-            val height = if(searchFragment.view == null) 500 else searchFragment.view!!.height
+            val height = getFragmentHeight()
             allRoutesFragment = AllRoutesFragment.newInstance(height)
-            resultsFragment = ResultsFragment.newInstance(height)
+//            resultsFragment = ResultsFragment.newInstance(height)
         }
     }
+
+    private fun getFragmentHeight(): Int = if(searchFragment.view == null) 500 else searchFragment.view!!.height
 
     override fun onNavigationItemSelected(menuitem: MenuItem): Boolean {
         when(menuitem.itemId){
             R.id.menu_item_all_routes -> replaceFragment(allRoutesFragment, AllRoutesFragment.TAG)
 
             R.id.menu_item_find_route -> if(resultsFragmentActive)
-                                            replaceFragment(resultsFragment, ResultsFragment.TAG)
+                                            replaceFragment(resultsFragment!!, ResultsFragment.TAG)
                                         else
                                             replaceFragment(searchFragment, SearchFragment.TAG)
         }
@@ -155,7 +163,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         // other wise, causes not initialized view error
         when(tag){
             AllRoutesFragment.TAG -> allRoutesFragment.onViewCreated = Runnable{slidingLayout.setScrollableView(allRoutesFragment.recyclerView)}
-            ResultsFragment.TAG -> if(resultsFragmentActive) resultsFragment.onViewCreated = Runnable{slidingLayout.setScrollableView(resultsFragment.recyclerView)}
+            ResultsFragment.TAG -> if(resultsFragmentActive) resultsFragment?.onViewCreated = Runnable{slidingLayout.setScrollableView(resultsFragment?.recyclerView)}
         }
     }
 
@@ -210,83 +218,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private fun latLngToString(pos: LatLng?): String{
         if(pos == null) return ""
         return "%.5f,  %.5f".format(pos.latitude, pos.longitude) //.toString() + ", " + pos.longitude.toString()
-    }
-
-    fun findRoute() {
-        originSquare?.remove()
-        destinationSquare?.remove()
-        controlPanel.setDistanceToBusStop(INITIAL_WALKING_DISTANCE_TOL)
-        controlPanel.clearRoutes()
-
-        if(originMarker == null || destinationMarker == null){
-            Toast.makeText(this, "You must select an origin and destination point", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if(controlPanel.getWalkingDistTolerance() == null){
-            Toast.makeText(this, "You must enter distance tolerance", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        var walkingDistanceTolerance = controlPanel.getWalkingDistTolerance()
-
-        if(walkingDistanceTolerance!! < 0){
-            Toast.makeText(this, "distance can't be negative", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        drawSquares(walkingDistanceTolerance)
-
-        val originLatLng = originMarker!!.position
-        val destinationLatLng = destinationMarker!!.position
-        val walkingDistToDest = walkingDistance(originLatLng, destinationLatLng)
-        Log.d("findRoute", "walkingDistToDest: $walkingDistToDest")
-        Log.d("findRoute", "walkingDistanceTolerance*2: $walkingDistanceTolerance*2")
-        controlPanel.activateLoadingMode(true)
-        //todo: if the distance that you need to walk to the bus stop is greater or equal than the distance
-        //to the other point then maybe you should walk
-        AsyncTask.execute{
-            val routesDao = AppDatabase.getInstance(this)?.routesDAO()
-            var mutualRoutes: Set<Long>? = null
-            while(walkingDistToDest > walkingDistanceTolerance * 2){
-                Log.d("findRoute", "walkingDistToDest: $walkingDistToDest walkingDistanceTolerance: $walkingDistanceTolerance")
-                val routesNearOrigin = routesDao?.getRoutesIntercepting(walkingDistanceTolerance, originLatLng.latitude, originLatLng.longitude)
-                val routesNearDest = routesDao?.getRoutesIntercepting(walkingDistanceTolerance, destinationLatLng.latitude, destinationLatLng.longitude)
-                walkingDistanceTolerance += WALKING_DISTANCE_INCREMENT
-
-                if(routesNearDest.isNullOrEmpty() || routesNearOrigin.isNullOrEmpty()) continue
-                mutualRoutes = routesNearOrigin.intersect(routesNearDest)
-                if(mutualRoutes.size > MAX_AMOUNT_ROUTES) break
-            }
-
-            if(mutualRoutes.isNullOrEmpty())
-                runOnUiThread{
-                    Toast.makeText(this, "No routes found, maybe you should walk", Toast.LENGTH_SHORT).show()
-                    drawSquares(walkingDistanceTolerance)
-                    controlPanel.activateLoadingMode(false)
-                }
-            else{
-                val routesInfo = routesDao?.getRoutes(mutualRoutes.toList())
-                val adapterItems = arrayListOf<RouteModel>()
-                routesInfo?.forEach{
-                    adapterItems.add(RouteModel(it))
-                }
-                runOnUiThread{
-                    controlPanel.setAdapterRoutes(adapterItems)
-                    controlPanel.setDistanceToBusStop(walkingDistanceTolerance)
-                    controlPanel.activateLoadingMode(false)
-                    Toast.makeText(this, "route found", Toast.LENGTH_SHORT).show()
-                    drawSquares(walkingDistanceTolerance)
-                }
-            }
-        }
-    }
-
-    //todo: take in consideration streets
-    private fun walkingDistance(from: LatLng, to: LatLng): Double {
-        val d1 = (from.latitude - to.latitude)
-        val d2 = (from.longitude - to.longitude)
-        return Math.sqrt(d1 * d1 + d2 * d2)
     }
 
     private fun drawSquares(walkingDistance: Double){
@@ -403,7 +334,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private fun getEndCapArrow(color: Int): BitmapDescriptor?{
         val drawable = getDrawable(R.drawable.ic_arrow) ?: return null
         drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
-        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight);
+        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
         val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         drawable.draw(canvas)
@@ -422,11 +353,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    override fun onSearch(){
-        originMarker?.remove()
-        destinationMarker?.remove()
-//        resultsFragmentActive = true
-//        replaceFragment(resultsFragment, ResultsFragment.TAG)
+    override fun onSearch(origin: LatLng, destination: LatLng){
+        resultsFragmentActive = true
+        resultsFragment = ResultsFragment.newInstance(getFragmentHeight(), origin, destination, INITIAL_WALKING_DISTANCE_TOL)
+        replaceFragment(resultsFragment!!, ResultsFragment.TAG)
     }
 
 //    @SuppressLint("MissingPermission")

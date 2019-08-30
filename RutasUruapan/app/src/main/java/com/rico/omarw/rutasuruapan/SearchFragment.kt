@@ -1,6 +1,7 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
+import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -24,6 +25,8 @@ import kotlin.collections.ArrayList
 
 class SearchFragment : Fragment(){
 
+    private var destinationLatLng: LatLng? = null
+    private var originLatLng: LatLng? = null
     private lateinit var placesClient: PlacesClient
     private lateinit var origin: CustomAutocompleteTextView
     private lateinit var destination: CustomAutocompleteTextView
@@ -43,9 +46,7 @@ class SearchFragment : Fragment(){
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
-        view.findViewById<FloatingActionButton>(R.id.fab_search).setOnClickListener{
-                //                run{listener?.onSearch()}
-        }
+        view.findViewById<FloatingActionButton>(R.id.fab_search).setOnClickListener{search()}
 
         origin = view.findViewById(R.id.custom_actv_origin)
         destination = view.findViewById(R.id.custom_actv_destination)
@@ -85,8 +86,14 @@ class SearchFragment : Fragment(){
 
     private fun onTextViewClear(view: View){
         when(view.id){
-            R.id.custom_actv_origin -> listener?.clearMarker(MarkerType.Origin)
-            R.id.custom_actv_destination -> listener?.clearMarker(MarkerType.Destination)
+            R.id.custom_actv_origin -> {
+                listener?.clearMarker(MarkerType.Origin)
+                originLatLng = null
+            }
+            R.id.custom_actv_destination -> {
+                listener?.clearMarker(MarkerType.Destination)
+                destinationLatLng = null
+            }
         }
     }
 
@@ -104,14 +111,33 @@ class SearchFragment : Fragment(){
         listener = null
     }
 
+    private fun search(){
+        if(originLatLng == null){
+            origin.autoCompleteTextView.error = "You must pick a place"
+        }
+        else if (destinationLatLng == null) {
+            destination.autoCompleteTextView.error = "You must pick a place"
+        }
+        else {
+            listener?.onSearch(originLatLng!!, destinationLatLng!!)
+        }
+    }
+
     //todo: format the address: looks different when is currentLocation, see note
+    // todo: refactor method
     private fun autoCompleteItemClick(sender: AutoCompleteTextView, item: AutocompleteItemModel){
         val markerType = sender.tag as MarkerType
         val title = if(markerType == MarkerType.Origin) "Origin" else "Destination"
 
+
         if(item.isCurrentLocation){
             sender.setText(item.currentPlace?.address)
             listener?.drawMarker(item.currentPlace!!.latLng!!, title, markerType)
+            if(markerType == MarkerType.Origin)
+                originLatLng = item.currentPlace!!.latLng!!
+            else
+                destinationLatLng = item.currentPlace!!.latLng!!
+
         }
         else if(item.autocompletePrediction != null){
             sender.setText(item.autocompletePrediction.getPrimaryText(null) ?: item.primaryText)
@@ -122,7 +148,13 @@ class SearchFragment : Fragment(){
                 if(it.isSuccessful && it.result != null){
                     Log.d(DEBUG_TAG, "SearchFragment, success")
                     listener?.drawMarker(it.result!!.place.latLng!!, title, markerType)
-//                      note: shows a shit load of text for a split second
+
+                    if(markerType == MarkerType.Origin)
+                        originLatLng = it.result!!.place.latLng!!
+                    else
+                        destinationLatLng = it.result!!.place.latLng!!
+
+//                      note: shows a ton load of text for a split second
 //                    sender.setText(it.result!!.place.address!!)
 
                 }else{
@@ -145,7 +177,7 @@ class SearchFragment : Fragment(){
     }
 
     interface OnFragmentInteractionListener {
-        fun onSearch()
+        fun onSearch(origin: LatLng, destination: LatLng)
 //        fun onGetCurLocation(onSuccess: (Location) -> Unit)
         fun drawMarker(position: LatLng, title: String, markerType: MarkerType)
         fun clearMarker(markerType: MarkerType)

@@ -34,6 +34,7 @@ class CustomAutocompleteTextView(context: Context?, attrs: AttributeSet) : Relat
     override fun afterTextChanged(editable: Editable) {
         clearButton.visibility = if(editable.isEmpty()) INVISIBLE
                                 else VISIBLE
+        autoCompleteTextView.error = null
     }
 
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) = Unit
