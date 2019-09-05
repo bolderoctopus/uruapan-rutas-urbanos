@@ -20,7 +20,7 @@ interface RouteDAO{
     fun getPointsFrom(routeId: Long): List<Points>
 
     @Query("SELECT * FROM  Routes")
-    fun getRoutes(): List<Routes>
+    suspend fun getRoutes(): List<Routes>
 
     @Query("SELECT * FROM  Routes WHERE routeId IN (:routesIds)")
     fun getRoutes(routesIds: List<Long>): List<Routes>

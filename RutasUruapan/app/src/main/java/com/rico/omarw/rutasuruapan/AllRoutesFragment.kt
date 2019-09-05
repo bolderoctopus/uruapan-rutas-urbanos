@@ -1,8 +1,8 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
-import android.os.AsyncTask
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
+import kotlinx.coroutines.*
+import java.lang.Runnable
 import kotlin.Comparator
 
 
@@ -41,11 +43,14 @@ class AllRoutesFragment : Fragment(){
     private var height: Int? = null
     public var onViewCreated: Runnable? = null
 
+    private var uiScope = CoroutineScope(Dispatchers.Main)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             height = it.getInt(HEIGHT_KEY)
         }
+        uiScope = CoroutineScope(Dispatchers.Main)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
@@ -58,21 +63,23 @@ class AllRoutesFragment : Fragment(){
         onViewCreated?.run()
         onViewCreated = null
 
-        AsyncTask.execute{
-            if(context != null) {
-                val routesList = AppDatabase.getInstance(context!!)?.routesDAO()?.getRoutes()
-                val adapterItems = arrayListOf<RouteModel>()
-                routesList?.forEach{
-                    adapterItems.add(RouteModel(it))
-           }
-                activity?.runOnUiThread{setAdapterRoutes(adapterItems)}
-            }
+        uiScope.launch {
+            val routes = async (Dispatchers.IO){getRoutes()}.await()
+            setAdapterRoutes(routes)
         }
 
         view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, if(height == null) ViewGroup.LayoutParams.MATCH_PARENT else height!!)
-
         return view
     }
+
+    private suspend fun getRoutes(): List<RouteModel> {
+        val routesList =  AppDatabase.getInstance(context!!)?.routesDAO()?.getRoutes()
+
+        return arrayListOf<RouteModel>().apply {
+            routesList?.forEach{add(RouteModel(it))}
+        }
+    }
+
 
     fun filter(models: List<RouteModel>, query: String): List<RouteModel>{
         val lowerCaseQuery = query.toLowerCase()
@@ -104,8 +111,9 @@ class AllRoutesFragment : Fragment(){
     }
 
     override fun onDetach() {
-        super.onDetach()
+        uiScope.cancel()
         interactionsListener = null
+        super.onDetach()
     }
 
     companion object {
@@ -120,7 +128,6 @@ class AllRoutesFragment : Fragment(){
                 }
     }
 
-    interface InteractionsInterface : RouteListFilterableAdapter.DrawRouteListener{
-    }
+    interface InteractionsInterface : RouteListFilterableAdapter.DrawRouteListener
 
 }
