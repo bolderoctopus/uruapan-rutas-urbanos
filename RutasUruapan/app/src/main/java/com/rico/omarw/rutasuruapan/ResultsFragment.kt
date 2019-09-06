@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
+import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
@@ -117,10 +118,10 @@ class ResultsFragment : Fragment(){
     private fun displayRoutes(results: ArrayList<RouteModel>){
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.adapter = RouteListAdapter(results, null)
+        recyclerView.adapter = RouteListAdapter(results, listener)
     }
 
-    interface OnFragmentInteractionListener{
+    interface OnFragmentInteractionListener: RouteListAdapter.DrawRouteListener{
         fun onBackFromResults()
     }
 

@@ -9,7 +9,7 @@ import com.rico.omarw.rutasuruapan.R
 import com.rico.omarw.rutasuruapan.models.RouteModel
 
 class RouteListAdapter  (private val items: List<RouteModel>,
-                         private val callback: Listener?): RecyclerView.Adapter<RouteListAdapter.MyViewHolder>(){
+                         private val callback: DrawRouteListener?): RecyclerView.Adapter<RouteListAdapter.MyViewHolder>(){
 
     public fun getItems() = items
 
@@ -33,7 +33,7 @@ class RouteListAdapter  (private val items: List<RouteModel>,
         var checkBox: CheckBox = itemView.findViewById(R.id.route_name)
     }
 
-    interface Listener{
+    interface DrawRouteListener{
         fun drawRoute(route: RouteModel)
     }
 }
