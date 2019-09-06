@@ -1,7 +1,6 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,6 +15,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
+import kotlinx.coroutines.*
 import kotlin.math.sqrt
 
 class ResultsFragment : Fragment(){
@@ -28,6 +28,8 @@ class ResultsFragment : Fragment(){
     private lateinit var destinationLatLng: LatLng
     private var tolerance: Double? = null
 
+    private var uiScope = CoroutineScope(Dispatchers.Main)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -36,6 +38,9 @@ class ResultsFragment : Fragment(){
             destinationLatLng = it.getParcelable(DESTINATION_LATLNG_KEY)
             tolerance = it.getDouble(TOLERANCE_KEY)
         }
+
+        if(!uiScope.isActive)
+            uiScope = CoroutineScope(Dispatchers.Main)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -47,8 +52,9 @@ class ResultsFragment : Fragment(){
         onViewCreated?.run()
         onViewCreated = null
 
-        if(context != null)
-            findRouteAsync(originLatLng, destinationLatLng, tolerance!!, context!!, this::displayRoutes)
+//        uiScope.launch {
+            findRouteAsync(originLatLng, destinationLatLng, tolerance!!)
+//        }
 
         return view
     }
@@ -63,11 +69,11 @@ class ResultsFragment : Fragment(){
     }
 
     override fun onDetach() {
-        super.onDetach()
+        uiScope.cancel()
         listener = null
+        super.onDetach()
     }
 
-    // my methods
     //todo: take in consideration streets
     private fun distanceBetweenPoints(from: LatLng, to: LatLng): Double {
         val d1 = (from.latitude - to.latitude)
@@ -75,37 +81,36 @@ class ResultsFragment : Fragment(){
         return sqrt(d1 * d1 + d2 * d2)
     }
 
+    // nextTask: fix the  keyboardthing
     //todo: if the distance that you need to walk to the bus stop is greater or equal than the distance, to the other point then maybe you should walk
-    private fun findRouteAsync(originLatLng: LatLng, destinationLatLng: LatLng, tolerance: Double, c: Context, onCompletion: (results: ArrayList<RouteModel>) -> Unit){
+    private fun findRouteAsync(originLatLng: LatLng, destinationLatLng: LatLng, tolerance: Double){
         var walkingDistanceTolerance = tolerance
-
         if(walkingDistanceTolerance < 0) throw Exception("")
-
         val walkingDistToDest = distanceBetweenPoints(originLatLng, destinationLatLng)
-        AsyncTask.execute{
-            val routesDao = AppDatabase.getInstance(c)?.routesDAO()
+
+        uiScope.launch {
+            val routesDao = AppDatabase.getInstance(context!!)?.routesDAO()
             var mutualRoutes: Set<Long>? = null
             while(walkingDistToDest > walkingDistanceTolerance * 2){
                 Log.d("findRoute", "walkingDistToDest: $walkingDistToDest walkingDistanceTolerance: $walkingDistanceTolerance")
-                val routesNearOrigin = routesDao?.getRoutesIntercepting(walkingDistanceTolerance, originLatLng.latitude, originLatLng.longitude)
-                val routesNearDest = routesDao?.getRoutesIntercepting(walkingDistanceTolerance, destinationLatLng.latitude, destinationLatLng.longitude)
+                val routesNearOrigin = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkingDistanceTolerance, originLatLng.latitude, originLatLng.longitude)}
+                val routesNearDest = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkingDistanceTolerance, destinationLatLng.latitude, destinationLatLng.longitude)}
+                awaitAll(routesNearDest, routesNearOrigin)
+
                 walkingDistanceTolerance += WALKING_DISTANCE_INCREMENT
 
-                if(routesNearDest.isNullOrEmpty() || routesNearOrigin.isNullOrEmpty()) continue
-                mutualRoutes = routesNearOrigin.intersect(routesNearDest)
-                if(mutualRoutes.size > MAX_AMOUNT_ROUTES) break
+                if(routesNearDest.await().isNullOrEmpty() || routesNearOrigin.await().isNullOrEmpty()) continue
+                mutualRoutes = routesNearOrigin.await()!!.intersect(routesNearDest.await()!!)
+                if(mutualRoutes.size > MAX_AMOUNT_ROUTES) break //todo: seems to not be working
             }
 
             val results = arrayListOf<RouteModel>()
             if(!mutualRoutes.isNullOrEmpty()){
-                val routesInfo = routesDao?.getRoutes(mutualRoutes.toList())
+                val routesInfo = withContext(Dispatchers.IO) { routesDao?.getRoutes(mutualRoutes.toList()) }
                 routesInfo?.forEach{results.add(RouteModel(it))}
             }
-            //todo: find a better way to call it
-            view?.post {
 
-                onCompletion.invoke(results)
-            }
+            displayRoutes(results)
         }
     }
 
