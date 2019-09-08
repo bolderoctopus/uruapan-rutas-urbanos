@@ -42,6 +42,7 @@ import kotlin.math.sqrt
 * [] add settings
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
+* [] replace Asynctasks with coroutines
 *
 * [] find a way to add an arbitrary marker for the destination, let the user drag it then, perhaps origin too?
 * */
@@ -172,9 +173,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map = googleMap
         map.setOnMapLongClickListener(this)
         map.setOnMarkerDragListener(this)
-        slidingLayout.post{
-            map.setPadding(0,getStatusBarHeight(),0,0)
-        }
 
         val uruapan = LatLng(19.411843, -102.051518)
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(uruapan, 13f))

@@ -73,7 +73,7 @@ class AutoCompleteAdapter (context: Context,
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): FilterResults {
-                Log.d(DEBUG_TAG, "performFiltering")
+//                Log.d(DEBUG_TAG, "performFiltering")
                 val results = FilterResults()
                 var filterData: MutableList<AutocompletePrediction>? = null
 
