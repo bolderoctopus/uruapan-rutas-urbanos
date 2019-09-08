@@ -12,12 +12,14 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
+import com.rico.omarw.rutasuruapan.models.RouteModel
 
 
 class ControlPanelFragment : Fragment() {
 
     private var contolPanelListener: Listener? = null
-    private var routesAdapterDrawRouteListener: RouteListAdapter.Listener? = null
+    private var routesAdapterDrawRouteListener: RouteListAdapter.DrawRouteListener? = null
     private lateinit var originTextView: TextView
     private lateinit var destinationTextView: TextView
     private lateinit var distanceEditText: EditText
@@ -77,7 +79,7 @@ class ControlPanelFragment : Fragment() {
             throw RuntimeException(context.toString() + " must implement DrawRouteListener")
         }
 
-        if (context is RouteListAdapter.Listener) {
+        if (context is RouteListAdapter.DrawRouteListener) {
             routesAdapterDrawRouteListener = context
         } else {
             throw RuntimeException(context.toString() + " must implement routesAdapterDrawRouteListener")

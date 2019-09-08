@@ -1,21 +1,25 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
-import android.os.AsyncTask
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
+import com.rico.omarw.rutasuruapan.models.RouteModel
+import kotlinx.coroutines.*
+import java.lang.Runnable
 import kotlin.Comparator
 
 
 class AllRoutesFragment : Fragment(){
-
     private val comparator = Comparator<RouteModel>{ routeModel1: RouteModel, routeModel2: RouteModel ->
         routeModel1.name.compareTo(routeModel2.name)
     }
@@ -33,14 +37,20 @@ class AllRoutesFragment : Fragment(){
 
     private lateinit var adapter: RouteListFilterableAdapter
     private lateinit var routeModels: List<RouteModel>
-    lateinit var recyclerView: RecyclerView
+    public lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
     private var interactionsListener: InteractionsInterface? = null
+    private var height: Int? = null
+    public var onViewCreated: Runnable? = null
+
+    private var uiScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
+            height = it.getInt(HEIGHT_KEY)
         }
+        uiScope = CoroutineScope(Dispatchers.Main)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
@@ -49,28 +59,29 @@ class AllRoutesFragment : Fragment(){
         recyclerView = view.findViewById(R.id.recyclerView_all_routes)
         searchView = view.findViewById(R.id.searchview)
         searchView.setOnQueryTextListener(queryTextListener)
-        searchView.setOnFocusChangeListener{ sender, hasFocus ->
-            run {
-                if (hasFocus)
-                    interactionsListener?.onSearchGotFocus()
-            }
+
+        onViewCreated?.run()
+        onViewCreated = null
+
+        uiScope.launch {
+            val routes = async (Dispatchers.IO){getRoutes()}.await()
+            setAdapterRoutes(routes)
         }
 
-        AsyncTask.execute{
-            if(context != null) {
-                val routesList = AppDatabase.getInstance(context!!)?.routesDAO()?.getRoutes()
-                val adapterItems = arrayListOf<RouteModel>()
-                routesList?.forEach{
-                    adapterItems.add(RouteModel(it))
-           }
-                activity?.runOnUiThread{setAdapterRoutes(adapterItems)}
-            }
-        }
-
+        view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, if(height == null) ViewGroup.LayoutParams.MATCH_PARENT else height!!)
         return view
     }
 
-    fun filter(models: List<RouteModel> ,query: String): List<RouteModel>{
+    private suspend fun getRoutes(): List<RouteModel> {
+        val routesList =  AppDatabase.getInstance(context!!)?.routesDAO()?.getRoutes()
+
+        return arrayListOf<RouteModel>().apply {
+            routesList?.forEach{add(RouteModel(it))}
+        }
+    }
+
+
+    fun filter(models: List<RouteModel>, query: String): List<RouteModel>{
         val lowerCaseQuery = query.toLowerCase()
         val filteredList = ArrayList<RouteModel>()
         for(model in models){
@@ -100,21 +111,23 @@ class AllRoutesFragment : Fragment(){
     }
 
     override fun onDetach() {
-        super.onDetach()
+        uiScope.cancel()
         interactionsListener = null
+        super.onDetach()
     }
 
     companion object {
+        const val HEIGHT_KEY = "height"
+        val TAG = "AllRoutesFragment"
         @JvmStatic
-        fun newInstance() =
+        fun newInstance(height: Int) =
                 AllRoutesFragment().apply {
                     arguments = Bundle().apply {
+                        putInt(HEIGHT_KEY, height)
                     }
                 }
     }
 
-    interface InteractionsInterface : RouteListFilterableAdapter.DrawRouteListener{
-        fun onSearchGotFocus()
-    }
+    interface InteractionsInterface : RouteListFilterableAdapter.DrawRouteListener
 
 }

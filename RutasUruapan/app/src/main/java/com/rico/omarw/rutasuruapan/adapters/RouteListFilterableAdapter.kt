@@ -1,4 +1,4 @@
-package com.rico.omarw.rutasuruapan
+package com.rico.omarw.rutasuruapan.adapters
 
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import androidx.recyclerview.widget.SortedList
 import androidx.recyclerview.widget.SortedListAdapterCallback
+import com.rico.omarw.rutasuruapan.R
+import com.rico.omarw.rutasuruapan.models.RouteModel
 
 class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
                                    private val comparator: Comparator<RouteModel>): RecyclerView.Adapter<RouteListFilterableAdapter.MyViewHolder>(){

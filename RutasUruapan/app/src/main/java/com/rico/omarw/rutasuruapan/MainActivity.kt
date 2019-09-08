@@ -6,27 +6,26 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
+import android.location.Location
 import android.os.*
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.slidingpanelayout.widget.SlidingPaneLayout
-import androidx.viewpager.widget.ViewPager
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
-import com.google.android.material.tabs.TabLayout
+import com.google.android.gms.tasks.Task
+import com.google.android.libraries.places.api.Places
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.database.AppDatabase
-import com.rico.omarw.rutasuruapan.database.Routes
+import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import kotlin.math.sqrt
 
 //todo: see below
 /*
@@ -34,34 +33,58 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 * [] update algorithm, take into consideration direction
 * [] improve function walkingDistanceToDest, take into consideration buildings
 *
-* [] i think the app crashes if its starting but the screen is blocked
+* [] id think the app crashes if its starting but the screen is blocked
 * [] draw only the relevant part of the route?
-* [] if available, use current location as origin
+* [x] if available, use current location as origin
 * [] sort resulting routes
-* [] improve origin/destination looks
-* [] overall design
+* [x] improve origin/destination looks
+* [...] overall design
 * [] add settings
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
 *
-* [] find methd to log gps data
+* [] find a way to add an arbitrary marker for the destination, let the user drag it then, perhaps origin too?
 * */
+
+/*
+sub taks
+[] improve color palette
+[x] size of searchFragment, fab touches the destination
+[x] check the shadow of the fab
+[1/2] add drag up indicator, (small view on top of the sliding panel)
+[x] fix menu selection thing
+[] set fragment transitions between seach and results
+[x] code origyn & destination textBoxes
+    [x] design and choose functionality
+    [x] clear button
+    [x] google maps suggestions
+    [x] use actual location in suggestions
+    [x] create markers
+[] fragments lose state
+[x] switch scroll view when the thing changes
+[] fix issues when keyboard is shown
+    [] it hides the reciclerview from allRoutesFragment
+    [] more space between the dropdwn in the autocompleteTextView and the editTExt
+[] implement ResultsFragment
+    [x] validate before search that markers exist
+    [x] pass info to onSearch
+    [] decide where to find route
+    [] display results in resultsFragment
+ */
 
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
-        ControlPanelFragment.Listener,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnMapLongClickListener,
-        RouteListAdapter.Listener,RouteListFilterableAdapter.DrawRouteListener,
-        AllRoutesFragment.InteractionsInterface, ViewPager.OnPageChangeListener, SlidingUpPanelLayout.PanelSlideListener {
+        AllRoutesFragment.InteractionsInterface,
+        SearchFragment.OnFragmentInteractionListener,
+        ResultsFragment.OnFragmentInteractionListener,
+        BottomNavigationView.OnNavigationItemSelectedListener {
 
     private val DIRECTIONAL_ARROWS_STEP = 7
-    private val INITIAL_WALKING_DISTANCE_TOL = 0.001
-    private val WALKING_DISTANCE_INCREMENT: Double = 0.001
-    private val MAX_WALKING_DISTANCE = 0.05// should be configurable
+
     private val DEBUG_SQUARES = false
-    private val MAX_AMOUNT_ROUTES = 3
     private val VIBRATION_DURATION: Long = 75
 
     private val LOCATION_PERMISSION_REQUEST = 32
@@ -72,42 +95,76 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var originSquare: Polygon? = null
     private var destinationSquare: Polygon? = null
 
-    //views
     private lateinit var map: GoogleMap
-    private lateinit var controlPanel: ControlPanelFragment
+    private lateinit var searchFragment: SearchFragment
     private lateinit var allRoutesFragment: AllRoutesFragment
+    private var resultsFragment: ResultsFragment? = null
     private lateinit var slidingLayout: SlidingUpPanelLayout
-    private lateinit var viewPager: ViewPager
-    private lateinit var tabLayout: TabLayout
-    private lateinit var linearlayoutTabs: LinearLayout
+    private lateinit var locationClient: FusedLocationProviderClient
+    private var resultsFragmentActive = false
 
-
+    //todo: to delete
+    private lateinit var controlPanel: ControlPanelFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        if(!Places.isInitialized())
+            Places.initialize(this, resources.getString(R.string.google_maps_key))
+
+        locationClient = LocationServices.getFusedLocationProviderClient(this)
+
         slidingLayout= findViewById(R.id.sliding_layout)
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        viewPager = findViewById(R.id.viewpager)
-        tabLayout = findViewById(R.id.tablayout)
-
-        linearlayoutTabs = findViewById(R.id.root_layout_tabs)
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_navigation_slide_panel)
 
 
-        controlPanel = ControlPanelFragment.newInstance()
-        allRoutesFragment = AllRoutesFragment.newInstance()
-        viewPager.addOnPageChangeListener(this)
-        val fragments = ArrayList<Fragment>()
-        fragments.add(controlPanel)
-        fragments.add(allRoutesFragment)
-        viewPager.adapter = ViewPagerAdapter(supportFragmentManager, fragments)
-        tabLayout.setupWithViewPager(viewPager)
+        searchFragment = SearchFragment.newInstance()
 
-        viewPager.post{slidingLayout.setScrollableView(controlPanel.recyclerView)}
+        bottomNavView.setOnNavigationItemSelectedListener (this)
+
+        supportFragmentManager.beginTransaction()
+                .add(R.id.fragment_container, searchFragment)
+                .commit()
+
         mapFragment.getMapAsync(this)
+        // when the bottomNavView first becomes visible, set the height of the other fragments
+        // according to searchFragment's height
+        bottomNavView.post{
+            val height = getFragmentHeight()
+            allRoutesFragment = AllRoutesFragment.newInstance(height)
+//            resultsFragment = ResultsFragment.newInstance(height)
+        }
+    }
 
-        slidingLayout.addPanelSlideListener(this)
+    private fun getFragmentHeight(): Int = if(searchFragment.view == null) 500 else searchFragment.view!!.height
+
+    override fun onNavigationItemSelected(menuitem: MenuItem): Boolean {
+        when(menuitem.itemId){
+            R.id.menu_item_all_routes -> replaceFragment(allRoutesFragment, AllRoutesFragment.TAG)
+
+            R.id.menu_item_find_route -> if(resultsFragmentActive)
+                                            replaceFragment(resultsFragment!!, ResultsFragment.TAG)
+                                        else
+                                            replaceFragment(searchFragment, SearchFragment.TAG)
+        }
+
+        return true
+    }
+
+    private fun replaceFragment(newFragment: Fragment, tag: String){
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, newFragment, tag)
+            .commit()
+        // slidingPanel needs to know if it has a scrollable view in order to work the nested scrolling thing
+        // when the view is being created, its scrollView is set as the slidingPanel scrollableView
+        // other wise, causes not initialized view error
+        when(tag){
+            AllRoutesFragment.TAG -> allRoutesFragment.onViewCreated = Runnable{slidingLayout.setScrollableView(allRoutesFragment.recyclerView)}
+            ResultsFragment.TAG -> if(resultsFragmentActive) resultsFragment?.onViewCreated = Runnable{slidingLayout.setScrollableView(resultsFragment?.recyclerView)}
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -116,16 +173,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map.setOnMapLongClickListener(this)
         map.setOnMarkerDragListener(this)
         slidingLayout.post{
-            slidingLayout.panelHeight = (tabLayout.height * 1.2).toInt()
-            linearlayoutTabs.layoutParams = SlidingUpPanelLayout.LayoutParams(linearlayoutTabs.layoutParams)
-                    .apply {this.topMargin = getStatusBarHeight()}
             map.setPadding(0,getStatusBarHeight(),0,0)
-
-//            //todo: fix status bar color (currently not working:)
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-//                window.statusBarColor = Color.parseColor("#20FF0000")
         }
-
 
         val uruapan = LatLng(19.411843, -102.051518)
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(uruapan, 13f))
@@ -140,7 +189,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val rectangle = Rect()
         val window = window
         window.decorView.getWindowVisibleDisplayFrame(rectangle)
-        //Log.d(DEBUG_TAG, "statusBarHeight: " + rectangle.top)
         return rectangle.top
     }
 
@@ -163,90 +211,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 controlPanel.clearRoutes()
             }
         }
-        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
+//        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
 
     }
 
     private fun latLngToString(pos: LatLng?): String{
         if(pos == null) return ""
         return "%.5f,  %.5f".format(pos.latitude, pos.longitude) //.toString() + ", " + pos.longitude.toString()
-    }
-
-    override fun findRoute() {
-        originSquare?.remove()
-        destinationSquare?.remove()
-        controlPanel.setDistanceToBusStop(INITIAL_WALKING_DISTANCE_TOL)
-        controlPanel.clearRoutes()
-
-        if(originMarker == null || destinationMarker == null){
-            Toast.makeText(this, "You must select an origin and destination point", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if(controlPanel.getWalkingDistTolerance() == null){
-            Toast.makeText(this, "You must enter distance tolerance", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        var walkingDistanceTolerance = controlPanel.getWalkingDistTolerance()
-
-        if(walkingDistanceTolerance!! < 0){
-            Toast.makeText(this, "distance can't be negative", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        drawSquares(walkingDistanceTolerance)
-
-        val originLatLng = originMarker!!.position
-        val destinationLatLng = destinationMarker!!.position
-        val walkingDistToDest = walkingDistance(originLatLng, destinationLatLng)
-        Log.d("findRoute", "walkingDistToDest: $walkingDistToDest")
-        Log.d("findRoute", "walkingDistanceTolerance*2: $walkingDistanceTolerance*2")
-        controlPanel.activateLoadingMode(true)
-        //todo: if the distance that you need to walk to the bus stop is greater or equal than the distance
-        //to the other point then maybe you should walk
-        AsyncTask.execute{
-            val routesDao = AppDatabase.getInstance(this)?.routesDAO()
-            var mutualRoutes: Set<Long>? = null
-            while(walkingDistToDest > walkingDistanceTolerance * 2){
-                Log.d("findRoute", "walkingDistToDest: $walkingDistToDest walkingDistanceTolerance: $walkingDistanceTolerance")
-                val routesNearOrigin = routesDao?.getRoutesIntercepting(walkingDistanceTolerance, originLatLng.latitude, originLatLng.longitude)
-                val routesNearDest = routesDao?.getRoutesIntercepting(walkingDistanceTolerance, destinationLatLng.latitude, destinationLatLng.longitude)
-                walkingDistanceTolerance += WALKING_DISTANCE_INCREMENT
-
-                if(routesNearDest.isNullOrEmpty() || routesNearOrigin.isNullOrEmpty()) continue
-                mutualRoutes = routesNearOrigin.intersect(routesNearDest)
-                if(mutualRoutes.size > MAX_AMOUNT_ROUTES) break
-            }
-
-            if(mutualRoutes.isNullOrEmpty())
-                runOnUiThread{
-                    Toast.makeText(this, "No routes found, maybe you should walk", Toast.LENGTH_SHORT).show()
-                    drawSquares(walkingDistanceTolerance)
-                    controlPanel.activateLoadingMode(false)
-                }
-            else{
-                val routesInfo = routesDao?.getRoutes(mutualRoutes.toList())
-                val adapterItems = arrayListOf<RouteModel>()
-                routesInfo?.forEach{
-                    adapterItems.add(RouteModel(it))
-                }
-                runOnUiThread{
-                    controlPanel.setAdapterRoutes(adapterItems)
-                    controlPanel.setDistanceToBusStop(walkingDistanceTolerance)
-                    controlPanel.activateLoadingMode(false)
-                    Toast.makeText(this, "route found", Toast.LENGTH_SHORT).show()
-                    drawSquares(walkingDistanceTolerance)
-                }
-            }
-        }
-    }
-
-    //todo: take in consideration streets
-    private fun walkingDistance(from: LatLng, to: LatLng): Double {
-        val d1 = (from.latitude - to.latitude)
-        val d2 = (from.longitude - to.longitude)
-        return Math.sqrt(d1 * d1 + d2 * d2)
     }
 
     private fun drawSquares(walkingDistance: Double){
@@ -359,19 +330,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onMarkerDrag(p0: Marker?) {}
 
-    override fun clear() {
-        map.clear()
-        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
-        controlPanel.setDistanceToBusStop(0.001)
-        controlPanel.setAdapterRoutes(List(0) {RouteModel(Routes("","", ""))})
-
-    }
-
     @SuppressLint("NewApi")
     private fun getEndCapArrow(color: Int): BitmapDescriptor?{
         val drawable = getDrawable(R.drawable.ic_arrow) ?: return null
         drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
-        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight);
+        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
         val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         drawable.draw(canvas)
@@ -390,36 +353,55 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    override fun onSearchGotFocus() {
-        slidingLayout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
+    override fun onSearch(origin: LatLng, destination: LatLng){
+        resultsFragmentActive = true
+        resultsFragment = ResultsFragment.newInstance(getFragmentHeight(), origin, destination, INITIAL_WALKING_DISTANCE_TOL)
+        replaceFragment(resultsFragment!!, ResultsFragment.TAG)
     }
 
-    override fun onPageSelected(position: Int) {
-        when(position){
-            0 -> slidingLayout.setScrollableView(controlPanel.recyclerView)
-            1 -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
+//    @SuppressLint("MissingPermission")
+//    override fun onGetCurLocation(onSuccess: (Location) -> Unit){
+//        try{
+//            if(locationPermissionEnabled()){
+//                locationClient.lastLocation.addOnCompleteListener {
+//                    if(it.isSuccessful && it.result != null){
+//                        onSuccess.invoke(it.result!!)
+//                    }else{
+//                        Log.d(DEBUG_TAG,"unable to find location")
+//                    }
+//                }
+//
+//            }else{
+//                Toast.makeText(this, "No location permission", Toast.LENGTH_SHORT).show()
+//            }
+//        }catch (excep: Exception){
+//            Log.d(DEBUG_TAG, "error while requesting current location",excep)
+//        }
+//    }
+
+    override fun drawMarker(position: LatLng, title: String, markerType: SearchFragment.MarkerType) {
+        map.animateCamera(CameraUpdateFactory.newLatLng(position))
+
+        if(markerType == SearchFragment.MarkerType.Origin) {
+            originMarker?.remove()
+            originMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
         }
-
-        if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED)
-            slidingLayout.panelState = SlidingUpPanelLayout.PanelState.ANCHORED
-    }
-
-    override fun onPageScrollStateChanged(state: Int) {}
-    override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
-
-    override fun onPanelSlide(panel: View?, slideOffset: Float) {
-        //Log.d(DEBUG_TAG, "onPanelSlide, slideOffset: $slideOffset")
-    }
-
-    override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
-        when(newState){
-            SlidingUpPanelLayout.PanelState.ANCHORED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
-                height = 500
-            }
-            SlidingUpPanelLayout.PanelState.EXPANDED -> allRoutesFragment.recyclerView.layoutParams = allRoutesFragment.recyclerView.layoutParams.apply {
-                height = 1600
-            }
+        else if(markerType == SearchFragment.MarkerType.Destination) {
+            destinationMarker?.remove()
+            destinationMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
         }
+    }
+
+    override fun clearMarker(markerType: SearchFragment.MarkerType) {
+        when(markerType){
+            SearchFragment.MarkerType.Origin -> originMarker?.remove()
+            SearchFragment.MarkerType.Destination -> destinationMarker?.remove()
+        }
+    }
+
+    override fun onBackFromResults(){
+        resultsFragmentActive = false
+        replaceFragment(searchFragment, SearchFragment.TAG)
     }
 
 }

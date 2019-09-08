@@ -1,4 +1,4 @@
-package com.rico.omarw.rutasuruapan
+package com.rico.omarw.rutasuruapan.models
 
 import com.google.android.gms.maps.model.Polyline
 import com.rico.omarw.rutasuruapan.database.Routes
