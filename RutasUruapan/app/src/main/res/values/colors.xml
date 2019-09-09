@@ -15,7 +15,7 @@
     <color name="secondaryTextColor">#e0f2f1</color>
     <color name="transparent">#00FFFFFF</color>
 
-    <color name="divider">#aaaaaa</color>
+    <color name="my_divider">#E4E2E2</color>
 
     <color name="icon_tint">#292929</color>
 </resources>

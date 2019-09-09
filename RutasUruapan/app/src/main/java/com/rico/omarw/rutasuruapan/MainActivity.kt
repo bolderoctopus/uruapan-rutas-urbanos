@@ -10,6 +10,8 @@ import android.location.Location
 import android.os.*
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -52,7 +54,7 @@ sub taks
 [] improve color palette
 [x] size of searchFragment, fab touches the destination
 [x] check the shadow of the fab
-[1/2] add drag up indicator, (small view on top of the sliding panel)
+[1/2] nextTask: add drag up indicator, (small view on top of the sliding panel)
 [x] fix menu selection thing
 [] set fragment transitions between seach and results
 [x] code origyn & destination textBoxes
@@ -63,14 +65,14 @@ sub taks
     [x] create markers
 [] fragments lose state
 [x] switch scroll view when the thing changes
-[] fix issues when keyboard is shown
-    [] it hides the reciclerview from allRoutesFragment
-    [] more space between the dropdwn in the autocompleteTextView and the editTExt
-[] implement ResultsFragment
+[x] fix issues when keyboard is shown
+    [x] it hides the recyclerview from allRoutesFragment
+    [x] more space between the dropdwn in the autocompleteTextView and the editTExt
+[x] implement ResultsFragment
     [x] validate before search that markers exist
     [x] pass info to onSearch
-    [] decide where to find route
-    [] display results in resultsFragment
+    [x] decide where to find route
+    [x] display results in resultsFragment
  */
 
 
@@ -81,7 +83,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         AllRoutesFragment.InteractionsInterface,
         SearchFragment.OnFragmentInteractionListener,
         ResultsFragment.OnFragmentInteractionListener,
-        BottomNavigationView.OnNavigationItemSelectedListener {
+        BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener {
 
     private val DIRECTIONAL_ARROWS_STEP = 7
 
@@ -103,6 +105,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var slidingLayout: SlidingUpPanelLayout
     private lateinit var locationClient: FusedLocationProviderClient
     private var resultsFragmentActive = false
+    private lateinit var slideIndicator: ImageView
 
     //todo: to delete
     private lateinit var controlPanel: ControlPanelFragment
@@ -117,7 +120,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         slidingLayout= findViewById(R.id.sliding_layout)
-
+        slideIndicator = findViewById(R.id.imageview_slide_indicator)
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
         val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_navigation_slide_panel)
 
@@ -125,6 +128,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         searchFragment = SearchFragment.newInstance()
 
         bottomNavView.setOnNavigationItemSelectedListener (this)
+        slidingLayout.addPanelSlideListener(this)
 
         supportFragmentManager.beginTransaction()
                 .add(R.id.fragment_container, searchFragment)
@@ -401,5 +405,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         resultsFragmentActive = false
         replaceFragment(searchFragment, SearchFragment.TAG)
     }
+
+    override fun onPanelSlide(panel: View?, slideOffset: Float) {
+        slideIndicator.rotation = 180 * (1-slideOffset)
+    }
+
+    override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) = Unit
 
 }
