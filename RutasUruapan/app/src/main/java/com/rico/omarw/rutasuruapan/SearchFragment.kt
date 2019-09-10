@@ -55,7 +55,11 @@ class SearchFragment : Fragment(){
         destination.autoCompleteTextView.tag = MarkerType.Destination
 
         origin.autoCompleteTextView.setOnFocusChangeListener { _, hasFocus ->
-            if(hasFocus) origin.autoCompleteTextView.showDropDown()
+            try {
+                if (hasFocus) origin.autoCompleteTextView.showDropDown()
+            }catch (error: Exception){
+                Log.e(DEBUG_TAG, error.message)
+            }
         }
         origin.autoCompleteTextView.setOnClickListener {origin.autoCompleteTextView.showDropDown()}
         origin.autoCompleteTextView.setOnItemClickListener{ parent, _, position, id ->
@@ -72,8 +76,8 @@ class SearchFragment : Fragment(){
         }
 
         if(context != null){
-            originAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, showCurrentLocation = true)
-            destinationAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, showCurrentLocation = false)
+            originAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, AutocompleteItemModel.ItemKind.CurrentLocation)
+            destinationAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, AutocompleteItemModel.ItemKind.PickLocation)
             destination.autoCompleteTextView.setAdapter(destinationAdapter)
             origin.autoCompleteTextView.setAdapter(originAdapter)
         }
@@ -129,41 +133,47 @@ class SearchFragment : Fragment(){
         val markerType = sender.tag as MarkerType
         val title = if(markerType == MarkerType.Origin) "Origin" else "Destination"
 
+        when(item.kind){
+            AutocompleteItemModel.ItemKind.CurrentLocation -> {
+                sender.setText(item.currentPlace?.address)
+                listener?.drawMarker(item.currentPlace!!.latLng!!, title, markerType)
+                setLatLng(markerType, item.currentPlace!!.latLng!!)
+            }
+            AutocompleteItemModel.ItemKind.AutocompletePrediction -> {
+//                sender.setText(item.autocompletePrediction!!.getPrimaryText(null))
+                // request coordinates from place id
+                val placeId = item.autocompletePrediction!!.placeId
+                val fetchPlaceRequest = FetchPlaceRequest.builder(placeId, PlaceFields).setSessionToken(AutocompleteSessionToken.newInstance()).build()
+                placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
+                    if(it.isSuccessful && it.result != null){
+                        Log.d(DEBUG_TAG, "SearchFragment, success")
+                        listener?.drawMarker(it.result!!.place.latLng!!, title, markerType)
+                        setLatLng(markerType, it.result!!.place.latLng!!)
 
-        if(item.isCurrentLocation){
-            sender.setText(item.currentPlace?.address)
-            listener?.drawMarker(item.currentPlace!!.latLng!!, title, markerType)
-            if(markerType == MarkerType.Origin)
-                originLatLng = item.currentPlace!!.latLng!!
-            else
-                destinationLatLng = item.currentPlace!!.latLng!!
-
-        }
-        else if(item.autocompletePrediction != null){
-            sender.setText(item.autocompletePrediction.getPrimaryText(null) ?: item.primaryText)
-            // request coordinates from place id
-            val placeId = item.autocompletePrediction.placeId
-            val fetchPlaceRequest = FetchPlaceRequest.builder(placeId, PlaceFields).setSessionToken(AutocompleteSessionToken.newInstance()).build()
-            placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
-                if(it.isSuccessful && it.result != null){
-                    Log.d(DEBUG_TAG, "SearchFragment, success")
-                    listener?.drawMarker(it.result!!.place.latLng!!, title, markerType)
-
-                    if(markerType == MarkerType.Origin)
-                        originLatLng = it.result!!.place.latLng!!
-                    else
-                        destinationLatLng = it.result!!.place.latLng!!
-
-//                      note: shows a ton load of text for a split second
-//                    sender.setText(it.result!!.place.address!!)
-
-                }else{
-                    Log.d(DEBUG_TAG, "couldnt find current place")
-                    if(it.exception != null)
-                        Log.d(DEBUG_TAG, "exception", it.exception)
+                    }else{
+                        Log.d(DEBUG_TAG, "couldnt find current place")
+                        if(it.exception != null)
+                            Log.d(DEBUG_TAG, "exception", it.exception)
+                    }
                 }
             }
+
+            AutocompleteItemModel.ItemKind.PickLocation -> {
+                sender.setText(" ")
+                setLatLng(markerType, null)
+                listener?.drawMarker(null, title, markerType)
+            }
+
         }
+
+
+    }
+
+    private fun setLatLng(markerType: MarkerType, latLng: LatLng?){
+        if(markerType == MarkerType.Origin)
+            originLatLng = latLng
+        else
+            destinationLatLng = latLng
     }
 
     private fun hideKeyboard(windowToken: IBinder){
@@ -179,7 +189,7 @@ class SearchFragment : Fragment(){
     interface OnFragmentInteractionListener {
         fun onSearch(origin: LatLng, destination: LatLng)
 //        fun onGetCurLocation(onSuccess: (Location) -> Unit)
-        fun drawMarker(position: LatLng, title: String, markerType: MarkerType)
+        fun drawMarker(position: LatLng?, title: String, markerType: MarkerType)
         fun clearMarker(markerType: MarkerType)
     }
     companion object {

@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 class AutoCompleteAdapter (context: Context,
                            private val placesClient: PlacesClient,
                            private val bounds: RectangularBounds,
-                           showCurrentLocation: Boolean = true)
+                           stickyRow: AutocompleteItemModel.ItemKind? = null)
     : ArrayAdapter<AutocompleteItemModel>(context, R.layout.current_location_list_item, android.R.id.text1),
     Filterable{
     /*todo:
@@ -38,31 +38,48 @@ class AutoCompleteAdapter (context: Context,
     enum class ViewTypes(val id: Int){
         CurrentLocation (0),
         AutocompletePrediction (1),
+        PickLocation(2)
     }
 
     private val characterStyle = StyleSpan(Typeface.BOLD)
     private var resultsList: ArrayList<AutocompleteItemModel> = ArrayList()
 
     init {
-        if(showCurrentLocation)
+        if(stickyRow != null && stickyRow == AutocompleteItemModel.ItemKind.CurrentLocation)
             getCurrentPlace()
+        else if(stickyRow != null && stickyRow == AutocompleteItemModel.ItemKind.PickLocation)
+        {
+            resultsList.add(AutocompleteItemModel(AutocompleteItemModel.ItemKind.PickLocation, "Pick location from map", "Adjust by dragging the marker"))
+        }
     }
 
     override fun getCount() =  resultsList.size
     override fun getItem(pos: Int): AutocompleteItemModel = resultsList[pos]
     override fun getItemViewType(position: Int): Int =
-        if(resultsList[position].isCurrentLocation)
-            ViewTypes.CurrentLocation.id
-        else
-            ViewTypes.AutocompletePrediction.id
+        when(resultsList[position].kind){
+            AutocompleteItemModel.ItemKind.CurrentLocation -> ViewTypes.CurrentLocation.id
+            AutocompleteItemModel.ItemKind.AutocompletePrediction -> ViewTypes.AutocompletePrediction.id
+            AutocompleteItemModel.ItemKind.PickLocation -> ViewTypes.PickLocation.id
+        }
 
 //re: use only one kind of view if things cause problems with some devices (like my huawaei)
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val prediction = getItem(position)
         val row: View = super.getView(position, convertView, parent)
-        row.findViewById<ImageView>(R.id.imageview_gps).visibility =
-                if(prediction.isCurrentLocation) View.VISIBLE
-                else View.GONE
+        val icon = row.findViewById<ImageView>(R.id.imageview_gps)
+
+        when (prediction.kind) {
+            AutocompleteItemModel.ItemKind.CurrentLocation -> {
+                icon.visibility = View.VISIBLE
+                icon.setImageResource(R.drawable.ic_gps)
+            }
+            AutocompleteItemModel.ItemKind.PickLocation -> {
+                icon.visibility = View.VISIBLE
+                icon.setImageResource(R.drawable.ic_pin_drop)
+            }
+            else -> icon.visibility = View.GONE
+        }
+
         row.findViewById<TextView>(android.R.id.text1).text = prediction.autocompletePrediction?.getPrimaryText(characterStyle) ?: prediction.primaryText
         row.findViewById<TextView>(android.R.id.text2).text = prediction.autocompletePrediction?.getSecondaryText(characterStyle) ?: prediction.secondaryText
         row.findViewById<TextView>(R.id.textview_google).visibility = if(position == 0 && count > 1) View.VISIBLE else View.GONE
@@ -87,7 +104,7 @@ class AutoCompleteAdapter (context: Context,
             }
 
             override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                resultsList.removeAll {!it.isCurrentLocation}
+                resultsList.removeAll {it.kind == AutocompleteItemModel.ItemKind.AutocompletePrediction}
                 if(results != null && results.count > 0){
                     (results.values as MutableList<AutocompletePrediction>).forEach{
                         resultsList.add(0, AutocompleteItemModel(it))
@@ -132,7 +149,7 @@ class AutoCompleteAdapter (context: Context,
         val request = FindCurrentPlaceRequest.builder(SearchFragment.PlaceFields).build()
         placesClient.findCurrentPlace(request).addOnCompleteListener{
             if(it.isSuccessful && it.result != null){
-                resultsList.add(0, AutocompleteItemModel("Usar ubicación actual", it.result!!.placeLikelihoods[0].place))
+                resultsList.add(0, AutocompleteItemModel(AutocompleteItemModel.ItemKind.CurrentLocation, "Usar ubicación actual", it.result!!.placeLikelihoods[0].place.address!!, null, it.result!!.placeLikelihoods[0].place))
                 notifyDataSetChanged()
             }else{
                 Log.d(DEBUG_TAG, "couldnt find current place")

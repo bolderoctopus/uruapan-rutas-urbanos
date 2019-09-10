@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
-import android.location.Location
 import android.os.*
 import android.util.Log
 import android.view.MenuItem
@@ -21,13 +20,11 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
-import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
-import kotlin.math.sqrt
 
 //todo: see below
 /*
@@ -46,7 +43,8 @@ import kotlin.math.sqrt
 * [] settings: how many results to show?
 * [] replace Asynctasks with coroutines
 *
-* [] find a way to add an arbitrary marker for the destination, let the user drag it then, perhaps origin too?
+* [...] nextTask: update AutoComplete adapter to offer "Pick location from map option"
+*           add callback or something
 * */
 
 /*
@@ -54,7 +52,7 @@ sub taks
 [] improve color palette
 [x] size of searchFragment, fab touches the destination
 [x] check the shadow of the fab
-[1/2] nextTask: add drag up indicator, (small view on top of the sliding panel)
+[x] add drag up indicator, (small view on top of the sliding panel)
 [x] fix menu selection thing
 [] set fragment transitions between seach and results
 [x] code origyn & destination textBoxes
@@ -86,6 +84,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener {
 
     private val DIRECTIONAL_ARROWS_STEP = 7
+    private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
 
     private val DEBUG_SQUARES = false
     private val VIBRATION_DURATION: Long = 75
@@ -178,8 +177,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map.setOnMapLongClickListener(this)
         map.setOnMarkerDragListener(this)
 
-        val uruapan = LatLng(19.411843, -102.051518)
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(uruapan, 13f))
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(URUAPAN_LATLNG, 13f))
         if (locationPermissionEnabled()){
             map.isMyLocationEnabled = true
         }else {
@@ -194,25 +192,26 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return rectangle.top
     }
 
+    //todo: if there are no origin or destination put marker, and update textView
     override fun onMapLongClick(pos: LatLng){
         vibrate()
-        when {
-            originMarker == null ->
-                originMarker = map.addMarker(MarkerOptions().title("Origin").position(pos).draggable(true))
-
-            destinationMarker == null ->
-                destinationMarker = map.addMarker(MarkerOptions().title("Destination").position(pos).draggable(true))
-
-            else -> {
-                originMarker?.isVisible = false
-                destinationMarker?.isVisible = false
-                originMarker = null
-                destinationMarker = null
-                originSquare?.remove()
-                destinationSquare?.remove()
-                controlPanel.clearRoutes()
-            }
-        }
+//        when {
+//            originMarker == null ->
+//                originMarker = map.addMarker(MarkerOptions().title("Origin").position(pos).draggable(true))
+//
+//            destinationMarker == null ->
+//                destinationMarker = map.addMarker(MarkerOptions().title("Destination").position(pos).draggable(true))
+//
+//            else -> {
+//                originMarker?.isVisible = false
+//                destinationMarker?.isVisible = false
+//                originMarker = null
+//                destinationMarker = null
+//                originSquare?.remove()
+//                destinationSquare?.remove()
+//                controlPanel.clearRoutes()
+//            }
+//        }
 //        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
 
     }
@@ -324,13 +323,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     //marker drag events interface
-    override fun onMarkerDragStart(m: Marker?) {}
-
-    override fun onMarkerDragEnd(m: Marker?) {
-        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
+    override fun onMarkerDragStart(m: Marker?) {
+        Log.d(DEBUG_TAG, "onMarkerDragStart, tag: ${m?.tag}")
     }
 
-    override fun onMarkerDrag(p0: Marker?) {}
+    override fun onMarkerDragEnd(m: Marker?) {
+
+    }
+
+    override fun onMarkerDrag(m: Marker?) {
+
+    }
 
     @SuppressLint("NewApi")
     private fun getEndCapArrow(color: Int): BitmapDescriptor?{
@@ -381,16 +384,33 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 //        }
 //    }
 
-    override fun drawMarker(position: LatLng, title: String, markerType: SearchFragment.MarkerType) {
-        map.animateCamera(CameraUpdateFactory.newLatLng(position))
+// nextTask:
+//          modify MainActivity and SearchFragment, add Marquer dragged event
+
+    private fun getDummyLatLng(): LatLng{
+        var latlng: LatLng
+        val increment = 0.002
+        if(originMarker != null) latlng = LatLng(originMarker!!.position.latitude - increment, originMarker!!.position.longitude)
+        else if(destinationMarker != null) latlng = LatLng(destinationMarker!!.position.latitude - increment, destinationMarker!!.position.longitude)
+        else latlng = URUAPAN_LATLNG
+
+        return latlng
+    }
+
+    override fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType) {
+        val pos = position ?: getDummyLatLng()
+
+        map.animateCamera(CameraUpdateFactory.newLatLng(pos))
 
         if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker?.remove()
-            originMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
+            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).draggable(true))
+            originMarker?.tag = markerType
         }
         else if(markerType == SearchFragment.MarkerType.Destination) {
             destinationMarker?.remove()
-            destinationMarker = map.addMarker(MarkerOptions().title(title).position(position).draggable(true))
+            destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).draggable(true))
+            destinationMarker?.tag = markerType
         }
     }
 
