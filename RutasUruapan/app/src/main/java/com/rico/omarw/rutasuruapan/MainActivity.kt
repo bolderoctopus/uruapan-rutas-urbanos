@@ -41,36 +41,35 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 * [] add settings
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
-* [] replace Asynctasks with coroutines
+* [...] replace Asynctasks with coroutines
 *
-* [...] nextTask: update AutoComplete adapter to offer "Pick location from map option"
-*           add callback or something
-* */
+* [x] offer "Pick current location"
+* [x] update address after marker drag
+* [] when moving the map, do so taking into cosideration the part of it thats visible
 
-/*
-sub taks
-[] improve color palette
-[x] size of searchFragment, fab touches the destination
-[x] check the shadow of the fab
-[x] add drag up indicator, (small view on top of the sliding panel)
-[x] fix menu selection thing
-[] set fragment transitions between seach and results
-[x] code origyn & destination textBoxes
-    [x] design and choose functionality
-    [x] clear button
-    [x] google maps suggestions
-    [x] use actual location in suggestions
-    [x] create markers
-[] fragments lose state
-[x] switch scroll view when the thing changes
-[x] fix issues when keyboard is shown
-    [x] it hides the recyclerview from allRoutesFragment
-    [x] more space between the dropdwn in the autocompleteTextView and the editTExt
-[x] implement ResultsFragment
-    [x] validate before search that markers exist
-    [x] pass info to onSearch
-    [x] decide where to find route
-    [x] display results in resultsFragment
+
+    [] improve color palette
+    [x] size of searchFragment, fab touches the destination
+    [x] check the shadow of the fab
+    [x] add drag up indicator, (small view on top of the sliding panel)
+    [x] fix menu selection thing
+    [] set fragment transitions between seach and results
+    [x] code origyn & destination textBoxes
+        [x] design and choose functionality
+        [x] clear button
+        [x] google maps suggestions
+        [x] use actual location in suggestions
+        [x] create markers
+    [] fragments lose state
+    [x] switch scroll view when the thing changes
+    [x] fix issues when keyboard is shown
+        [x] it hides the recyclerview from allRoutesFragment
+        [x] more space between the dropdwn in the autocompleteTextView and the editTExt
+    [x] implement ResultsFragment
+        [x] validate before search that markers exist
+        [x] pass info to onSearch
+        [x] decide where to find route
+        [x] display results in resultsFragment
  */
 
 
@@ -192,17 +191,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return rectangle.top
     }
 
-    //todo: if there are no origin or destination put marker, and update textView
     override fun onMapLongClick(pos: LatLng){
         vibrate()
-//        when {
-//            originMarker == null ->
-//                originMarker = map.addMarker(MarkerOptions().title("Origin").position(pos).draggable(true))
-//
-//            destinationMarker == null ->
-//                destinationMarker = map.addMarker(MarkerOptions().title("Destination").position(pos).draggable(true))
-//
-//            else -> {
+        when {
+            originMarker == null -> {
+                originMarker = map.addMarker(MarkerOptions().title("Origin").position(pos).draggable(true))
+                originMarker?.tag = SearchFragment.MarkerType.Origin
+                searchFragment.updatePosition(SearchFragment.MarkerType.Origin, pos, true)
+            }
+
+            destinationMarker == null -> {
+                destinationMarker = map.addMarker(MarkerOptions().title("Destination").position(pos).draggable(true))
+                destinationMarker?.tag = SearchFragment.MarkerType.Destination
+                searchFragment.updatePosition(SearchFragment.MarkerType.Destination, pos, true)
+            }
+
+            else -> {
+                //todo: what to do if both markers are already there?
 //                originMarker?.isVisible = false
 //                destinationMarker?.isVisible = false
 //                originMarker = null
@@ -210,9 +215,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 //                originSquare?.remove()
 //                destinationSquare?.remove()
 //                controlPanel.clearRoutes()
-//            }
-//        }
-//        controlPanel.setOriginDestinationText(latLngToString(originMarker?.position), latLngToString(destinationMarker?.position))
+            }
+        }
 
     }
 
@@ -324,41 +328,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     //marker drag events interface
     override fun onMarkerDragStart(m: Marker?) {
-        Log.d(DEBUG_TAG, "onMarkerDragStart, tag: ${m?.tag}")
-        if(m?.tag == SearchFragment.MarkerType.Origin){
-            searchFragment.origin.autoCompleteTextView.isEnabled = false
-            searchFragment.origin.autoCompleteTextView.threshold = 99
-        }
-        else if(m?.tag == SearchFragment.MarkerType.Destination){
-            searchFragment.destination.autoCompleteTextView.isEnabled = false
-            searchFragment.destination.autoCompleteTextView.threshold = 99
-        }
+        Log.d(DEBUG_TAG, "onMarkerDragStart")
+        searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, false)
     }
 
-    //nextTask: request place according to position and update textView
     override fun onMarkerDragEnd(m: Marker?) {
-        if(m?.tag == SearchFragment.MarkerType.Origin){
-            searchFragment.origin.autoCompleteTextView.isEnabled = true
-            searchFragment.origin.autoCompleteTextView.threshold = COMPLETION_THRESHOLD
-        }
-        else if(m?.tag == SearchFragment.MarkerType.Destination){
-            searchFragment.destination.autoCompleteTextView.isEnabled = true
-            searchFragment.destination.autoCompleteTextView.threshold = COMPLETION_THRESHOLD
-        }
-
-        if(m?.tag != null)
-        searchFragment.findPlaceByLatLng(m.tag as SearchFragment.MarkerType, m.position)
+        Log.d(DEBUG_TAG, "onMarkerDragEnd")
+        searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, true)
     }
     override fun onMarkerDrag(m: Marker?) {
-        //todo: fix lag caused by this block
-        if(m?.tag == SearchFragment.MarkerType.Origin){
-            searchFragment.origin.autoCompleteTextView.setText(getString(R.string.lat_lng, m.position.latitude, m.position.longitude))
-            searchFragment.originLatLng = m.position
-        }
-        else if(m?.tag == SearchFragment.MarkerType.Destination){
-            searchFragment.destination.autoCompleteTextView.setText(getString(R.string.lat_lng, m.position.latitude, m.position.longitude))
-            searchFragment.destinationLatLng = m.position
-        }
+        Log.d(DEBUG_TAG, "onMarkerDrag")
+        searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, false)
     }
 
     @SuppressLint("NewApi")
@@ -439,8 +419,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun clearMarker(markerType: SearchFragment.MarkerType) {
         when(markerType){
-            SearchFragment.MarkerType.Origin -> originMarker?.remove()
-            SearchFragment.MarkerType.Destination -> destinationMarker?.remove()
+            SearchFragment.MarkerType.Origin -> {
+                originMarker?.remove()
+                originMarker = null
+            }
+            SearchFragment.MarkerType.Destination -> {
+                destinationMarker?.remove()
+                destinationMarker = null
+            }
         }
     }
 

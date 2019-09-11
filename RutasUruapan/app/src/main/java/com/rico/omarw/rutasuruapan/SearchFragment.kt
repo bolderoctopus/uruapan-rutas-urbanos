@@ -3,7 +3,6 @@ package com.rico.omarw.rutasuruapan
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
-import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -97,6 +96,25 @@ class SearchFragment : Fragment(){
         return view
     }
 
+    //nextTask: 1 fix lag caused by this block
+    fun updatePosition(markerType: MarkerType, latLng: LatLng, enableTextview: Boolean){
+        when(markerType){
+            MarkerType.Origin -> {
+                originLatLng = latLng
+                origin.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                origin.autoCompleteTextView.setAdapter(if(enableTextview) originAdapter else null)
+                origin.autoCompleteTextView.isEnabled = enableTextview
+            }
+            MarkerType.Destination -> {
+                destinationLatLng = latLng
+                destination.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                destination.autoCompleteTextView.setAdapter(if(enableTextview) destinationAdapter else null)
+                destination.autoCompleteTextView.isEnabled = enableTextview
+            }
+        }
+        if(enableTextview) findPlaceByLatLng(markerType, latLng)
+    }
+
     private fun onTextViewClear(view: View){
         when(view.id){
             R.id.custom_actv_origin -> {
@@ -137,8 +155,8 @@ class SearchFragment : Fragment(){
         }
     }
 
-    //todo: format the address: looks different when is currentLocation, see note
-    // todo: refactor method
+    //todo: format the address: looks different when is currentLocation, see note (it has to do with the to string method on the model)
+    // suggested format for address: street name + colonia? no number?
     private fun autoCompleteItemClick(sender: AutoCompleteTextView, item: AutocompleteItemModel){
         val markerType = sender.tag as MarkerType
         val title = if(markerType == MarkerType.Origin) "Origin" else "Destination"
@@ -146,51 +164,42 @@ class SearchFragment : Fragment(){
         when(item.kind){
             AutocompleteItemModel.ItemKind.CurrentLocation -> {
                 sender.setText(item.currentPlace?.address)
-                listener?.drawMarker(item.currentPlace!!.latLng!!, title, markerType)
-                setLatLng(markerType, item.currentPlace!!.latLng!!)
+                darMarker(markerType, item.currentPlace?.latLng, title)
             }
-            AutocompleteItemModel.ItemKind.AutocompletePrediction -> {
-//                sender.setText(item.autocompletePrediction!!.getPrimaryText(null))
-                // request coordinates from place id
-                val placeId = item.autocompletePrediction!!.placeId
-                val fetchPlaceRequest = FetchPlaceRequest.builder(placeId, PlaceFields).setSessionToken(AutocompleteSessionToken.newInstance()).build()
+            AutocompleteItemModel.ItemKind.AutocompletePrediction -> {// request coordinates from place id
+//                sender.setText(item.autocompletePrediction!!.getPrimaryText(null))    // this shows object toString()
+                val fetchPlaceRequest = FetchPlaceRequest.builder(item.autocompletePrediction!!.placeId, PlaceFields)
+                        .setSessionToken(AutocompleteSessionToken.newInstance()).build()
                 placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
                     if(it.isSuccessful && it.result != null){
-                        Log.d(DEBUG_TAG, "SearchFragment, success")
-                        listener?.drawMarker(it.result!!.place.latLng!!, title, markerType)
-                        setLatLng(markerType, it.result!!.place.latLng!!)
-
-                    }else{
-                        Log.d(DEBUG_TAG, "couldnt find current place")
-                        if(it.exception != null)
-                            Log.d(DEBUG_TAG, "exception", it.exception)
+                        darMarker(markerType, it.result?.place?.latLng, title)
                     }
+                    else Log.d(DEBUG_TAG, "couldnt find current place")
                 }
             }
 
             AutocompleteItemModel.ItemKind.PickLocation -> {
                 sender.setText(" ")
-                setLatLng(markerType, null)
-                listener?.drawMarker(null, title, markerType)
+                darMarker(markerType, null, title)
             }
 
         }
-
-
     }
 
-    private fun setLatLng(markerType: MarkerType, latLng: LatLng?){
+    private fun darMarker(markerType: MarkerType, latLng: LatLng?, title: String){
         if(markerType == MarkerType.Origin)
             originLatLng = latLng
         else
             destinationLatLng = latLng
+
+        listener?.drawMarker(latLng, title, markerType)
     }
 
     private fun hideKeyboard(windowToken: IBinder){
         (context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
                 .hideSoftInputFromWindow(windowToken,0)
     }
-
+//todo: prevent to start autoComplete query after setting text on the TextView
     fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
         if(!::geocoder.isInitialized) geocoder = Geocoder(context, Locale.getDefault())
 

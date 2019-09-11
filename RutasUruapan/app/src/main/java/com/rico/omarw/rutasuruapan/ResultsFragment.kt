@@ -121,7 +121,7 @@ class ResultsFragment : Fragment(){
     }
 
     interface OnFragmentInteractionListener: RouteListAdapter.DrawRouteListener{
-        fun onBackFromResults()
+        fun onBackFromResults()//todo: clear drawed routes on back from results fragment
     }
 
     companion object{
