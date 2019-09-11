@@ -28,6 +28,7 @@ class CustomAutocompleteTextView(context: Context?, attrs: AttributeSet) : Relat
             onClear(this)
             autoCompleteTextView.setText("")
         }
+        autoCompleteTextView.threshold = COMPLETION_THRESHOLD
         autoCompleteTextView.addTextChangedListener(this)
     }
 

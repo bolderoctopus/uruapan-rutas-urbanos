@@ -1,6 +1,8 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.os.IBinder
@@ -21,15 +23,17 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
+import kotlinx.coroutines.*
+import java.util.*
 import kotlin.collections.ArrayList
 
 class SearchFragment : Fragment(){
 
-    private var destinationLatLng: LatLng? = null
-    private var originLatLng: LatLng? = null
+    var destinationLatLng: LatLng? = null
+    var originLatLng: LatLng? = null
     private lateinit var placesClient: PlacesClient
-    private lateinit var origin: CustomAutocompleteTextView
-    private lateinit var destination: CustomAutocompleteTextView
+    lateinit var origin: CustomAutocompleteTextView
+    lateinit var destination: CustomAutocompleteTextView
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var originAdapter: AutoCompleteAdapter
     private lateinit var destinationAdapter: AutoCompleteAdapter
@@ -37,11 +41,16 @@ class SearchFragment : Fragment(){
             LatLng(19.367936, -102.098275),
             LatLng(19.478144, -101.993454)
     )
+    private lateinit var geocoder: Geocoder
+    private var uiScope = CoroutineScope(Dispatchers.Main)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if(context == null) return
         placesClient = Places.createClient(context!!)
+        if(!uiScope.isActive)
+            uiScope = CoroutineScope(Dispatchers.Main)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -111,8 +120,9 @@ class SearchFragment : Fragment(){
     }
 
     override fun onDetach() {
-        super.onDetach()
+        uiScope.cancel()
         listener = null
+        super.onDetach()
     }
 
     private fun search(){
@@ -179,6 +189,25 @@ class SearchFragment : Fragment(){
     private fun hideKeyboard(windowToken: IBinder){
         (context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
                 .hideSoftInputFromWindow(windowToken,0)
+    }
+
+    fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
+        if(!::geocoder.isInitialized) geocoder = Geocoder(context, Locale.getDefault())
+
+        uiScope.launch {
+            val address: List<Address>? = async(Dispatchers.IO) { geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)}.await()
+            if(!address.isNullOrEmpty() && address[0].maxAddressLineIndex > -1){
+                Log.d(DEBUG_TAG, "address[0].maxAddressLineIndex : ${address[0].maxAddressLineIndex}")
+                when(markerType){
+                    MarkerType.Origin ->{
+                        origin.autoCompleteTextView.setText(address[0].getAddressLine(0))
+                    }
+                    MarkerType.Destination ->{
+                        destination.autoCompleteTextView.setText(address[0].getAddressLine(0))
+                    }
+                }
+            }
+        }
     }
 
     enum class MarkerType {

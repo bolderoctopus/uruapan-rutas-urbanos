@@ -75,7 +75,7 @@ class AutoCompleteAdapter (context: Context,
             }
             AutocompleteItemModel.ItemKind.PickLocation -> {
                 icon.visibility = View.VISIBLE
-                icon.setImageResource(R.drawable.ic_pin_drop)
+                icon.setImageResource(R.drawable.ic_place)
             }
             else -> icon.visibility = View.GONE
         }

@@ -325,14 +325,40 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     //marker drag events interface
     override fun onMarkerDragStart(m: Marker?) {
         Log.d(DEBUG_TAG, "onMarkerDragStart, tag: ${m?.tag}")
+        if(m?.tag == SearchFragment.MarkerType.Origin){
+            searchFragment.origin.autoCompleteTextView.isEnabled = false
+            searchFragment.origin.autoCompleteTextView.threshold = 99
+        }
+        else if(m?.tag == SearchFragment.MarkerType.Destination){
+            searchFragment.destination.autoCompleteTextView.isEnabled = false
+            searchFragment.destination.autoCompleteTextView.threshold = 99
+        }
     }
 
+    //nextTask: request place according to position and update textView
     override fun onMarkerDragEnd(m: Marker?) {
+        if(m?.tag == SearchFragment.MarkerType.Origin){
+            searchFragment.origin.autoCompleteTextView.isEnabled = true
+            searchFragment.origin.autoCompleteTextView.threshold = COMPLETION_THRESHOLD
+        }
+        else if(m?.tag == SearchFragment.MarkerType.Destination){
+            searchFragment.destination.autoCompleteTextView.isEnabled = true
+            searchFragment.destination.autoCompleteTextView.threshold = COMPLETION_THRESHOLD
+        }
 
+        if(m?.tag != null)
+        searchFragment.findPlaceByLatLng(m.tag as SearchFragment.MarkerType, m.position)
     }
-
     override fun onMarkerDrag(m: Marker?) {
-
+        //todo: fix lag caused by this block
+        if(m?.tag == SearchFragment.MarkerType.Origin){
+            searchFragment.origin.autoCompleteTextView.setText(getString(R.string.lat_lng, m.position.latitude, m.position.longitude))
+            searchFragment.originLatLng = m.position
+        }
+        else if(m?.tag == SearchFragment.MarkerType.Destination){
+            searchFragment.destination.autoCompleteTextView.setText(getString(R.string.lat_lng, m.position.latitude, m.position.longitude))
+            searchFragment.destinationLatLng = m.position
+        }
     }
 
     @SuppressLint("NewApi")
@@ -384,11 +410,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 //        }
 //    }
 
-// nextTask:
-//          modify MainActivity and SearchFragment, add Marquer dragged event
-
     private fun getDummyLatLng(): LatLng{
-        var latlng: LatLng
+        val latlng: LatLng
         val increment = 0.002
         if(originMarker != null) latlng = LatLng(originMarker!!.position.latitude - increment, originMarker!!.position.longitude)
         else if(destinationMarker != null) latlng = LatLng(destinationMarker!!.position.latitude - increment, destinationMarker!!.position.longitude)
