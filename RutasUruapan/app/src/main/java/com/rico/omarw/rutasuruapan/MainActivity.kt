@@ -104,6 +104,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var locationClient: FusedLocationProviderClient
     private var resultsFragmentActive = false
     private lateinit var slideIndicator: ImageView
+    private var refreshStartTime: Long = 0
+    private val REFRESH_INTERVAL: Int = 300// in milliseconds
 
     //todo: to delete
     private lateinit var controlPanel: ControlPanelFragment
@@ -326,19 +328,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    //marker drag events interface
     override fun onMarkerDragStart(m: Marker?) {
-        Log.d(DEBUG_TAG, "onMarkerDragStart")
+        vibrate()
         searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, false)
+        refreshStartTime = System.currentTimeMillis()
     }
 
     override fun onMarkerDragEnd(m: Marker?) {
-        Log.d(DEBUG_TAG, "onMarkerDragEnd")
         searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, true)
     }
+
     override fun onMarkerDrag(m: Marker?) {
-        Log.d(DEBUG_TAG, "onMarkerDrag")
-        searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, false)
+        // Only update display the corresponding location on the textField every REFRESH_INTERVAL in order to prevent greater lag while dragging the marker
+        if(System.currentTimeMillis() - refreshStartTime > REFRESH_INTERVAL){
+            searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, false)
+            refreshStartTime = System.currentTimeMillis()
+        }
     }
 
     @SuppressLint("NewApi")
