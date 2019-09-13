@@ -199,13 +199,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             originMarker == null -> {
                 originMarker = map.addMarker(MarkerOptions().title("Origin").position(pos).draggable(true))
                 originMarker?.tag = SearchFragment.MarkerType.Origin
-                searchFragment.updatePosition(SearchFragment.MarkerType.Origin, pos, true)
+                searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Origin, pos)
             }
 
             destinationMarker == null -> {
                 destinationMarker = map.addMarker(MarkerOptions().title("Destination").position(pos).draggable(true))
                 destinationMarker?.tag = SearchFragment.MarkerType.Destination
-                searchFragment.updatePosition(SearchFragment.MarkerType.Destination, pos, true)
+                searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Destination, pos)
             }
 
             else -> {
@@ -330,18 +330,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onMarkerDragStart(m: Marker?) {
         vibrate()
-        searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, false)
-        refreshStartTime = System.currentTimeMillis()
+        searchFragment.startUpdatePosition(m?.tag as SearchFragment.MarkerType, m.position)
     }
 
     override fun onMarkerDragEnd(m: Marker?) {
-        searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, true)
+        searchFragment.endUpdatePosition(m?.tag as SearchFragment.MarkerType, m.position)
     }
 
     override fun onMarkerDrag(m: Marker?) {
         // Only update display the corresponding location on the textField every REFRESH_INTERVAL in order to prevent greater lag while dragging the marker
         if(System.currentTimeMillis() - refreshStartTime > REFRESH_INTERVAL){
-            searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position, false)
+            searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position)
             refreshStartTime = System.currentTimeMillis()
         }
     }

@@ -22,6 +22,7 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
+import kotlinx.android.synthetic.main.custom_textview.view.*
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -97,22 +98,68 @@ class SearchFragment : Fragment(){
         return view
     }
 
-    fun updatePosition(markerType: MarkerType, latLng: LatLng, enableTextview: Boolean){
+    fun startUpdatePosition(markerType: MarkerType, latLng: LatLng){
+        val autocompleteTextview: AutoCompleteTextView
+        when(markerType){
+            MarkerType.Origin -> {
+                originLatLng = latLng
+                autocompleteTextview = origin.autoCompleteTextView
+                originAdapter.ignoreFiltering = true
+            }
+            MarkerType.Destination -> {
+                destinationLatLng = latLng
+                autocompleteTextview = destination.autoCompleteTextView
+                destinationAdapter.ignoreFiltering = true
+            }
+        }
+
+        autocompleteTextview.isEnabled = false
+        autocompleteTextview.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+    }
+
+    fun updatePosition(markerType: MarkerType, latLng: LatLng){
         when(markerType){
             MarkerType.Origin -> {
                 originLatLng = latLng
                 origin.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
-                origin.autoCompleteTextView.setAdapter(if(enableTextview) originAdapter else null)
-                origin.autoCompleteTextView.isEnabled = enableTextview
             }
             MarkerType.Destination -> {
                 destinationLatLng = latLng
                 destination.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
-                destination.autoCompleteTextView.setAdapter(if(enableTextview) destinationAdapter else null)
-                destination.autoCompleteTextView.isEnabled = enableTextview
             }
         }
-        if(enableTextview) findPlaceByLatLng(markerType, latLng)
+    }
+
+    fun endUpdatePosition(markerType: MarkerType, latLng: LatLng){
+        when(markerType){
+            MarkerType.Origin -> {
+                originLatLng = latLng
+                origin.autoCompleteTextView.isEnabled = true
+                origin.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+            }
+            MarkerType.Destination -> {
+                destinationLatLng = latLng
+                destination.autoCompleteTextView.isEnabled = true
+                destination.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+            }
+        }
+        findPlaceByLatLng(markerType, latLng)
+    }
+
+    fun oneTimeUpdatePosition(markerType: MarkerType, latLng: LatLng){
+        when(markerType){
+            MarkerType.Origin -> {
+                originLatLng = latLng
+                originAdapter.ignoreFiltering = true
+                origin.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+            }
+            MarkerType.Destination -> {
+                destinationLatLng = latLng
+                destinationAdapter.ignoreFiltering = true
+                destination.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+            }
+        }
+        findPlaceByLatLng(markerType, latLng)
     }
 
     private fun onTextViewClear(view: View){
@@ -162,12 +209,7 @@ class SearchFragment : Fragment(){
         val title = if(markerType == MarkerType.Origin) "Origin" else "Destination"
 
         when(item.kind){
-            AutocompleteItemModel.ItemKind.CurrentLocation -> {
-                sender.setText(item.currentPlace?.address)
-                drawMarker(markerType, item.currentPlace?.latLng, title)
-            }
             AutocompleteItemModel.ItemKind.AutocompletePrediction -> {// request coordinates from place id
-                sender.setText(item.autocompletePrediction!!.getPrimaryText(null))    // this shows object toString()
                 val fetchPlaceRequest = FetchPlaceRequest.builder(item.autocompletePrediction!!.placeId, PlaceFields)
                         .setSessionToken(AutocompleteSessionToken.newInstance()).build()
                 placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
@@ -175,11 +217,8 @@ class SearchFragment : Fragment(){
                     else Log.d(DEBUG_TAG, "We're having trouble fetching the coordinates from this address, try again later or instead drag the marker")
                 }
             }
-            AutocompleteItemModel.ItemKind.PickLocation -> {
-                sender.setText(" ")
-                drawMarker(markerType, null, title)
-            }
-
+            AutocompleteItemModel.ItemKind.PickLocation -> drawMarker(markerType, null, title)
+            AutocompleteItemModel.ItemKind.CurrentLocation -> drawMarker(markerType, item.currentPlace?.latLng, title)
         }
     }
 
@@ -196,8 +235,8 @@ class SearchFragment : Fragment(){
         (context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
                 .hideSoftInputFromWindow(windowToken,0)
     }
-//nextTask: 1 prevent to start autoComplete query after setting text on the TextView
-    fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
+
+    private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
         if(!::geocoder.isInitialized) geocoder = Geocoder(context, Locale.getDefault())
 
         uiScope.launch {
@@ -206,9 +245,11 @@ class SearchFragment : Fragment(){
                 when(markerType){
                     MarkerType.Origin ->{
                         origin.autoCompleteTextView.setText(address[0].getAddressLine(0))
+                        originAdapter.ignoreFiltering = false
                     }
                     MarkerType.Destination ->{
                         destination.autoCompleteTextView.setText(address[0].getAddressLine(0))
+                        destinationAdapter.ignoreFiltering = false
                     }
                 }
             }

@@ -43,6 +43,7 @@ class AutoCompleteAdapter (context: Context,
 
     private val characterStyle = StyleSpan(Typeface.BOLD)
     private var resultsList: ArrayList<AutocompleteItemModel> = ArrayList()
+    var ignoreFiltering = false
 
     init {
         if(stickyRow != null && stickyRow == AutocompleteItemModel.ItemKind.CurrentLocation)
@@ -94,7 +95,7 @@ class AutoCompleteAdapter (context: Context,
                 val results = FilterResults()
                 var filterData: MutableList<AutocompletePrediction>? = null
 
-                if(constraint != null)
+                if(constraint != null && !ignoreFiltering)
                     filterData = getAutocomplete(constraint.toString())
 
                 results.values = filterData
@@ -113,12 +114,15 @@ class AutoCompleteAdapter (context: Context,
                 notifyDataSetChanged()
             }
 
-            override fun convertResultToString(resultValue: Any?): CharSequence  =
-                    if(resultValue is AutocompletePrediction)
-                        resultValue.getFullText(null)
-                    else
-                        super.convertResultToString(resultValue)
-
+            override fun convertResultToString(resultValue: Any?): CharSequence {
+                if (resultValue is AutocompleteItemModel)
+                    return when (resultValue.kind){
+                        AutocompleteItemModel.ItemKind.AutocompletePrediction -> resultValue.autocompletePrediction?.getFullText(null) ?: ""
+                        AutocompleteItemModel.ItemKind.CurrentLocation -> resultValue.secondaryText
+                        AutocompleteItemModel.ItemKind.PickLocation -> " "
+                    }
+                    return super.convertResultToString(resultValue)
+            }
         }
     }
 
