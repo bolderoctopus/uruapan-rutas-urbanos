@@ -98,20 +98,18 @@ class SearchFragment : Fragment(){
     }
 
     fun startUpdatePosition(markerType: MarkerType, latLng: LatLng){
+        ignoreFiltering(true)
         val autocompleteTextview: AutoCompleteTextView
         when(markerType){
             MarkerType.Origin -> {
                 originLatLng = latLng
                 autocompleteTextview = origin.autoCompleteTextView
-                originAdapter.ignoreFiltering = true
             }
             MarkerType.Destination -> {
                 destinationLatLng = latLng
                 autocompleteTextview = destination.autoCompleteTextView
-                destinationAdapter.ignoreFiltering = true
             }
         }
-
         autocompleteTextview.isEnabled = false
         autocompleteTextview.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
     }
@@ -146,15 +144,14 @@ class SearchFragment : Fragment(){
     }
 
     fun oneTimeUpdatePosition(markerType: MarkerType, latLng: LatLng){
+        ignoreFiltering(true)
         when(markerType){
             MarkerType.Origin -> {
                 originLatLng = latLng
-                originAdapter.ignoreFiltering = true
                 origin.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
             }
             MarkerType.Destination -> {
                 destinationLatLng = latLng
-                destinationAdapter.ignoreFiltering = true
                 destination.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
             }
         }
@@ -243,19 +240,12 @@ class SearchFragment : Fragment(){
 
         uiScope.launch {
             val addresses: List<Address>? = async(Dispatchers.IO) { geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)}.await()
-            if(!addresses.isNullOrEmpty()){
+            if(!addresses.isNullOrEmpty())
                 when(markerType){
-                    MarkerType.Origin ->{
-                        origin.autoCompleteTextView.setText(getShortAddress(addresses[0]))
-                        originAdapter.ignoreFiltering = false
-                    }
-                    MarkerType.Destination ->{
-                        destination.autoCompleteTextView.setText(getShortAddress(addresses[0]))
-                        destinationAdapter.ignoreFiltering = false
-                    }
+                    MarkerType.Origin -> origin.autoCompleteTextView.setText(getShortAddress(addresses[0]))
+                    MarkerType.Destination -> destination.autoCompleteTextView.setText(getShortAddress(addresses[0]))
                 }
-            }
-            // do not ignore filtering, reset it here instead of up
+            ignoreFiltering(false)
         }
     }
 
@@ -275,7 +265,8 @@ class SearchFragment : Fragment(){
     }
 
     private fun ignoreFiltering(ignore: Boolean){
-        // todo: try refactor this
+        originAdapter.ignoreFiltering = ignore
+        destinationAdapter.ignoreFiltering = ignore
     }
 
     enum class MarkerType {
