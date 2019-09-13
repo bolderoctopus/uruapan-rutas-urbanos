@@ -46,6 +46,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 * [x] offer "Pick current location"
 * [x] update address after marker drag
 * [] when moving the map, do so taking into cosideration the part of it thats visible
+* [] nextTask: prevent markers from being dragged outside city bounds
 
 
     [] improve color palette

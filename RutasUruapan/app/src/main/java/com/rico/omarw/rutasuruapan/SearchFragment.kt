@@ -22,7 +22,6 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
-import kotlinx.android.synthetic.main.custom_textview.view.*
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -204,6 +203,9 @@ class SearchFragment : Fragment(){
 
     //nextTask: 2 format the address: looks different when is currentLocation, see note (it has to do with the to string method on the model)
     // suggested format for address: street name + colonia? no number?
+    // [] current location: on adapter and textView
+    // [] autocompletePrediction: adapter and textView
+    // [x] pick location from map
     private fun autoCompleteItemClick(sender: AutoCompleteTextView, item: AutocompleteItemModel){
         val markerType = sender.tag as MarkerType
         val title = if(markerType == MarkerType.Origin) "Origin" else "Destination"
@@ -240,20 +242,40 @@ class SearchFragment : Fragment(){
         if(!::geocoder.isInitialized) geocoder = Geocoder(context, Locale.getDefault())
 
         uiScope.launch {
-            val address: List<Address>? = async(Dispatchers.IO) { geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)}.await()
-            if(!address.isNullOrEmpty() && address[0].maxAddressLineIndex > -1){
+            val addresses: List<Address>? = async(Dispatchers.IO) { geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)}.await()
+            if(!addresses.isNullOrEmpty()){
                 when(markerType){
                     MarkerType.Origin ->{
-                        origin.autoCompleteTextView.setText(address[0].getAddressLine(0))
+                        origin.autoCompleteTextView.setText(getShortAddress(addresses[0]))
                         originAdapter.ignoreFiltering = false
                     }
                     MarkerType.Destination ->{
-                        destination.autoCompleteTextView.setText(address[0].getAddressLine(0))
+                        destination.autoCompleteTextView.setText(getShortAddress(addresses[0]))
                         destinationAdapter.ignoreFiltering = false
                     }
                 }
             }
+            // do not ignore filtering, reset it here instead of up
         }
+    }
+
+    private fun getShortAddress(address: Address): String{
+        // use featureName if it's not the street number
+        return if(address.featureName != address.subThoroughfare)
+            address.featureName
+        // use coords if street + subLocality are null or street + postalCode are null
+        else if(address.thoroughfare == null || (address.subLocality == null || address.postalCode == null ))
+            getString(R.string.lat_lng, address.latitude, address.longitude)
+        // use street + subLocality if it's not "Colonia"
+        else if(address.subLocality != "Colonia")
+            address.thoroughfare + ", " + address.subLocality
+        // use street + postalCode
+        else
+            address.thoroughfare + ", " + address.postalCode
+    }
+
+    private fun ignoreFiltering(ignore: Boolean){
+        // todo: try refactor this
     }
 
     enum class MarkerType {
