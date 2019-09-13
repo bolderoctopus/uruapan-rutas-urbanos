@@ -97,6 +97,21 @@ class SearchFragment : Fragment(){
         return view
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnFragmentInteractionListener) {
+            listener = context
+        } else {
+            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
+        }
+    }
+
+    override fun onDetach() {
+        uiScope.cancel()
+        listener = null
+        super.onDetach()
+    }
+
     fun startUpdatePosition(markerType: MarkerType, latLng: LatLng){
         ignoreFiltering(true)
         val autocompleteTextview: AutoCompleteTextView
@@ -158,46 +173,6 @@ class SearchFragment : Fragment(){
         findPlaceByLatLng(markerType, latLng)
     }
 
-    private fun onTextViewClear(view: View){
-        when(view.id){
-            R.id.custom_actv_origin -> {
-                listener?.clearMarker(MarkerType.Origin)
-                originLatLng = null
-            }
-            R.id.custom_actv_destination -> {
-                listener?.clearMarker(MarkerType.Destination)
-                destinationLatLng = null
-            }
-        }
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
-        }
-    }
-
-    override fun onDetach() {
-        uiScope.cancel()
-        listener = null
-        super.onDetach()
-    }
-
-    private fun search(){
-        if(originLatLng == null){
-            origin.autoCompleteTextView.error = "You must pick a place"
-        }
-        else if (destinationLatLng == null) {
-            destination.autoCompleteTextView.error = "You must pick a place"
-        }
-        else {
-            listener?.onSearch(originLatLng!!, destinationLatLng!!)
-        }
-    }
-
     //nextTask: 2 format the address: looks different when is currentLocation, see note (it has to do with the to string method on the model)
     // suggested format for address: street name + colonia? no number?
     // [] current location: on adapter and textView
@@ -219,20 +194,6 @@ class SearchFragment : Fragment(){
             AutocompleteItemModel.ItemKind.PickLocation -> drawMarker(markerType, null, title)
             AutocompleteItemModel.ItemKind.CurrentLocation -> drawMarker(markerType, item.currentPlace?.latLng, title)
         }
-    }
-
-    private fun drawMarker(markerType: MarkerType, latLng: LatLng?, title: String){
-        if(markerType == MarkerType.Origin)
-            originLatLng = latLng
-        else
-            destinationLatLng = latLng
-
-        listener?.drawMarker(latLng, title, markerType)
-    }
-
-    private fun hideKeyboard(windowToken: IBinder){
-        (context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                .hideSoftInputFromWindow(windowToken,0)
     }
 
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
@@ -262,6 +223,45 @@ class SearchFragment : Fragment(){
         // use street + postalCode
         else
             address.thoroughfare + ", " + address.postalCode
+    }
+
+    private fun onTextViewClear(view: View){
+        when(view.id){
+            R.id.custom_actv_origin -> {
+                listener?.clearMarker(MarkerType.Origin)
+                originLatLng = null
+            }
+            R.id.custom_actv_destination -> {
+                listener?.clearMarker(MarkerType.Destination)
+                destinationLatLng = null
+            }
+        }
+    }
+
+    private fun search(){
+        if(originLatLng == null){
+            origin.autoCompleteTextView.error = "You must pick a place"
+        }
+        else if (destinationLatLng == null) {
+            destination.autoCompleteTextView.error = "You must pick a place"
+        }
+        else {
+            listener?.onSearch(originLatLng!!, destinationLatLng!!)
+        }
+    }
+
+    private fun drawMarker(markerType: MarkerType, latLng: LatLng?, title: String){
+        if(markerType == MarkerType.Origin)
+            originLatLng = latLng
+        else
+            destinationLatLng = latLng
+
+        listener?.drawMarker(latLng, title, markerType)
+    }
+
+    private fun hideKeyboard(windowToken: IBinder){
+        (context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .hideSoftInputFromWindow(windowToken,0)
     }
 
     private fun ignoreFiltering(ignore: Boolean){
