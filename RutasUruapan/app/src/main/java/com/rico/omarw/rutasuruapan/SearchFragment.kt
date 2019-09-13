@@ -70,7 +70,7 @@ class SearchFragment : Fragment(){
                 Log.e(DEBUG_TAG, error.message)
             }
         }
-        // nextTask:3 add "Pick location from map" to origin adapter so that itll show both current location and pick location
+
         origin.autoCompleteTextView.setOnClickListener {origin.autoCompleteTextView.showDropDown()}
         origin.autoCompleteTextView.setOnItemClickListener{ parent, _, position, id ->
             val item = originAdapter.getItem(position)
@@ -86,8 +86,8 @@ class SearchFragment : Fragment(){
         }
 
         if(context != null){
-            originAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, AutocompleteItemModel.ItemKind.CurrentLocation)
-            destinationAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, AutocompleteItemModel.ItemKind.PickLocation)
+            originAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, includeCurrentLocation = true, includePickLocation = true)
+            destinationAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, includeCurrentLocation = false, includePickLocation = true)
             destination.autoCompleteTextView.setAdapter(destinationAdapter)
             origin.autoCompleteTextView.setAdapter(originAdapter)
         }

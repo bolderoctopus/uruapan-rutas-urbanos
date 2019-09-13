@@ -24,7 +24,8 @@ import java.util.concurrent.TimeUnit
 class AutoCompleteAdapter (context: Context,
                            private val placesClient: PlacesClient,
                            private val bounds: RectangularBounds,
-                           stickyRow: AutocompleteItemModel.ItemKind? = null)
+                           includeCurrentLocation: Boolean,
+                           includePickLocation: Boolean)
     : ArrayAdapter<AutocompleteItemModel>(context, R.layout.current_location_list_item, android.R.id.text1),
     Filterable{
     /*todo:
@@ -46,12 +47,10 @@ class AutoCompleteAdapter (context: Context,
     var ignoreFiltering = false
 
     init {
-        if(stickyRow != null && stickyRow == AutocompleteItemModel.ItemKind.CurrentLocation)
+        if(includeCurrentLocation)
             getCurrentPlace()
-        else if(stickyRow != null && stickyRow == AutocompleteItemModel.ItemKind.PickLocation)
-        {
+         if(includePickLocation)
             resultsList.add(AutocompleteItemModel(AutocompleteItemModel.ItemKind.PickLocation, "Pick location from map", "Adjust by dragging the marker"))
-        }
     }
 
     override fun getCount() =  resultsList.size
