@@ -116,7 +116,7 @@ class AutoCompleteAdapter (context: Context,
             override fun convertResultToString(resultValue: Any?): CharSequence {
                 if (resultValue is AutocompleteItemModel)
                     return when (resultValue.kind){
-                        AutocompleteItemModel.ItemKind.AutocompletePrediction -> resultValue.autocompletePrediction?.getFullText(null) ?: ""
+                        AutocompleteItemModel.ItemKind.AutocompletePrediction -> resultValue.primaryText
                         AutocompleteItemModel.ItemKind.CurrentLocation -> resultValue.secondaryText
                         AutocompleteItemModel.ItemKind.PickLocation -> " "
                     }
@@ -130,7 +130,7 @@ class AutoCompleteAdapter (context: Context,
         val request = FindAutocompletePredictionsRequest.builder()
                 .setLocationRestriction(bounds)
                 .setCountry("mx")
-                .setTypeFilter(TypeFilter.ADDRESS)
+                .setTypeFilter(TypeFilter.GEOCODE)
                 .setSessionToken(AutocompleteSessionToken.newInstance())
                 .setQuery(query)
                 .build()
