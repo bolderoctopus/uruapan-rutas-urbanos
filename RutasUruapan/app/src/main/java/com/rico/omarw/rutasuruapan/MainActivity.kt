@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
+import android.location.Location
 import android.os.*
 import android.util.Log
 import android.view.MenuItem
@@ -13,6 +14,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.solver.widgets.Rectangle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -21,6 +23,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
@@ -45,8 +48,8 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 *
 * [x] offer "Pick current location"
 * [x] update address after marker drag
-* [] when moving the map, do so taking into cosideration the part of it thats visible
-* [] nextTask: prevent markers from being dragged outside city bounds
+* [] when moving the map's camera, do so taking into cosideration the part of it thats visible
+* [x] prevent markers from being drwan outside bounds
 * [x] show addresses with the same format
 
 
@@ -108,6 +111,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var slideIndicator: ImageView
     private var refreshStartTime: Long = 0
     private val REFRESH_INTERVAL: Int = 300// in milliseconds
+    private lateinit var startMarkerPosition: LatLng
 
     //todo: to delete
     private lateinit var controlPanel: ControlPanelFragment
@@ -195,8 +199,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return rectangle.top
     }
 
+    private fun showOutOfBoundsError(){
+        Toast.makeText(this, "position outside uruapan bounds", Toast.LENGTH_SHORT).show()
+    }
+
     override fun onMapLongClick(pos: LatLng){
         vibrate()
+        if(!SearchFragment.uruapanLatLngBounds.contains(pos)){
+            showOutOfBoundsError()
+            return
+        }
         when {
             originMarker == null -> {
                 originMarker = map.addMarker(MarkerOptions().title("Origin").position(pos).draggable(true))
@@ -263,7 +275,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             route.showLines(route.isDrawed.not())
 
         }else{
-            AsyncTask.execute {
+            AsyncTask.execute {//todo replace with coroutine
                 val color = Color.parseColor(route.color)
                 val arrowCap = getEndCapArrow(color)
                 val points = AppDatabase.getInstance(this)?.routesDAO()?.getPointsFrom( route.id)
@@ -331,12 +343,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onMarkerDragStart(m: Marker?) {
+        if(m == null) return
         vibrate()
-        searchFragment.startUpdatePosition(m?.tag as SearchFragment.MarkerType, m.position)
+        startMarkerPosition = m.position
+        searchFragment.startUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
     }
 
     override fun onMarkerDragEnd(m: Marker?) {
-        searchFragment.endUpdatePosition(m?.tag as SearchFragment.MarkerType, m.position)
+        if(m == null) return
+        if(SearchFragment.uruapanLatLngBounds.contains(m.position))
+            searchFragment.endUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
+        else{
+            showOutOfBoundsError()
+            m.position = startMarkerPosition
+            searchFragment.endUpdatePosition(m.tag as SearchFragment.MarkerType, startMarkerPosition)
+        }
     }
 
     override fun onMarkerDrag(m: Marker?) {

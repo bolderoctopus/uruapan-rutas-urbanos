@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.AutoCompleteTextView
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.Place
@@ -267,6 +268,9 @@ class SearchFragment : Fragment(){
                 LatLng(19.367936, -102.098275),
                 LatLng(19.478144, -101.993454)
         )
+        val uruapanLatLngBounds = LatLngBounds(
+                uruapanBounds.southwest,
+                uruapanBounds.northeast)
         @JvmStatic
         fun newInstance() = SearchFragment().apply {
 //            enterTransition = androidx.transition.Explode()
