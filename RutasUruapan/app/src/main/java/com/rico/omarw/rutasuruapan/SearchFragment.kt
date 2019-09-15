@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.AutoCompleteTextView
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
@@ -23,6 +24,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
 import kotlinx.coroutines.*
+import java.text.DecimalFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -36,10 +38,7 @@ class SearchFragment : Fragment(){
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var originAdapter: AutoCompleteAdapter
     private lateinit var destinationAdapter: AutoCompleteAdapter
-    private val uruapanBounds = RectangularBounds.newInstance(
-            LatLng(19.367936, -102.098275),
-            LatLng(19.478144, -101.993454)
-    )
+
     private lateinit var geocoder: Geocoder
     private var uiScope = CoroutineScope(Dispatchers.Main)
 
@@ -85,8 +84,9 @@ class SearchFragment : Fragment(){
         }
 
         if(context != null){
-            originAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, includeCurrentLocation = true, includePickLocation = true)
-            destinationAdapter = AutoCompleteAdapter(context!!, placesClient, uruapanBounds, includeCurrentLocation = false, includePickLocation = true)
+            val locationClient = LocationServices.getFusedLocationProviderClient(context!!)
+            originAdapter = AutoCompleteAdapter(context!!, uiScope, locationClient, placesClient, uruapanBounds, includeCurrentLocation = true, includePickLocation = true)
+            destinationAdapter = AutoCompleteAdapter(context!!, uiScope, locationClient, placesClient, uruapanBounds, includeCurrentLocation = false, includePickLocation = true)
             destination.autoCompleteTextView.setAdapter(destinationAdapter)
             origin.autoCompleteTextView.setAdapter(originAdapter)
         }
@@ -107,6 +107,7 @@ class SearchFragment : Fragment(){
     }
 
     override fun onDetach() {
+        Log.d(DEBUG_TAG, "cancelling coroutines")
         uiScope.cancel()
         listener = null
         super.onDetach()
@@ -173,11 +174,6 @@ class SearchFragment : Fragment(){
         findPlaceByLatLng(markerType, latLng)
     }
 
-    //nextTask: 2 format the address: looks different when is currentLocation, see note (it has to do with the to string method on the model)
-    // suggested format for address: street name + colonia? no number?
-    // [] current location: on adapter and textView
-    // [] autocompletePrediction: adapter and textView
-    // [x] pick location from map
     private fun autoCompleteItemClick(sender: AutoCompleteTextView, item: AutocompleteItemModel){
         val markerType = sender.tag as MarkerType
         val title = if(markerType == MarkerType.Origin) "Origin" else "Destination"
@@ -192,7 +188,7 @@ class SearchFragment : Fragment(){
                 }
             }
             AutocompleteItemModel.ItemKind.PickLocation -> drawMarker(markerType, null, title)
-            AutocompleteItemModel.ItemKind.CurrentLocation -> drawMarker(markerType, item.currentPlace?.latLng, title)
+            AutocompleteItemModel.ItemKind.CurrentLocation -> drawMarker(markerType, item.currentLatLng, title)
         }
     }
 
@@ -208,21 +204,6 @@ class SearchFragment : Fragment(){
                 }
             ignoreFiltering(false)
         }
-    }
-
-    private fun getShortAddress(address: Address): String{
-        // use featureName if it's not the street number
-        return if(address.featureName != address.subThoroughfare)
-            address.featureName
-        // use coords if street + subLocality are null or street + postalCode are null
-        else if(address.thoroughfare == null || (address.subLocality == null || address.postalCode == null ))
-            getString(R.string.lat_lng, address.latitude, address.longitude)
-        // use street + subLocality if it's not "Colonia"
-        else if(address.subLocality != "Colonia")
-            address.thoroughfare + ", " + address.subLocality
-        // use street + postalCode
-        else
-            address.thoroughfare + ", " + address.postalCode
     }
 
     private fun onTextViewClear(view: View){
@@ -282,6 +263,10 @@ class SearchFragment : Fragment(){
     }
     companion object {
         const val TAG = "SearchFragment"
+        val uruapanBounds = RectangularBounds.newInstance(
+                LatLng(19.367936, -102.098275),
+                LatLng(19.478144, -101.993454)
+        )
         @JvmStatic
         fun newInstance() = SearchFragment().apply {
 //            enterTransition = androidx.transition.Explode()
@@ -291,6 +276,23 @@ class SearchFragment : Fragment(){
         val PlaceFields = ArrayList<Place.Field>().apply{
             add(Place.Field.ADDRESS)
             add(Place.Field.LAT_LNG)
+        }
+
+        private val decimalFormat = DecimalFormat("#.#####")
+
+        fun getShortAddress(address: Address): String{
+            // use featureName if it's not the street number
+            return if(address.featureName != address.subThoroughfare)
+                address.featureName
+            // use coords if street + subLocality are null or street + postalCode are null
+            else if(address.thoroughfare == null || (address.subLocality == null || address.postalCode == null ))
+                decimalFormat.format(address.latitude) + ", " + decimalFormat.format(address.longitude)
+            // use street + subLocality if it's not "Colonia"
+            else if(address.subLocality != "Colonia")
+                address.thoroughfare + ", " + address.subLocality
+            // use street + postalCode
+            else
+                address.thoroughfare + ", " + address.postalCode
         }
     }
 }

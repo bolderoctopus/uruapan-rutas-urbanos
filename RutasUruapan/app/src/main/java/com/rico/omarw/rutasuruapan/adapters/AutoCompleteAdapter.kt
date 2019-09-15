@@ -1,27 +1,35 @@
 package com.rico.omarw.rutasuruapan.adapters
 
+import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Typeface
+import android.location.Geocoder
 import android.text.style.StyleSpan
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Tasks
-import com.google.android.libraries.places.api.model.*
+import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken
+import com.google.android.libraries.places.api.model.RectangularBounds
+import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
-import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.rico.omarw.rutasuruapan.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.R
 import com.rico.omarw.rutasuruapan.SearchFragment
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
-import java.lang.Exception
+import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
 class AutoCompleteAdapter (context: Context,
+                           private val coroutineScope: CoroutineScope,
+                           private val locationClient: FusedLocationProviderClient,
                            private val placesClient: PlacesClient,
                            private val bounds: RectangularBounds,
                            includeCurrentLocation: Boolean,
@@ -41,14 +49,13 @@ class AutoCompleteAdapter (context: Context,
         AutocompletePrediction (1),
         PickLocation(2)
     }
-
     private val characterStyle = StyleSpan(Typeface.BOLD)
     private var resultsList: ArrayList<AutocompleteItemModel> = ArrayList()
     var ignoreFiltering = false
 
     init {
         if(includeCurrentLocation)
-            getCurrentPlace()
+            getCurrentLocation()
          if(includePickLocation)
             resultsList.add(AutocompleteItemModel(AutocompleteItemModel.ItemKind.PickLocation, "Pick location from map", "Adjust by dragging the marker"))
     }
@@ -82,7 +89,7 @@ class AutoCompleteAdapter (context: Context,
 
         row.findViewById<TextView>(android.R.id.text1).text = prediction.autocompletePrediction?.getPrimaryText(characterStyle) ?: prediction.primaryText
         row.findViewById<TextView>(android.R.id.text2).text = prediction.autocompletePrediction?.getSecondaryText(characterStyle) ?: prediction.secondaryText
-        row.findViewById<TextView>(R.id.textview_google).visibility = if(position == 0 && count > 1) View.VISIBLE else View.GONE
+        row.findViewById<TextView>(R.id.textview_google).visibility = if(position == 0 && count > 1) View.VISIBLE else View.GONE // todo: remove powered by google when its origin adapter
 
         return row
     }
@@ -125,6 +132,7 @@ class AutoCompleteAdapter (context: Context,
         }
     }
 
+    // This function runs on the background when called by Filter
     private fun getAutocomplete(query: String): MutableList<AutocompletePrediction>?{
         Log.d(DEBUG_TAG, "Starting autocomplete query for: $query")
         val request = FindAutocompletePredictionsRequest.builder()
@@ -145,19 +153,19 @@ class AutoCompleteAdapter (context: Context,
 
     }
 
-    private fun getCurrentPlace(){
-        if(ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            return
-
-        val request = FindCurrentPlaceRequest.builder(SearchFragment.PlaceFields).build()
-        placesClient.findCurrentPlace(request).addOnCompleteListener{
-            if(it.isSuccessful && it.result != null){
-                resultsList.add(0, AutocompleteItemModel(AutocompleteItemModel.ItemKind.CurrentLocation, "Usar ubicación actual", it.result!!.placeLikelihoods[0].place.address!!, null, it.result!!.placeLikelihoods[0].place))
-                notifyDataSetChanged()
-            }else{
-                Log.d(DEBUG_TAG, "couldnt find current place")
-                if(it.exception != null)
-                    Log.d(DEBUG_TAG, "exception", it.exception)
+    private fun getCurrentLocation(){
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+        coroutineScope.launch {
+            try {
+                val location = withContext(Dispatchers.IO) { Tasks.await(locationClient.lastLocation) }
+                val address = withContext(Dispatchers.IO) { Geocoder(context).getFromLocation(location.latitude, location.longitude, 1) }
+                if(!address.isNullOrEmpty()){
+                    resultsList.add(0, AutocompleteItemModel(AutocompleteItemModel.ItemKind.CurrentLocation, "Usar ubicación actual",
+                            SearchFragment.getShortAddress(address[0]), null, LatLng(address[0].latitude, address[0].longitude)))
+                    notifyDataSetChanged()
+                }
+            }catch (exception: Exception) {
+                Log.e(DEBUG_TAG, "Unable to find current location.", exception)
             }
         }
     }

@@ -47,6 +47,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 * [x] update address after marker drag
 * [] when moving the map, do so taking into cosideration the part of it thats visible
 * [] nextTask: prevent markers from being dragged outside city bounds
+* [x] show addresses with the same format
 
 
     [] improve color palette
