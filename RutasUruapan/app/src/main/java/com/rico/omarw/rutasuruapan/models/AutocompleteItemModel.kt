@@ -17,7 +17,7 @@ data class AutocompleteItemModel(
     }
 
     constructor(autocompletePrediction: AutocompletePrediction):
-            this(ItemKind.AutocompletePrediction, autocompletePrediction.getPrimaryText(null).toString(), autocompletePrediction.getSecondaryText(null).toString(), null)
+            this(ItemKind.AutocompletePrediction, autocompletePrediction.getPrimaryText(null).toString(), autocompletePrediction.getSecondaryText(null).toString(), autocompletePrediction, null)
 
     override fun toString(): String = primaryText
 
