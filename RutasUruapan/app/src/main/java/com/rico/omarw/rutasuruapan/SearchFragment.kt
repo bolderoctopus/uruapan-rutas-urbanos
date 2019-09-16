@@ -254,6 +254,14 @@ class SearchFragment : Fragment(){
         destinationAdapter.ignoreFiltering = ignore
     }
 
+    fun clearInputs(){
+        originLatLng = null
+        destinationLatLng = null
+        origin.autoCompleteTextView.setText("")
+        destination.autoCompleteTextView.setText("")
+    }
+
+
     enum class MarkerType {
         Origin,
         Destination

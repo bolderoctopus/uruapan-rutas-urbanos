@@ -39,47 +39,38 @@ import java.lang.Runnable
 * [] update algorithm, take into consideration direction
 * [] improve function walkingDistanceToDest, take into consideration buildings
 *
-* [] id think the app crashes if its starting but the screen is blocked
+* [] when the phone is blocked and the app starts, the AllRoutesFragment has 0 height
 * [] draw only the relevant part of the route?
 * [x] if available, use current location as origin
 * [] sort resulting routes
 * [x] improve origin/destination looks
-* [...] overall design
+* [x] overall design
 * [] add settings
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
 * [x] replace Asynctasks with coroutines
-*
 * [x] offer "Pick current location"
 * [x] update address after marker drag
-* [] when moving the map's camera, do so taking into cosideration the part of it thats visible
-* [x] prevent markers from being drwan outside bounds
+* [] when moving the map's camera, do so taking into consideration the part of it that's visible
+* [x] prevent markers from being drawn outside bounds
 * [x] show addresses with the same format
-
-
-    [] improve color palette
-    [x] size of searchFragment, fab touches the destination
-    [x] check the shadow of the fab
-    [x] add drag up indicator, (small view on top of the sliding panel)
-    [x] fix menu selection thing
-    [] set fragment transitions between seach and results
-    [x] code origyn & destination textBoxes
-        [x] design and choose functionality
-        [x] clear button
-        [x] google maps suggestions
-        [x] use actual location in suggestions
-        [x] create markers
-    [] fragments lose state
-    [x] switch scroll view when the thing changes
-    [x] fix issues when keyboard is shown
-        [x] it hides the recyclerview from allRoutesFragment
-        [x] more space between the dropdwn in the autocompleteTextView and the editTExt
-    [x] implement ResultsFragment
-        [x] validate before search that markers exist
-        [x] pass info to onSearch
-        [x] decide where to find route
-        [x] display results in resultsFragment
- */
+* [] improve color palette
+* [x] size of searchFragment, fab touches the destination
+* [x] check the shadow of the fab
+* [x] add drag up indicator, (small view on top of the sliding panel)
+* [x] fix menu selection thing
+* [] set fragment transitions between search and results
+* [x] code origin & destination textBoxes
+* [] fragments lose state
+* [x] switch scroll view when the thing changes
+* [x] fix issues when keyboard is shown
+* [x] implement ResultsFragment
+* [] if current location wasn't used in origin offer it at destination
+* [] improve looks of the textviews, show a more meaningful hint
+* [] nextTask: onSearch: move camera to focus both markers, also if a marker is added
+* [] improve looks of outside of bounds error, possible create custom Toast
+* [] settings: add how many results to show?
+*/
 
 
 
@@ -222,21 +213,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 originMarker?.tag = SearchFragment.MarkerType.Origin
                 searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Origin, pos)
             }
-
             destinationMarker == null -> {
                 destinationMarker = map.addMarker(MarkerOptions().title("Destination").position(pos).draggable(true))
                 destinationMarker?.tag = SearchFragment.MarkerType.Destination
                 searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Destination, pos)
             }
-
-            else -> {
-                //todo: what to do if both markers are already there?
-//                originMarker?.isVisible = false
-//                destinationMarker?.isVisible = false
-//                originMarker = null
-//                destinationMarker = null
-//                originSquare?.remove()
-//                destinationSquare?.remove()
+            else -> {// remove both
+                clearMarker(SearchFragment.MarkerType.Origin)
+                clearMarker(SearchFragment.MarkerType.Destination)
+                searchFragment.clearInputs()
             }
         }
 

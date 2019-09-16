@@ -107,7 +107,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
                 if(routesNearDest.await().isNullOrEmpty() || routesNearOrigin.await().isNullOrEmpty()) continue
                 mutualRoutes = routesNearOrigin.await()!!.intersect(routesNearDest.await()!!)
-                if(mutualRoutes.size > MAX_AMOUNT_ROUTES) break //todo: seems to not be working
+                if(mutualRoutes.size > MAX_AMOUNT_ROUTES) break
             }
 
             val results = arrayListOf<RouteModel>()
