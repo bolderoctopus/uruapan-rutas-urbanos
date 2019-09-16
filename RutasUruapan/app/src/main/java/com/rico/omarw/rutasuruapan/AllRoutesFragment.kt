@@ -2,22 +2,18 @@ package com.rico.omarw.rutasuruapan
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.SearchView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
-import java.lang.Runnable
-import kotlin.Comparator
 
 
 class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener{
@@ -66,7 +62,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         onViewCreated = null
 
         uiScope.launch {
-            val routes = async (Dispatchers.IO){getRoutes()}.await()
+            val routes = withContext(Dispatchers.IO) {getRoutes()}
             setAdapterRoutes(routes)
         }
 

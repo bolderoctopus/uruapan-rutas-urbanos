@@ -28,6 +28,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import kotlinx.coroutines.*
+import java.lang.Runnable
 
 //todo: see below
 /*
@@ -44,7 +46,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 * [] add settings
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
-* [...] replace Asynctasks with coroutines
+* [x] replace Asynctasks with coroutines
 *
 * [x] offer "Pick current location"
 * [x] update address after marker drag
@@ -112,9 +114,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var refreshStartTime: Long = 0
     private val REFRESH_INTERVAL: Int = 300// in milliseconds
     private lateinit var startMarkerPosition: LatLng
-
-    //todo: to delete
-    private lateinit var controlPanel: ControlPanelFragment
+    private var uiScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,6 +148,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             allRoutesFragment = AllRoutesFragment.newInstance(height)
 //            resultsFragment = ResultsFragment.newInstance(height)
         }
+    }
+
+    override fun onDestroy() {
+        uiScope.cancel()
+        super.onDestroy()
     }
 
     private fun getFragmentHeight(): Int = if(searchFragment.view == null) 500 else searchFragment.view!!.height
@@ -230,7 +235,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 //                destinationMarker = null
 //                originSquare?.remove()
 //                destinationSquare?.remove()
-//                controlPanel.clearRoutes()
             }
         }
 
@@ -275,24 +279,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             route.showLines(route.isDrawed.not())
 
         }else{
-            AsyncTask.execute {//todo replace with coroutine
+            uiScope.launch {
                 val color = Color.parseColor(route.color)
                 val arrowCap = getEndCapArrow(color)
-                val points = AppDatabase.getInstance(this)?.routesDAO()?.getPointsFrom( route.id)
+                val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)}
                 val polylineOptions = PolylineOptions()
                 val arrowPolylineOptions = ArrayList<PolylineOptions>()
-
                 polylineOptions
                         .color(color)
                         .width(LINE_WIDTH)
                         .jointType(JointType.ROUND)
-
                 var counter = 0
+                // Add small polylines with arrow caps in order to show the direction
                 for(x in 0 until (points?.size ?: 0)){
                     val point = points!![x]
-
                     polylineOptions.add(LatLng(point.lat, point.lng))
-
                     if(counter == 0 && arrowCap != null){
                         counter = DIRECTIONAL_ARROWS_STEP
                         if(x + 1 < points.size)
@@ -302,20 +303,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                                     .add(LatLng(point.lat, point.lng), LatLng(points[x+1].lat, points[x+1].lng)))
 
                     }
-
                     counter--
                 }
-
-                runOnUiThread{
-                    route.polyline = map.addPolyline(polylineOptions)
-                    route.arrowPolylines = ArrayList<Polyline>()
-                    arrowPolylineOptions.forEach {
-                        route.arrowPolylines?.add(map.addPolyline(it))
-                    }
-                    route.isDrawed = true
-
-                    Log.d(DEBUG_TAG, "\npoints in route: ${points?.size} \narrows drawn: ${arrowPolylineOptions.size}")
+                route.polyline = map.addPolyline(polylineOptions)
+                route.arrowPolylines = ArrayList()
+                arrowPolylineOptions.forEach {
+                    route.arrowPolylines?.add(map.addPolyline(it))
                 }
+                route.isDrawed = true
+                Log.d(DEBUG_TAG, "\npoints in route: ${points?.size} \narrows drawn: ${arrowPolylineOptions.size}")
             }
         }
     }

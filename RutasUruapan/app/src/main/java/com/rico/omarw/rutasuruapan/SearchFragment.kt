@@ -6,12 +6,12 @@ import android.location.Geocoder
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.AutoCompleteTextView
+import androidx.fragment.app.Fragment
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -197,7 +197,7 @@ class SearchFragment : Fragment(){
         if(!::geocoder.isInitialized) geocoder = Geocoder(context, Locale.getDefault())
 
         uiScope.launch {
-            val addresses: List<Address>? = async(Dispatchers.IO) { geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)}.await()
+            val addresses: List<Address>? = withContext(Dispatchers.IO) {geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)}
             if(!addresses.isNullOrEmpty())
                 when(markerType){
                     MarkerType.Origin -> origin.autoCompleteTextView.setText(getShortAddress(addresses[0]))
