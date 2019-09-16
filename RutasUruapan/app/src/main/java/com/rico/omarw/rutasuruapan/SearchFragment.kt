@@ -199,12 +199,14 @@ class SearchFragment : Fragment(){
 
         uiScope.launch {
             val addresses: List<Address>? = withContext(Dispatchers.IO) {geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)}
+            Log.d(DEBUG_TAG, "setting textView text to ${getShortAddress(addresses!![0])}")
             if(!addresses.isNullOrEmpty())
                 when(markerType){
                     MarkerType.Origin -> origin.autoCompleteTextView.setText(getShortAddress(addresses[0]))
                     MarkerType.Destination -> destination.autoCompleteTextView.setText(getShortAddress(addresses[0]))
                 }
             ignoreFiltering(false)
+            Log.d(DEBUG_TAG, "setting ignoreFiltering to false")
         }
     }
 

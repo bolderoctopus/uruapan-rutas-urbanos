@@ -36,13 +36,6 @@ class AutoCompleteAdapter (context: Context,
                            includePickLocation: Boolean)
     : ArrayAdapter<AutocompleteItemModel>(context, R.layout.current_location_list_item, android.R.id.text1),
     Filterable{
-    /*todo:
-        [x] add powered by google
-        [x] add "Use current location" item
-        [x] get latlng from place
-        [] check autocomplete threshold,
-        [] check double call
-     */
 
     enum class ViewTypes(val id: Int){
         CurrentLocation (0),
@@ -101,10 +94,11 @@ class AutoCompleteAdapter (context: Context,
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): FilterResults {
 //                Log.d(DEBUG_TAG, "performFiltering")
+
                 val results = FilterResults()
                 var filterData: MutableList<AutocompletePrediction>? = null
 
-                if(constraint != null && !ignoreFiltering)
+                if(constraint != null)
                     filterData = getAutocomplete(constraint.toString())
 
                 results.values = filterData
@@ -137,6 +131,8 @@ class AutoCompleteAdapter (context: Context,
 
     // This function runs on the background when called by Filter
     private fun getAutocomplete(query: String): MutableList<AutocompletePrediction>?{
+        if(ignoreFiltering) return null
+
         Log.d(DEBUG_TAG, "Starting autocomplete query for: $query")
         val request = FindAutocompletePredictionsRequest.builder()
                 .setLocationRestriction(bounds)
