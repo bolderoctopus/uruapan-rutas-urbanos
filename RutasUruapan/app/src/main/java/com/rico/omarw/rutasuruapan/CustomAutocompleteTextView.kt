@@ -9,6 +9,7 @@ import android.widget.AutoCompleteTextView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import com.rico.omarw.rutasuruapan.Constants.COMPLETION_THRESHOLD
 
 class CustomAutocompleteTextView(context: Context?, attrs: AttributeSet) : RelativeLayout(context, attrs),
         TextWatcher{
