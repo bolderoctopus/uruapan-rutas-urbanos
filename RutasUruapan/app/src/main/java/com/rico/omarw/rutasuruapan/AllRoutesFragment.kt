@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
@@ -19,7 +20,7 @@ import java.lang.Runnable
 import kotlin.Comparator
 
 
-class AllRoutesFragment : Fragment(){
+class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener{
     private val comparator = Comparator<RouteModel>{ routeModel1: RouteModel, routeModel2: RouteModel ->
         routeModel1.name.compareTo(routeModel2.name)
     }
@@ -42,6 +43,7 @@ class AllRoutesFragment : Fragment(){
     private var interactionsListener: InteractionsInterface? = null
     private var height: Int? = null
     public var onViewCreated: Runnable? = null
+    private var drawnRoutes: ArrayList<RouteModel>? = null
 
     private var uiScope = CoroutineScope(Dispatchers.Main)
 
@@ -97,7 +99,7 @@ class AllRoutesFragment : Fragment(){
         routeModels = data
         recyclerView.setHasFixedSize(false)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        adapter = RouteListFilterableAdapter(interactionsListener, comparator).apply { add(routeModels) }
+        adapter = RouteListFilterableAdapter(this, comparator).apply { add(routeModels) }
         recyclerView.adapter = adapter
     }
 
@@ -111,10 +113,19 @@ class AllRoutesFragment : Fragment(){
     }
 
     override fun onDetach() {
+        clearDrawnRoutes()
         uiScope.cancel()
         interactionsListener = null
         super.onDetach()
     }
+
+    override fun drawRoute(route: RouteModel) {
+        if(drawnRoutes == null) drawnRoutes = ArrayList()
+        drawnRoutes!!.add(route)
+        interactionsListener?.drawRoute(route)
+    }
+
+    private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
 
     companion object {
         const val HEIGHT_KEY = "height"

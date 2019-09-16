@@ -13,13 +13,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
-import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
 import kotlin.math.sqrt
 
-class ResultsFragment : Fragment(){
+class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     lateinit var recyclerView: RecyclerView
     private var listener: OnFragmentInteractionListener? = null
@@ -28,6 +27,7 @@ class ResultsFragment : Fragment(){
     private lateinit var originLatLng: LatLng
     private lateinit var destinationLatLng: LatLng
     private var tolerance: Double? = null
+    private var drawnRoutes: ArrayList<RouteModel>? = null
 
     private var uiScope = CoroutineScope(Dispatchers.Main)
 
@@ -47,14 +47,17 @@ class ResultsFragment : Fragment(){
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_results, container, false)
         recyclerView = view.findViewById(R.id.recyclerView_results)
-        view.findViewById<ImageButton>(R.id.imagebutton_back).setOnClickListener{run{listener?.onBackFromResults()}}
+        view.findViewById<ImageButton>(R.id.imagebutton_back).setOnClickListener{
+            clearDrawnRoutes()
+            listener?.onBackFromResults()
+        }
         view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, if(this.height == null) ViewGroup.LayoutParams.MATCH_PARENT else this.height!!)
 
         onViewCreated?.run()
         onViewCreated = null
 
 //        uiScope.launch {
-            findRouteAsync(originLatLng, destinationLatLng, tolerance!!)
+            findRoutesAsync(originLatLng, destinationLatLng, tolerance!!)
 //        }
 
         return view
@@ -70,6 +73,7 @@ class ResultsFragment : Fragment(){
     }
 
     override fun onDetach() {
+        clearDrawnRoutes()
         uiScope.cancel()
         listener = null
         super.onDetach()
@@ -83,7 +87,7 @@ class ResultsFragment : Fragment(){
     }
 
     //todo: if the distance that you need to walk to the bus stop is greater or equal than the distance, to the other point then maybe you should walk
-    private fun findRouteAsync(originLatLng: LatLng, destinationLatLng: LatLng, tolerance: Double){
+    private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, tolerance: Double){
         var walkingDistanceTolerance = tolerance
         if(walkingDistanceTolerance < 0) throw Exception("")
         val walkingDistToDest = distanceBetweenPoints(originLatLng, destinationLatLng)
@@ -114,14 +118,23 @@ class ResultsFragment : Fragment(){
         }
     }
 
+    private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
+
     private fun displayRoutes(results: ArrayList<RouteModel>){
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.adapter = RouteListAdapter(results, listener)
+        recyclerView.adapter = RouteListAdapter(results, this)
     }
 
-    interface OnFragmentInteractionListener: RouteListAdapter.DrawRouteListener{
-        fun onBackFromResults()//todo: clear drawed routes on back from results fragment
+    override fun drawRoute(route: RouteModel) {
+        if(drawnRoutes == null) drawnRoutes = ArrayList()
+        drawnRoutes!!.add(route)
+        listener?.drawRoute(route)
+    }
+
+    interface OnFragmentInteractionListener {
+        fun onBackFromResults()
+        fun drawRoute(route: RouteModel)
     }
 
     companion object{
