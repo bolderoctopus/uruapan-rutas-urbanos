@@ -11,8 +11,7 @@ import android.os.*
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.widget.ImageView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.solver.widgets.Rectangle
 import androidx.core.app.ActivityCompat
@@ -25,11 +24,13 @@ import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.INITIAL_WALKING_DISTANCE_TOL
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.coroutines.*
 import java.lang.Runnable
 
@@ -67,9 +68,10 @@ import java.lang.Runnable
 * [x] implement ResultsFragment
 * [] if current location wasn't used in origin offer it at destination
 * [] improve looks of the textviews, show a more meaningful hint
-* [] nextTask: onSearch: move camera to focus both markers, also if a marker is added
+* [x] onSearch: move camera to focus both markers, also if a marker is added
 * [] improve looks of outside of bounds error, possible create custom Toast
 * [] settings: add how many results to show?
+* [] find a way to differentiate between origin/dest markers
 */
 
 
@@ -140,6 +142,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             val height = getFragmentHeight()
             allRoutesFragment = AllRoutesFragment.newInstance(height)
 //            resultsFragment = ResultsFragment.newInstance(height)
+            map.setPadding(0,0,0, height + bottomNavView.height)
         }
     }
 
@@ -148,7 +151,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onDestroy()
     }
 
-    private fun getFragmentHeight(): Int = if(searchFragment.view == null) 500 else searchFragment.view!!.height
+    private fun getFragmentHeight(): Int = if(searchFragment.view == null) 500 else searchFragment.view!!.height// todo: possibly change for density pixels
 
     override fun onNavigationItemSelected(menuitem: MenuItem): Boolean {
         when(menuitem.itemId){
@@ -181,13 +184,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map = googleMap
         map.setOnMapLongClickListener(this)
         map.setOnMarkerDragListener(this)
-
+        //map.setLatLngBoundsForCameraTarget(SearchFragment.uruapanLatLngBounds)// restrict camera to just uruapan?
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(URUAPAN_LATLNG, 13f))
         if (locationPermissionEnabled()){
             map.isMyLocationEnabled = true
         }else {
             askPermission()
         }
+
+        // Moves the Google logo to the top left corner of the screen
+        val googleLogo = slidingLayout.findViewWithTag<View>("GoogleWatermark")
+        val layoutParams = googleLogo.layoutParams as RelativeLayout.LayoutParams
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START, RelativeLayout.TRUE)
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+        googleLogo.layoutParams = layoutParams
     }
 
     private fun getStatusBarHeight(): Int{
@@ -209,13 +221,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
         when {
             originMarker == null -> {
-                originMarker = map.addMarker(MarkerOptions().title("Origin").position(pos).draggable(true))
-                originMarker?.tag = SearchFragment.MarkerType.Origin
+                drawMarker(pos, "Origin", SearchFragment.MarkerType.Origin, false)
                 searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Origin, pos)
             }
             destinationMarker == null -> {
-                destinationMarker = map.addMarker(MarkerOptions().title("Destination").position(pos).draggable(true))
-                destinationMarker?.tag = SearchFragment.MarkerType.Destination
+                drawMarker(pos, "Destination", SearchFragment.MarkerType.Destination, false)
                 searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Destination, pos)
             }
             else -> {// remove both
@@ -374,31 +384,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    private fun getLatLngBoundsFrom(point1: LatLng, point2: LatLng) =
+        LatLngBounds.builder().include(point1).include(point2).build()
+
     override fun onSearch(origin: LatLng, destination: LatLng){
+        map.animateCamera(CameraUpdateFactory.newLatLngBounds(getLatLngBoundsFrom(destination, origin), CAMERA_PADDING_MARKER))
         resultsFragmentActive = true
         resultsFragment = ResultsFragment.newInstance(getFragmentHeight(), origin, destination, INITIAL_WALKING_DISTANCE_TOL)
         replaceFragment(resultsFragment!!, ResultsFragment.TAG)
     }
-
-//    @SuppressLint("MissingPermission")
-//    override fun onGetCurLocation(onSuccess: (Location) -> Unit){
-//        try{
-//            if(locationPermissionEnabled()){
-//                locationClient.lastLocation.addOnCompleteListener {
-//                    if(it.isSuccessful && it.result != null){
-//                        onSuccess.invoke(it.result!!)
-//                    }else{
-//                        Log.d(DEBUG_TAG,"unable to find location")
-//                    }
-//                }
-//
-//            }else{
-//                Toast.makeText(this, "No location permission", Toast.LENGTH_SHORT).show()
-//            }
-//        }catch (excep: Exception){
-//            Log.d(DEBUG_TAG, "error while requesting current location",excep)
-//        }
-//    }
 
     private fun getDummyLatLng(): LatLng{
         val latlng: LatLng
@@ -410,10 +404,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return latlng
     }
 
-    override fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType) {
+    override fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType) = drawMarker(position, title, markerType, true)
+
+    private fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType, animate: Boolean) {
         val pos = position ?: getDummyLatLng()
 
-        map.animateCamera(CameraUpdateFactory.newLatLng(pos))
+        if(animate)
+            map.animateCamera(CameraUpdateFactory.newLatLng(pos))
 
         if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker?.remove()

@@ -129,7 +129,7 @@ class SearchFragment : Fragment(){
             }
         }
         autocompleteTextview.isEnabled = false
-        autocompleteTextview.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+        autocompleteTextview.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))// todo, if resultsFragment is active and you move a marker, this crashes the app
     }
 
     fun updatePosition(markerType: MarkerType, latLng: LatLng){
