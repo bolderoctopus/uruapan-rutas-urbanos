@@ -63,6 +63,9 @@ class SearchFragment : Fragment(){
         origin.autoCompleteTextView.tag = MarkerType.Origin
         destination.autoCompleteTextView.tag = MarkerType.Destination
 
+        origin.autoCompleteTextView.hint = "Origin"
+        destination.autoCompleteTextView.hint = "Destination"
+
         origin.autoCompleteTextView.setOnFocusChangeListener { _, hasFocus ->
             try {
                 if (hasFocus) origin.autoCompleteTextView.showDropDown()
