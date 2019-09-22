@@ -6,14 +6,12 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
-import android.location.Location
 import android.os.*
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.solver.widgets.Rectangle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -22,7 +20,6 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
@@ -30,7 +27,6 @@ import com.rico.omarw.rutasuruapan.Constants.INITIAL_WALKING_DISTANCE_TOL
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
-import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.coroutines.*
 import java.lang.Runnable
 
@@ -52,7 +48,7 @@ import java.lang.Runnable
 * [x] replace Asynctasks with coroutines
 * [x] offer "Pick current location"
 * [x] update address after marker drag
-* [] when moving the map's camera, do so taking into consideration the part of it that's visible
+* [x] when moving the map's camera, do so taking into consideration the part of it that's visible
 * [x] prevent markers from being drawn outside bounds
 * [x] show addresses with the same format
 * [] improve color palette
@@ -62,7 +58,7 @@ import java.lang.Runnable
 * [x] fix menu selection thing
 * [] set fragment transitions between search and results
 * [x] code origin & destination textBoxes
-* [] fragments lose state
+* [x] fragments lose state
 * [x] switch scroll view when the thing changes
 * [x] fix issues when keyboard is shown
 * [x] implement ResultsFragment
@@ -98,13 +94,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var originSquare: Polygon? = null
     private var destinationSquare: Polygon? = null
 
-    private lateinit var map: GoogleMap
     private lateinit var searchFragment: SearchFragment
     private lateinit var allRoutesFragment: AllRoutesFragment
     private var resultsFragment: ResultsFragment? = null
+    private lateinit var activeFragment: Fragment
+
     private lateinit var slidingLayout: SlidingUpPanelLayout
+    private lateinit var map: GoogleMap
     private lateinit var locationClient: FusedLocationProviderClient
-    private var resultsFragmentActive = false
     private lateinit var slideIndicator: ImageView
     private var refreshStartTime: Long = 0
     private val REFRESH_INTERVAL: Int = 300// in milliseconds
@@ -126,14 +123,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_navigation_slide_panel)
 
 
-        searchFragment = SearchFragment.newInstance()
 
         bottomNavView.setOnNavigationItemSelectedListener (this)
         slidingLayout.addPanelSlideListener(this)
 
+        searchFragment = SearchFragment.newInstance()
         supportFragmentManager.beginTransaction()
-                .add(R.id.fragment_container, searchFragment)
+                .add(R.id.fragment_container, searchFragment, SearchFragment.TAG)
                 .commit()
+        activeFragment = searchFragment
 
         mapFragment.getMapAsync(this)
         // when the bottomNavView first becomes visible, set the height of the other fragments
@@ -141,6 +139,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         bottomNavView.post{
             val height = getFragmentHeight()
             allRoutesFragment = AllRoutesFragment.newInstance(height)
+            supportFragmentManager.beginTransaction().add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG).hide(allRoutesFragment).commit()
 //            resultsFragment = ResultsFragment.newInstance(height)
             map.setPadding(0,0,0, height + bottomNavView.height)
         }
@@ -151,31 +150,37 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onDestroy()
     }
 
+    override fun onSaveInstanceState(outState: Bundle?) {
+        Log.d(DEBUG_TAG, "onSaveInstanceState called on MainActivity")
+        super.onSaveInstanceState(outState)
+    }
+
     private fun getFragmentHeight(): Int = if(searchFragment.view == null) 500 else searchFragment.view!!.height// todo: possibly change for density pixels
 
     override fun onNavigationItemSelected(menuitem: MenuItem): Boolean {
         when(menuitem.itemId){
-            R.id.menu_item_all_routes -> replaceFragment(allRoutesFragment, AllRoutesFragment.TAG)
+            R.id.menu_item_all_routes -> showFragment(allRoutesFragment, AllRoutesFragment.TAG)
 
-            R.id.menu_item_find_route -> if(resultsFragmentActive)
-                                            replaceFragment(resultsFragment!!, ResultsFragment.TAG)
+            R.id.menu_item_find_route -> if(resultsFragment != null)
+                                            showFragment(resultsFragment!!, ResultsFragment.TAG)
                                         else
-                                            replaceFragment(searchFragment, SearchFragment.TAG)
+                                            showFragment(searchFragment, SearchFragment.TAG)
         }
-
         return true
     }
 
-    private fun replaceFragment(newFragment: Fragment, tag: String){
+    private fun showFragment(newFragment: Fragment, tag: String){
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, newFragment, tag)
+            .hide(activeFragment)
+            .show(newFragment)
             .commit()
+        activeFragment = newFragment
         // slidingPanel needs to know if it has a scrollable view in order to work the nested scrolling thing
         // when the view is being created, its scrollView is set as the slidingPanel scrollableView
         // other wise, causes not initialized view error
         when(tag){
-            AllRoutesFragment.TAG -> allRoutesFragment.onViewCreated = Runnable{slidingLayout.setScrollableView(allRoutesFragment.recyclerView)}
-            ResultsFragment.TAG -> if(resultsFragmentActive) resultsFragment?.onViewCreated = Runnable{slidingLayout.setScrollableView(resultsFragment?.recyclerView)}
+            AllRoutesFragment.TAG -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
+            ResultsFragment.TAG -> if(resultsFragment != null) slidingLayout.setScrollableView(resultsFragment?.recyclerView)
         }
     }
 
@@ -373,6 +378,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
+    @SuppressLint("NewApi")
+    private fun getBitmapDescriptor(): BitmapDescriptor?{
+        val drawable = getDrawable(R.drawable.ic_place) ?: return null
+//        drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
+        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+        val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable.draw(canvas)
+
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
     private fun vibrate(){
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         if(!vibrator.hasVibrator()) return
@@ -389,9 +406,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onSearch(origin: LatLng, destination: LatLng){
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(getLatLngBoundsFrom(destination, origin), CAMERA_PADDING_MARKER))
-        resultsFragmentActive = true
         resultsFragment = ResultsFragment.newInstance(getFragmentHeight(), origin, destination, INITIAL_WALKING_DISTANCE_TOL)
-        replaceFragment(resultsFragment!!, ResultsFragment.TAG)
+
+        supportFragmentManager.beginTransaction()
+                .add(R.id.fragment_container, resultsFragment!!, ResultsFragment.TAG)
+                .hide(searchFragment)
+                .commit()
+        activeFragment = resultsFragment!!
+        resultsFragment?.onViewCreated = Runnable {slidingLayout.setScrollableView(resultsFragment?.recyclerView)}
     }
 
     private fun getDummyLatLng(): LatLng{
@@ -414,7 +436,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker?.remove()
-            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).draggable(true))
+            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(getBitmapDescriptor()).draggable(true))
             originMarker?.tag = markerType
         }
         else if(markerType == SearchFragment.MarkerType.Destination) {
@@ -438,8 +460,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onBackFromResults(){
-        resultsFragmentActive = false
-        replaceFragment(searchFragment, SearchFragment.TAG)
+        supportFragmentManager.beginTransaction()
+                .remove(resultsFragment!!)
+                .show(searchFragment)
+                .commit()
+        activeFragment = searchFragment
+        slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
+        resultsFragment = null
     }
 
     override fun onPanelSlide(panel: View?, slideOffset: Float) {
