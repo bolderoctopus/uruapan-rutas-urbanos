@@ -49,7 +49,7 @@ class AutoCompleteAdapter (context: Context,
 
     init {
         if(includeCurrentLocation)
-            getCurrentLocation()
+            addCurrentLocation()
          if(includePickLocation) {
              resultsList.add(AutocompleteItemModel(AutocompleteItemModel.ItemKind.PickLocation, "Pick location from map", "Adjust by dragging the marker"))
              showGoogleAttributionAfter ++
@@ -152,7 +152,7 @@ class AutoCompleteAdapter (context: Context,
 
     }
 
-    private fun getCurrentLocation(){
+    fun addCurrentLocation(){
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         coroutineScope.launch {
             try {
@@ -166,6 +166,16 @@ class AutoCompleteAdapter (context: Context,
                 }
             }catch (exception: Exception) {
                 Log.e(DEBUG_TAG, "Unable to find current location.", exception)
+            }
+        }
+    }
+
+    fun removeCurrentLocation(){
+        for(item in resultsList) {
+            if(item.kind == AutocompleteItemModel.ItemKind.CurrentLocation){
+                resultsList.remove(item)
+                notifyDataSetChanged()
+                break
             }
         }
     }

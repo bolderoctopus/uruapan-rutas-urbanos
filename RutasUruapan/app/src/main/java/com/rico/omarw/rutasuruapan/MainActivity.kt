@@ -36,7 +36,7 @@ import java.lang.Runnable
 * [] update algorithm, take into consideration direction
 * [] improve function walkingDistanceToDest, take into consideration buildings
 *
-* [] when the phone is blocked and the app starts, the AllRoutesFragment has 0 height
+* [] nextTask: 2 when the phone is blocked and the app starts, the AllRoutesFragment has 0 height
 * [] draw only the relevant part of the route?
 * [x] if available, use current location as origin
 * [] sort resulting routes
@@ -62,12 +62,15 @@ import java.lang.Runnable
 * [x] switch scroll view when the thing changes
 * [x] fix issues when keyboard is shown
 * [x] implement ResultsFragment
-* [] if current location wasn't used in origin offer it at destination
+* [x] if current location wasn't used in origin offer it at destination
 * [] improve looks of the textviews, show a more meaningful hint
 * [x] onSearch: move camera to focus both markers, also if a marker is added
 * [] improve looks of outside of bounds error, possible create custom Toast
 * [] settings: add how many results to show?
 * [] find a way to differentiate between origin/dest markers
+* [] try a different look for the search button
+* [] show tips for using the app
+* [] what to do if search has been done but a marker is dragged
 */
 
 

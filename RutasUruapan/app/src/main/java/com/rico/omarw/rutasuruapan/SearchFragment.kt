@@ -43,6 +43,7 @@ class SearchFragment : Fragment(){
 
     private lateinit var geocoder: Geocoder
     private var uiScope = CoroutineScope(Dispatchers.Main)
+    private var currentLocationOwner: MarkerType? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -145,11 +146,13 @@ class SearchFragment : Fragment(){
                 originLatLng = latLng
                 origin.autoCompleteTextView.isEnabled = true
                 origin.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                restoreCurrentLocation(MarkerType.Origin)
             }
             MarkerType.Destination -> {
                 destinationLatLng = latLng
                 destination.autoCompleteTextView.isEnabled = true
                 destination.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                restoreCurrentLocation(MarkerType.Destination)
             }
         }
         findPlaceByLatLng(markerType, latLng)
@@ -195,7 +198,13 @@ class SearchFragment : Fragment(){
                 }
             }
             AutocompleteItemModel.ItemKind.PickLocation -> drawMarker(markerType, null, title)
-            AutocompleteItemModel.ItemKind.CurrentLocation -> drawMarker(markerType, item.currentLatLng, title)
+            AutocompleteItemModel.ItemKind.CurrentLocation -> {
+                drawMarker(markerType, item.currentLatLng, title)
+                currentLocationOwner = markerType
+                // Si la opcion de "Use Current Location" es seleccionada en un textView esta ya no se mostrara hasta que se presione el boton de limpiar o cambie de ubicacion el marcador
+                //correspondiente al textview
+                autoCompleteAdapter.removeCurrentLocation()
+            }
         }
     }
 
@@ -220,11 +229,29 @@ class SearchFragment : Fragment(){
             R.id.custom_actv_origin -> {
                 listener?.clearMarker(MarkerType.Origin)
                 originLatLng = null
+                restoreCurrentLocation(MarkerType.Origin)
             }
             R.id.custom_actv_destination -> {
                 listener?.clearMarker(MarkerType.Destination)
                 destinationLatLng = null
+                restoreCurrentLocation(MarkerType.Destination)
             }
+        }
+    }
+
+    // If the user had picked 'Show current location' in this textview but then pressed the clear button we'll make the option available to both textviews again.
+    /* Si en uno de los textFields se habia seleccionado la opcion "Use Current Location", pero luego
+        1. Presiona el boton de limpiar en ese textView
+        o
+        2. Mueve el marcador correspondiente a otra ubicaion
+        entonces la opcion de "User Current Location" vuelve a estar disponible en el adaptador para ambos textViews
+
+     */
+    private fun restoreCurrentLocation(v: MarkerType){
+        if(currentLocationOwner == v) {
+            Log.d(DEBUG_TAG, "restoring current location")
+            autoCompleteAdapter.addCurrentLocation()
+            currentLocationOwner = null
         }
     }
 
@@ -263,10 +290,12 @@ class SearchFragment : Fragment(){
         destinationLatLng = null
         origin.autoCompleteTextView.setText("")
         destination.autoCompleteTextView.setText("")
+        currentLocationOwner = null
+        autoCompleteAdapter.addCurrentLocation()
     }
 
 
-    enum class MarkerType {
+    enum class MarkerType {//todo: rename, for something more relevant since this no longer works to differentiate between markers but also inputs
         Origin,
         Destination
     }
