@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
 import android.widget.AutoCompleteTextView
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.LocationServices
@@ -38,8 +39,7 @@ class SearchFragment : Fragment(){
     lateinit var origin: CustomAutocompleteTextView
     lateinit var destination: CustomAutocompleteTextView
     private var listener: OnFragmentInteractionListener? = null
-    private lateinit var originAdapter: AutoCompleteAdapter
-    private lateinit var destinationAdapter: AutoCompleteAdapter
+    private lateinit var autoCompleteAdapter: AutoCompleteAdapter
 
     private lateinit var geocoder: Geocoder
     private var uiScope = CoroutineScope(Dispatchers.Main)
@@ -75,25 +75,16 @@ class SearchFragment : Fragment(){
         }
 
         origin.autoCompleteTextView.setOnClickListener {origin.autoCompleteTextView.showDropDown()}
-        origin.autoCompleteTextView.setOnItemClickListener{ parent, _, position, id ->
-            val item = originAdapter.getItem(position)
-            autoCompleteItemClick(origin.autoCompleteTextView, item)
-            destination.autoCompleteTextView.requestFocus()
-        }
+        origin.autoCompleteTextView.setOnItemClickListener(this::autoCompleteItemClick)
 
         destination.autoCompleteTextView.setOnClickListener {destination.autoCompleteTextView.showDropDown()}
-        destination.autoCompleteTextView.setOnItemClickListener{ parent, _, position, id ->
-            val item = destinationAdapter.getItem(position)
-            autoCompleteItemClick(destination.autoCompleteTextView, item)
-            hideKeyboard(destination.autoCompleteTextView.windowToken)
-        }
+        destination.autoCompleteTextView.setOnItemClickListener (this::autoCompleteItemClick)
 
         if(context != null){
             val locationClient = LocationServices.getFusedLocationProviderClient(context!!)
-            originAdapter = AutoCompleteAdapter(context!!, uiScope, locationClient, placesClient, uruapanBounds, includeCurrentLocation = true, includePickLocation = true)
-            destinationAdapter = AutoCompleteAdapter(context!!, uiScope, locationClient, placesClient, uruapanBounds, includeCurrentLocation = false, includePickLocation = true)
-            destination.autoCompleteTextView.setAdapter(destinationAdapter)
-            origin.autoCompleteTextView.setAdapter(originAdapter)
+            autoCompleteAdapter = AutoCompleteAdapter(context!!, uiScope, locationClient, placesClient, uruapanBounds, includeCurrentLocation = true, includePickLocation = true)
+            destination.autoCompleteTextView.setAdapter(autoCompleteAdapter)
+            origin.autoCompleteTextView.setAdapter(autoCompleteAdapter)
         }
 
         origin.onClear = this::onTextViewClear
@@ -179,9 +170,20 @@ class SearchFragment : Fragment(){
         findPlaceByLatLng(markerType, latLng)
     }
 
-    private fun autoCompleteItemClick(sender: AutoCompleteTextView, item: AutocompleteItemModel){
-        val markerType = sender.tag as MarkerType
-        val title = if(markerType == MarkerType.Origin) "Origin" else "Destination"
+    private fun autoCompleteItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long){
+        val markerType: MarkerType
+        val item = autoCompleteAdapter.getItem(position)
+        val title: String
+
+        if(origin.autoCompleteTextView.hasFocus()){
+            title = "Origin"
+            markerType = MarkerType.Origin
+            destination.autoCompleteTextView.requestFocus()
+        }else{
+            title = "Destination"
+            markerType = MarkerType.Destination
+            hideKeyboard(destination.autoCompleteTextView.windowToken)
+        }
 
         when(item.kind){
             AutocompleteItemModel.ItemKind.AutocompletePrediction -> {// request coordinates from place id
@@ -253,8 +255,7 @@ class SearchFragment : Fragment(){
     }
 
     private fun ignoreFiltering(ignore: Boolean){
-        originAdapter.ignoreFiltering = ignore
-        destinationAdapter.ignoreFiltering = ignore
+        autoCompleteAdapter.ignoreFiltering = ignore
     }
 
     fun clearInputs(){
