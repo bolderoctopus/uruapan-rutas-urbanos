@@ -10,6 +10,7 @@ import android.os.*
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewTreeObserver
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -29,6 +30,7 @@ import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.coroutines.*
 import java.lang.Runnable
+import kotlin.collections.ArrayList
 
 //todo: see below
 /*
@@ -36,7 +38,7 @@ import java.lang.Runnable
 * [] update algorithm, take into consideration direction
 * [] improve function walkingDistanceToDest, take into consideration buildings
 *
-* [] nextTask: 2 when the phone is blocked and the app starts, the AllRoutesFragment has 0 height
+* [x] when the phone is blocked and the app starts, the AllRoutesFragment has 0 height
 * [] draw only the relevant part of the route?
 * [x] if available, use current location as origin
 * [] sort resulting routes
@@ -71,6 +73,7 @@ import java.lang.Runnable
 * [] try a different look for the search button
 * [] show tips for using the app
 * [] what to do if search has been done but a marker is dragged
+* [] hide keyboard if panel goes collapsed
 */
 
 
@@ -110,6 +113,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private val REFRESH_INTERVAL: Int = 300// in milliseconds
     private lateinit var startMarkerPosition: LatLng
     private var uiScope = CoroutineScope(Dispatchers.Main)
+    private lateinit var bottomNavView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,7 +127,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         slidingLayout= findViewById(R.id.sliding_layout)
         slideIndicator = findViewById(R.id.imageview_slide_indicator)
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_navigation_slide_panel)
+        bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_navigation_slide_panel)
 
 
 
@@ -131,21 +135,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         slidingLayout.addPanelSlideListener(this)
 
         searchFragment = SearchFragment.newInstance()
-        supportFragmentManager.beginTransaction()
-                .add(R.id.fragment_container, searchFragment, SearchFragment.TAG)
-                .commit()
+        allRoutesFragment = AllRoutesFragment.newInstance()
+        supportFragmentManager.beginTransaction().add(R.id.fragment_container, searchFragment, SearchFragment.TAG).commit()
+        supportFragmentManager.beginTransaction().add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG).hide(allRoutesFragment).commit()
         activeFragment = searchFragment
 
         mapFragment.getMapAsync(this)
-        // when the bottomNavView first becomes visible, set the height of the other fragments
-        // according to searchFragment's height
-        bottomNavView.post{
-            val height = getFragmentHeight()
-            allRoutesFragment = AllRoutesFragment.newInstance(height)
-            supportFragmentManager.beginTransaction().add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG).hide(allRoutesFragment).commit()
-//            resultsFragment = ResultsFragment.newInstance(height)
-            map.setPadding(0,0,0, height + bottomNavView.height)
-        }
     }
 
     override fun onDestroy() {
@@ -153,16 +148,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onDestroy()
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
-        Log.d(DEBUG_TAG, "onSaveInstanceState called on MainActivity")
-        super.onSaveInstanceState(outState)
+    private fun getSearchFragmentHeight(): Int{
+        return if(searchFragment.view == null || searchFragment.view!!.height == 0) resources.getDimensionPixelSize(R.dimen.default_fragment_height) else searchFragment.view!!.height
     }
-
-    private fun getFragmentHeight(): Int = if(searchFragment.view == null) 500 else searchFragment.view!!.height// todo: possibly change for density pixels
 
     override fun onNavigationItemSelected(menuitem: MenuItem): Boolean {
         when(menuitem.itemId){
-            R.id.menu_item_all_routes -> showFragment(allRoutesFragment, AllRoutesFragment.TAG)
+            R.id.menu_item_all_routes ->{
+                allRoutesFragment.setHeight(searchFragment.view?.height!!)
+                showFragment(allRoutesFragment, AllRoutesFragment.TAG)
+            }
 
             R.id.menu_item_find_route -> if(resultsFragment != null)
                                             showFragment(resultsFragment!!, ResultsFragment.TAG)
@@ -208,6 +203,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START, RelativeLayout.TRUE)
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
         googleLogo.layoutParams = layoutParams
+
+
+        val layoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                map.setPadding(0, 0, 0, getSearchFragmentHeight() + bottomNavView.height)
+                bottomNavView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                Log.d(DEBUG_TAG, "bottomNavView.height: ${bottomNavView.height}")
+            }
+        }
+        bottomNavView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
     }
 
     private fun getStatusBarHeight(): Int{
@@ -409,7 +414,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onSearch(origin: LatLng, destination: LatLng){
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(getLatLngBoundsFrom(destination, origin), CAMERA_PADDING_MARKER))
-        resultsFragment = ResultsFragment.newInstance(getFragmentHeight(), origin, destination, INITIAL_WALKING_DISTANCE_TOL)
+        resultsFragment = ResultsFragment.newInstance(getSearchFragmentHeight(), origin, destination, INITIAL_WALKING_DISTANCE_TOL)
 
         supportFragmentManager.beginTransaction()
                 .add(R.id.fragment_container, resultsFragment!!, ResultsFragment.TAG)

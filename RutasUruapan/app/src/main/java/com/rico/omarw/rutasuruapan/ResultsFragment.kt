@@ -53,14 +53,13 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             clearDrawnRoutes()
             listener?.onBackFromResults()
         }
-        view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, if(this.height == null) ViewGroup.LayoutParams.MATCH_PARENT else this.height!!)
+        if(height != null)
+            view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height!!)
 
         onViewCreated?.run()
         onViewCreated = null
 
-//        uiScope.launch {
-            findRoutesAsync(originLatLng, destinationLatLng, tolerance!!)
-//        }
+        findRoutesAsync(originLatLng, destinationLatLng, tolerance!!)
 
         return view
     }

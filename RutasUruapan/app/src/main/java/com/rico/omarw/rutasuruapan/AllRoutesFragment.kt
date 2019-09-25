@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,7 +38,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     public lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
     private var interactionsListener: InteractionsInterface? = null
-    private var height: Int? = null
     public var onViewCreated: Runnable? = null
     private var drawnRoutes: ArrayList<RouteModel>? = null
 
@@ -46,7 +46,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            height = it.getInt(HEIGHT_KEY)
         }
         uiScope = CoroutineScope(Dispatchers.Main)
     }
@@ -65,8 +64,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
             val routes = withContext(Dispatchers.IO) {getRoutes()}
             setAdapterRoutes(routes)
         }
-
-        view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, if(height == null) ViewGroup.LayoutParams.MATCH_PARENT else height!!)
         return view
     }
 
@@ -99,6 +96,10 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         recyclerView.adapter = adapter
     }
 
+    fun setHeight(height: Int) {
+        view?.layoutParams = RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height)
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is RouteListFilterableAdapter.DrawRouteListener) {
@@ -124,13 +125,11 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
 
     companion object {
-        const val HEIGHT_KEY = "height"
         val TAG = "AllRoutesFragment"
         @JvmStatic
-        fun newInstance(height: Int) =
+        fun newInstance() =
                 AllRoutesFragment().apply {
                     arguments = Bundle().apply {
-                        putInt(HEIGHT_KEY, height)
                     }
                 }
     }
