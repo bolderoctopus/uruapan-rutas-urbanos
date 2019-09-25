@@ -25,6 +25,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.INITIAL_WALKING_DISTANCE_TOL
+import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
@@ -73,7 +74,7 @@ import kotlin.collections.ArrayList
 * [] try a different look for the search button
 * [] show tips for using the app
 * [] what to do if search has been done but a marker is dragged
-* [] hide keyboard if panel goes collapsed
+* [x] hide keyboard if panel goes collapsed
 */
 
 
@@ -481,6 +482,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         slideIndicator.rotation = 180 * (1-slideOffset)
     }
 
-    override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) = Unit
+    override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
+        if(newState == SlidingUpPanelLayout.PanelState.COLLAPSED){
+            hideKeyboard(this, window.decorView.windowToken)
+        }
+    }
 
 }
