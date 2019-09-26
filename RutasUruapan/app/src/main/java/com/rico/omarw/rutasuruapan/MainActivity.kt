@@ -45,7 +45,7 @@ import kotlin.collections.ArrayList
 * [] sort resulting routes
 * [x] improve origin/destination looks
 * [x] overall design
-* [] add settings
+* [] nextTask: 8 add settings
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
 * [x] replace Asynctasks with coroutines
@@ -54,7 +54,7 @@ import kotlin.collections.ArrayList
 * [x] when moving the map's camera, do so taking into consideration the part of it that's visible
 * [x] prevent markers from being drawn outside bounds
 * [x] show addresses with the same format
-* [] improve color palette
+* [] nextTask: 6 improve color palette: bottomNavBar,
 * [x] size of searchFragment, fab touches the destination
 * [x] check the shadow of the fab
 * [x] add drag up indicator, (small view on top of the sliding panel)
@@ -66,15 +66,17 @@ import kotlin.collections.ArrayList
 * [x] fix issues when keyboard is shown
 * [x] implement ResultsFragment
 * [x] if current location wasn't used in origin offer it at destination
-* [] improve looks of the textviews, show a more meaningful hint
+* [] nextTask: 1 improve looks of the textviews, show a more meaningful hint
 * [x] onSearch: move camera to focus both markers, also if a marker is added
-* [] improve looks of outside of bounds error, possible create custom Toast
+* [] nextTask: 5 improve looks of outside of bounds error, possible create custom Toast
 * [] settings: add how many results to show?
-* [] find a way to differentiate between origin/dest markers
-* [] try a different look for the search button
+* [] nextTask: 2 find a way to differentiate between origin/dest markers
+* [] nextTask: 3 try a different look for the search button
 * [] show tips for using the app
-* [] what to do if search has been done but a marker is dragged
+* [] nextTask: 7 what to do if search has been done but a marker is dragged
 * [x] hide keyboard if panel goes collapsed
+* [] nextTask: 4 show message when no routes found or that the user should walk
+* [] try to draw arrows bigger, maybe change it according to zoom
 */
 
 
