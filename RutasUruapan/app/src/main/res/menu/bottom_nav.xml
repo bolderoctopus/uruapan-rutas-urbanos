@@ -3,10 +3,10 @@
     <item
         android:id="@+id/menu_item_find_route"
         android:icon="@drawable/ic_search_black_24dp"
-        android:title="Búsqueda"/>
+        android:title="@string/menu_search_fragment"/>
     <item
         android:id="@+id/menu_item_all_routes"
         android:icon="@drawable/ic_directions_bus_black_24dp"
-        android:title="Explorar"/>
+        android:title="@string/menu_all_routes"/>
 
 </menu>

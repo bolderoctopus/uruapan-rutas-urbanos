@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:contentDescription="Down Arrow" />
+                android:contentDescription="@string/slide_indicator_content_description" />
         </RelativeLayout>
 
         <RelativeLayout

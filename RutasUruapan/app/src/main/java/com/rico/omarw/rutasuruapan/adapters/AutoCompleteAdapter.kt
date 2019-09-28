@@ -51,7 +51,7 @@ class AutoCompleteAdapter (context: Context,
         if(includeCurrentLocation)
             addCurrentLocation()
          if(includePickLocation) {
-             resultsList.add(AutocompleteItemModel(AutocompleteItemModel.ItemKind.PickLocation, "Pick location from map", "Adjust by dragging the marker"))
+             resultsList.add(AutocompleteItemModel(AutocompleteItemModel.ItemKind.PickLocation, context.getString(R.string.pick_location_primary), context.getString(R.string.pick_location_secondary)))
              showGoogleAttributionAfter ++
          }
     }
@@ -159,7 +159,7 @@ class AutoCompleteAdapter (context: Context,
                 val location = withContext(Dispatchers.IO) { Tasks.await(locationClient.lastLocation) }
                 val address = withContext(Dispatchers.IO) { Geocoder(context).getFromLocation(location.latitude, location.longitude, 1) }
                 if(!address.isNullOrEmpty()){
-                    resultsList.add(0, AutocompleteItemModel(AutocompleteItemModel.ItemKind.CurrentLocation, "Usar ubicación actual",
+                    resultsList.add(0, AutocompleteItemModel(AutocompleteItemModel.ItemKind.CurrentLocation, context.getString(R.string.current_location_primary),
                             SearchFragment.getShortAddress(address[0]), null, LatLng(address[0].latitude, address[0].longitude)))
                     showGoogleAttributionAfter ++
                     notifyDataSetChanged()

@@ -3,6 +3,16 @@
     <string name="title_activity_main">@string/app_name</string>
 
     <string name="lat_lng">%1.5f, %2.5f</string>
+    <string name="origin">Origen</string>
+    <string name="to">hacia</string>
+    <string name="destination">Destino</string>
+    <string name="empty_textview_error">Selecciona una ubicación</string>
+    <string name="slide_indicator_content_description">Ocultar o mostrar panel</string>
+    <string name="menu_all_routes">Mostrar Todas</string>
+    <string name="menu_search_fragment">Buscar Ruta</string>
+    <string name="pick_location_primary">Seleccionar ubicación en el mapa</string>
+    <string name="pick_location_secondary">Ajústala arratrando el marcador</string>
+    <string name="current_location_primary">Usar ubicación actual</string>
 
 
 </resources>

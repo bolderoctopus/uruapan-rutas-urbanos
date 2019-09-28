@@ -68,9 +68,6 @@ class SearchFragment : Fragment(){
         originAutoCompleteTextView.tag = MarkerType.Origin
         destinationAutoCompleteTextView.tag = MarkerType.Destination
 
-        origin.hint = "Origin"
-        destination.hint = "Destination"
-
         originAutoCompleteTextView.setOnFocusChangeListener { _, hasFocus ->
             try {
                 if (hasFocus) originAutoCompleteTextView.showDropDown()
@@ -187,12 +184,12 @@ class SearchFragment : Fragment(){
         val title: String
 
         if(originAutoCompleteTextView.hasFocus()){
-            title = "Origin"
+            title = getString(R.string.origin)
             origin.error = null
             markerType = MarkerType.Origin
             destinationAutoCompleteTextView.requestFocus()
         }else{
-            title = "Destination"
+            title = getString(R.string.destination)
             destination.error = null
             markerType = MarkerType.Destination
             hideKeyboard(context!!, destinationAutoCompleteTextView.windowToken)
@@ -269,10 +266,10 @@ class SearchFragment : Fragment(){
 
     private fun search(){
         if(originLatLng == null){// todo: use textinput error instead
-            origin.error = "You must pick a place"
+            origin.error = getString(R.string.empty_textview_error)
         }
         else if (destinationLatLng == null) {
-            destination.error = "You must pick a place"
+            destination.error = getString(R.string.empty_textview_error)
         }
         else {
             listener?.onSearch(originLatLng!!, destinationLatLng!!)
