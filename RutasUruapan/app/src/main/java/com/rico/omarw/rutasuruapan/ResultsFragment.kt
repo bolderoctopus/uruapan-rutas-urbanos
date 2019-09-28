@@ -87,7 +87,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         return sqrt(d1 * d1 + d2 * d2)
     }
 
-    //todo: if the distance that you need to walk to the bus stop is greater or equal than the distance, to the other point then maybe you should walk
+    //todo: if the distance that you need to walk to the bus stop is greater or equal than the distance, to the other point then maybe you should walk, (already on mainActivity todo list)
     private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, tolerance: Double){
         var walkingDistanceTolerance = tolerance
         if(walkingDistanceTolerance < 0) throw Exception("")

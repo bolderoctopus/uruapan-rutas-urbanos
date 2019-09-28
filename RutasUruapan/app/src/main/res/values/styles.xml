@@ -10,4 +10,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="autocompletetextvew_style" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"/>
+<!--    <style name="autocompletetextvew_style" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"/>-->
+
 </resources>

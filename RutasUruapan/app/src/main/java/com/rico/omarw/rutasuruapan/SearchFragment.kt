@@ -4,12 +4,10 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
-import android.os.IBinder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.AutoCompleteTextView
 import androidx.fragment.app.Fragment
@@ -23,6 +21,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.TextInputLayout
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
@@ -37,8 +36,10 @@ class SearchFragment : Fragment(){
     var destinationLatLng: LatLng? = null
     var originLatLng: LatLng? = null
     private lateinit var placesClient: PlacesClient
-    lateinit var origin: CustomAutocompleteTextView
-    lateinit var destination: CustomAutocompleteTextView
+    lateinit var origin: TextInputLayout
+    lateinit var originAutoCompleteTextView: AutoCompleteTextView
+    lateinit var destination: TextInputLayout
+    lateinit var destinationAutoCompleteTextView: AutoCompleteTextView
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var autoCompleteAdapter: AutoCompleteAdapter
 
@@ -60,37 +61,39 @@ class SearchFragment : Fragment(){
         view.findViewById<FloatingActionButton>(R.id.fab_search).setOnClickListener{search()}
 
         origin = view.findViewById(R.id.custom_actv_origin)
+        originAutoCompleteTextView = view.findViewById(R.id.autocompletetextview_origin)
         destination = view.findViewById(R.id.custom_actv_destination)
+        destinationAutoCompleteTextView = view.findViewById(R.id.autocompletetextview_destination)
 
-        origin.autoCompleteTextView.tag = MarkerType.Origin
-        destination.autoCompleteTextView.tag = MarkerType.Destination
+        originAutoCompleteTextView.tag = MarkerType.Origin
+        destinationAutoCompleteTextView.tag = MarkerType.Destination
 
-        origin.autoCompleteTextView.hint = "Origin"
-        destination.autoCompleteTextView.hint = "Destination"
+        origin.hint = "Origin"
+        destination.hint = "Destination"
 
-        origin.autoCompleteTextView.setOnFocusChangeListener { _, hasFocus ->
+        originAutoCompleteTextView.setOnFocusChangeListener { _, hasFocus ->
             try {
-                if (hasFocus) origin.autoCompleteTextView.showDropDown()
+                if (hasFocus) originAutoCompleteTextView.showDropDown()
             }catch (error: Exception){
                 Log.e(DEBUG_TAG, error.message)
             }
         }
 
-        origin.autoCompleteTextView.setOnClickListener {origin.autoCompleteTextView.showDropDown()}
-        origin.autoCompleteTextView.setOnItemClickListener(this::autoCompleteItemClick)
+        originAutoCompleteTextView.setOnClickListener {originAutoCompleteTextView.showDropDown()}
+        originAutoCompleteTextView.setOnItemClickListener(this::onAutoCompleteItemClick)
 
-        destination.autoCompleteTextView.setOnClickListener {destination.autoCompleteTextView.showDropDown()}
-        destination.autoCompleteTextView.setOnItemClickListener (this::autoCompleteItemClick)
+        destinationAutoCompleteTextView.setOnClickListener {destinationAutoCompleteTextView.showDropDown()}
+        destinationAutoCompleteTextView.setOnItemClickListener (this::onAutoCompleteItemClick)
 
         if(context != null){
             val locationClient = LocationServices.getFusedLocationProviderClient(context!!)
             autoCompleteAdapter = AutoCompleteAdapter(context!!, uiScope, locationClient, placesClient, uruapanBounds, includeCurrentLocation = true, includePickLocation = true)
-            destination.autoCompleteTextView.setAdapter(autoCompleteAdapter)
-            origin.autoCompleteTextView.setAdapter(autoCompleteAdapter)
+            destinationAutoCompleteTextView.setAdapter(autoCompleteAdapter)
+            originAutoCompleteTextView.setAdapter(autoCompleteAdapter)
         }
 
-        origin.onClear = this::onTextViewClear
-        destination.onClear = this::onTextViewClear
+        origin.setEndIconOnClickListener{ clearAutoCompleteTextView(MarkerType.Origin)}
+        destination.setEndIconOnClickListener{ clearAutoCompleteTextView(MarkerType.Destination)}
 
         return view
     }
@@ -117,11 +120,13 @@ class SearchFragment : Fragment(){
         when(markerType){
             MarkerType.Origin -> {
                 originLatLng = latLng
-                autocompleteTextview = origin.autoCompleteTextView
+                origin.error = null
+                autocompleteTextview = originAutoCompleteTextView
             }
             MarkerType.Destination -> {
                 destinationLatLng = latLng
-                autocompleteTextview = destination.autoCompleteTextView
+                destination.error = null
+                autocompleteTextview = destinationAutoCompleteTextView
             }
         }
         autocompleteTextview.isEnabled = false
@@ -132,11 +137,11 @@ class SearchFragment : Fragment(){
         when(markerType){
             MarkerType.Origin -> {
                 originLatLng = latLng
-                origin.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                originAutoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
             }
             MarkerType.Destination -> {
                 destinationLatLng = latLng
-                destination.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                destinationAutoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
             }
         }
     }
@@ -145,14 +150,14 @@ class SearchFragment : Fragment(){
         when(markerType){
             MarkerType.Origin -> {
                 originLatLng = latLng
-                origin.autoCompleteTextView.isEnabled = true
-                origin.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                originAutoCompleteTextView.isEnabled = true
+                originAutoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
                 restoreCurrentLocation(MarkerType.Origin)
             }
             MarkerType.Destination -> {
                 destinationLatLng = latLng
-                destination.autoCompleteTextView.isEnabled = true
-                destination.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                destinationAutoCompleteTextView.isEnabled = true
+                destinationAutoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
                 restoreCurrentLocation(MarkerType.Destination)
             }
         }
@@ -164,29 +169,33 @@ class SearchFragment : Fragment(){
         when(markerType){
             MarkerType.Origin -> {
                 originLatLng = latLng
-                origin.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                origin.error = null
+                originAutoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
             }
             MarkerType.Destination -> {
                 destinationLatLng = latLng
-                destination.autoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
+                destination.error = null
+                destinationAutoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
             }
         }
         findPlaceByLatLng(markerType, latLng)
     }
 
-    private fun autoCompleteItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long){
+    private fun onAutoCompleteItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long){
         val markerType: MarkerType
         val item = autoCompleteAdapter.getItem(position)
         val title: String
 
-        if(origin.autoCompleteTextView.hasFocus()){
+        if(originAutoCompleteTextView.hasFocus()){
             title = "Origin"
+            origin.error = null
             markerType = MarkerType.Origin
-            destination.autoCompleteTextView.requestFocus()
+            destinationAutoCompleteTextView.requestFocus()
         }else{
             title = "Destination"
+            destination.error = null
             markerType = MarkerType.Destination
-            hideKeyboard(context!!, destination.autoCompleteTextView.windowToken)
+            hideKeyboard(context!!, destinationAutoCompleteTextView.windowToken)
         }
 
         when(item.kind){
@@ -195,7 +204,7 @@ class SearchFragment : Fragment(){
                         .setSessionToken(AutocompleteSessionToken.newInstance()).build()
                 placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
                     if(it.isSuccessful && it.result != null) drawMarker(markerType, it.result?.place?.latLng, title)
-                    else Log.d(DEBUG_TAG, "We're having trouble fetching the coordinates from this address, try again later or instead drag the marker")
+                    else Log.d(DEBUG_TAG, "We're having trouble fetching the coordinates from this address, try again later or instead drag the marker")//todo: should I display this to the user?
                 }
             }
             AutocompleteItemModel.ItemKind.PickLocation -> drawMarker(markerType, null, title)
@@ -217,22 +226,24 @@ class SearchFragment : Fragment(){
             Log.d(DEBUG_TAG, "setting textView text to ${getShortAddress(addresses!![0])}")
             if(!addresses.isNullOrEmpty())
                 when(markerType){
-                    MarkerType.Origin -> origin.autoCompleteTextView.setText(getShortAddress(addresses[0]))
-                    MarkerType.Destination -> destination.autoCompleteTextView.setText(getShortAddress(addresses[0]))
+                    MarkerType.Origin -> originAutoCompleteTextView.setText(getShortAddress(addresses[0]))
+                    MarkerType.Destination -> destinationAutoCompleteTextView.setText(getShortAddress(addresses[0]))
                 }
             ignoreFiltering(false)
             Log.d(DEBUG_TAG, "setting ignoreFiltering to false")
         }
     }
 
-    private fun onTextViewClear(view: View){
-        when(view.id){
-            R.id.custom_actv_origin -> {
+    private fun clearAutoCompleteTextView(markerType: MarkerType){
+        when(markerType){
+            MarkerType.Origin -> {
+                originAutoCompleteTextView.setText("")
                 listener?.clearMarker(MarkerType.Origin)
                 originLatLng = null
                 restoreCurrentLocation(MarkerType.Origin)
             }
-            R.id.custom_actv_destination -> {
+            MarkerType.Destination -> {
+                destinationAutoCompleteTextView.setText("")
                 listener?.clearMarker(MarkerType.Destination)
                 destinationLatLng = null
                 restoreCurrentLocation(MarkerType.Destination)
@@ -257,11 +268,11 @@ class SearchFragment : Fragment(){
     }
 
     private fun search(){
-        if(originLatLng == null){
-            origin.autoCompleteTextView.error = "You must pick a place"
+        if(originLatLng == null){// todo: use textinput error instead
+            origin.error = "You must pick a place"
         }
         else if (destinationLatLng == null) {
-            destination.autoCompleteTextView.error = "You must pick a place"
+            destination.error = "You must pick a place"
         }
         else {
             listener?.onSearch(originLatLng!!, destinationLatLng!!)
@@ -282,12 +293,18 @@ class SearchFragment : Fragment(){
     }
 
     fun clearInputs(){
+        if(currentLocationOwner != null) {
+            autoCompleteAdapter.addCurrentLocation()
+            currentLocationOwner = null
+        }
+
         originLatLng = null
+        origin.error = null
+        originAutoCompleteTextView.setText("")
+
         destinationLatLng = null
-        origin.autoCompleteTextView.setText("")
-        destination.autoCompleteTextView.setText("")
-        currentLocationOwner = null
-        autoCompleteAdapter.addCurrentLocation()
+        destination.error = null
+        destinationAutoCompleteTextView.setText("")
     }
 
 

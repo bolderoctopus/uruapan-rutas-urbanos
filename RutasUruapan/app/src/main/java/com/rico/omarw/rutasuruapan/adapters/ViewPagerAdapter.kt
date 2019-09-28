@@ -8,7 +8,7 @@ import com.rico.omarw.rutasuruapan.ControlPanelFragment
 import com.rico.omarw.rutasuruapan.ResultsFragment
 import com.rico.omarw.rutasuruapan.SearchFragment
 
-class ViewPagerAdapter(fm: FragmentManager?, private var fragments: Array<Fragment>) : FragmentPagerAdapter(fm) {
+class ViewPagerAdapter(fm: FragmentManager?, private var fragments: Array<Fragment>) : FragmentPagerAdapter(fm!!) {
 
     override fun getItem(position: Int) = fragments[position]
     override fun getCount() = fragments.size

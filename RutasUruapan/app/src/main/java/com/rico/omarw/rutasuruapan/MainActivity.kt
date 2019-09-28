@@ -77,6 +77,7 @@ import kotlin.collections.ArrayList
 * [x] hide keyboard if panel goes collapsed
 * [] nextTask: 4 show message when no routes found or that the user should walk
 * [] try to draw arrows bigger, maybe change it according to zoom
+* [] add lap time
 */
 
 
