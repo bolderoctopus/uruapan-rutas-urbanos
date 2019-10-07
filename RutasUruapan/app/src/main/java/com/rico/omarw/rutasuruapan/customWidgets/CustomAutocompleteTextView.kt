@@ -1,4 +1,4 @@
-package com.rico.omarw.rutasuruapan
+package com.rico.omarw.rutasuruapan.customWidgets
 
 import android.content.Context
 import android.text.Editable
@@ -6,10 +6,11 @@ import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.View
 import android.widget.AutoCompleteTextView
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.rico.omarw.rutasuruapan.Constants.COMPLETION_THRESHOLD
+import com.rico.omarw.rutasuruapan.R
+
 @Deprecated("This implementation was replaced by TextInputLayout in order to achieve a Mterial style textview")
 class CustomAutocompleteTextView(context: Context?, attrs: AttributeSet) : RelativeLayout(context, attrs),
         TextWatcher{

@@ -13,6 +13,6 @@
     <string name="pick_location_primary">Seleccionar ubicación en el mapa</string>
     <string name="pick_location_secondary">Ajústala arratrando el marcador</string>
     <string name="current_location_primary">Usar ubicación actual</string>
-
+    <string name="settings">Configuración</string>
 
 </resources>

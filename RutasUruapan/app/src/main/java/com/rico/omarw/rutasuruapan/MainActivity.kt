@@ -26,6 +26,7 @@ import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.INITIAL_WALKING_DISTANCE_TOL
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
+import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
@@ -66,12 +67,12 @@ import kotlin.collections.ArrayList
 * [x] fix issues when keyboard is shown
 * [x] implement ResultsFragment
 * [x] if current location wasn't used in origin offer it at destination
-* [] nextTask: 1 improve looks of the textviews, show a more meaningful hint
+* [x] nextTask: 1 improve looks of the textviews, show a more meaningful hint
 * [x] onSearch: move camera to focus both markers, also if a marker is added
 * [] nextTask: 5 improve looks of outside of bounds error, possible create custom Toast
 * [] settings: add how many results to show?
 * [] nextTask: 2 find a way to differentiate between origin/dest markers
-* [] nextTask: 3 try a different look for the search button
+* [x?] nextTask: 3 try a different look for the search button
 * [] show tips for using the app
 * [] nextTask: 7 what to do if search has been done but a marker is dragged
 * [x] hide keyboard if panel goes collapsed
@@ -89,7 +90,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         SearchFragment.OnFragmentInteractionListener,
         ResultsFragment.OnFragmentInteractionListener,
         BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener {
-
     private val DIRECTIONAL_ARROWS_STEP = 7
     private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
 
@@ -208,7 +208,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
         googleLogo.layoutParams = layoutParams
 
+        // Add settings button next to location button
+        val locationButton = slidingLayout.findViewWithTag<ImageView>("GoogleMapMyLocationButton")
+        val settingsButtonLayoutParams = RelativeLayout.LayoutParams(resources.getDimensionPixelSize(R.dimen.settings_button_size), resources.getDimensionPixelSize(R.dimen.settings_button_size)).apply {
+            marginEnd = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
+            addRule(RelativeLayout.ALIGN_TOP, locationButton.id)
+            addRule(RelativeLayout.START_OF, locationButton.id)
+        }
+        val settingsButton = CustomImageButton(this@MainActivity, settingsButtonLayoutParams).apply {
+            setOnClickListener{showSettings()}
+        }
+        (locationButton.parent as RelativeLayout).addView(settingsButton)
 
+        // Observes the drawing events of the bottomNavigationBar to know its height and take it into consideration for the map's bottom padding, then it removes itself.
         val layoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 map.setPadding(0, 0, 0, getSearchFragmentHeight() + bottomNavView.height)
@@ -217,6 +229,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
         bottomNavView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+    }
+
+    private fun showSettings(){
+        Toast.makeText(this, "Opening settings screen", Toast.LENGTH_SHORT).show()
     }
 
     private fun getStatusBarHeight(): Int{
