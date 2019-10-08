@@ -12,4 +12,5 @@
     <color name="my_divider">#D5D5D5</color>
 
     <color name="icon_tint">#292929</color>
+    <color name="settings_toolbar_background">#F3F1F1</color>
 </resources>

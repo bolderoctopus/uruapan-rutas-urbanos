@@ -3,6 +3,7 @@ package com.rico.omarw.rutasuruapan
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
@@ -67,7 +68,7 @@ import kotlin.collections.ArrayList
 * [x] fix issues when keyboard is shown
 * [x] implement ResultsFragment
 * [x] if current location wasn't used in origin offer it at destination
-* [x] nextTask: 1 improve looks of the textviews, show a more meaningful hint
+* [x] Improve looks of the textviews, show a more meaningful hint
 * [x] onSearch: move camera to focus both markers, also if a marker is added
 * [] nextTask: 5 improve looks of outside of bounds error, possible create custom Toast
 * [] settings: add how many results to show?
@@ -232,7 +233,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     private fun showSettings(){
-        Toast.makeText(this, "Opening settings screen", Toast.LENGTH_SHORT).show()
+        startActivity(Intent(this, SettingsActivity::class.java))
     }
 
     private fun getStatusBarHeight(): Int{
