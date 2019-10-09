@@ -185,17 +185,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
         googleLogo.layoutParams = layoutParams
 
-        // Add settings button next to location button
-        val locationButton = slidingLayout.findViewWithTag<ImageView>("GoogleMapMyLocationButton")
-        val settingsButtonLayoutParams = RelativeLayout.LayoutParams(resources.getDimensionPixelSize(R.dimen.settings_button_size), resources.getDimensionPixelSize(R.dimen.settings_button_size)).apply {
-            marginEnd = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
-            addRule(RelativeLayout.ALIGN_TOP, locationButton.id)
-            addRule(RelativeLayout.START_OF, locationButton.id)
-        }
-        val settingsButton = CustomImageButton(this@MainActivity, settingsButtonLayoutParams).apply {
-            setOnClickListener{showSettings()}
-        }
-        (locationButton.parent as RelativeLayout).addView(settingsButton)
+        setupSettingsButton()
 
         // Observes the drawing events of the bottomNavigationBar to know its height and take it into consideration for the map's bottom padding, then it removes itself.
         val layoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
@@ -206,6 +196,30 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
         bottomNavView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+    }
+
+    private fun setupSettingsButton(){
+        val locationButton = slidingLayout.findViewWithTag<ImageView>("GoogleMapMyLocationButton")
+        val settingsButtonLayoutParams = RelativeLayout.LayoutParams(resources.getDimensionPixelSize(R.dimen.settings_button_size), resources.getDimensionPixelSize(R.dimen.settings_button_size)).apply {
+            marginEnd = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
+            if(locationButton.visibility == View.VISIBLE){
+                addRule(RelativeLayout.ALIGN_TOP, locationButton.id)
+                addRule(RelativeLayout.START_OF, locationButton.id)
+            }else{
+                topMargin = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
+                addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+                addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE)
+            }
+        }
+
+        var settingsButton = slidingLayout.findViewWithTag<CustomImageButton>(CustomImageButton.TAG)
+        if(settingsButton == null) {
+            settingsButton = CustomImageButton(this@MainActivity, settingsButtonLayoutParams).apply {
+                setOnClickListener { showSettings() }}
+            (locationButton.parent as RelativeLayout).addView(settingsButton)
+        }
+        else
+            settingsButton.layoutParams = settingsButtonLayoutParams
     }
 
     private fun showSettings(){
@@ -340,6 +354,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             LOCATION_PERMISSION_REQUEST ->{
                 if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     map.isMyLocationEnabled = true
+                    setupSettingsButton()
                 }
             }
         }

@@ -9,10 +9,12 @@ import android.widget.RelativeLayout
 import com.rico.omarw.rutasuruapan.R
 
 class CustomImageButton(c: Context, layoutParams: RelativeLayout.LayoutParams): ImageView(c) {
-
+    companion object {
+        val TAG = "SettingsButton"
+    }
 
     init {
-        tag = "SettingsButton"
+        tag = TAG
         isClickable = true
         scaleType = ScaleType.FIT_CENTER
         contentDescription = c.getString(R.string.settings)
