@@ -2,6 +2,7 @@ package com.rico.omarw.rutasuruapan
 
 import android.content.Context
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
-import com.rico.omarw.rutasuruapan.Constants.MAX_AMOUNT_ROUTES
+import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.WALKING_DISTANCE_INCREMENT
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
@@ -92,6 +93,8 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         var walkingDistanceTolerance = tolerance
         if(walkingDistanceTolerance < 0) throw Exception("")
         val walkingDistToDest = distanceBetweenPoints(originLatLng, destinationLatLng)
+        val maxAmountResults = (PreferenceManager.getDefaultSharedPreferences(context).getString("max_amount_results", "10") ?: "10").toInt()
+        Log.d(DEBUG_TAG, "maxAmountResults: $maxAmountResults")
 
         uiScope.launch {
             val routesDao = AppDatabase.getInstance(context!!)?.routesDAO()
@@ -106,7 +109,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
                 if(routesNearDest.await().isNullOrEmpty() || routesNearOrigin.await().isNullOrEmpty()) continue
                 mutualRoutes = routesNearOrigin.await()!!.intersect(routesNearDest.await()!!)
-                if(mutualRoutes.size > MAX_AMOUNT_ROUTES) break
+                if(mutualRoutes.size > maxAmountResults) break
             }
 
             val results = arrayListOf<RouteModel>()

@@ -43,7 +43,6 @@ import kotlin.collections.ArrayList
 * [] i think the amount of results to show is currently not working
 * [] draw only the relevant part of the route?
 * [] sort resulting routes
-* [] nextTask: 8 add settings
 * [] show tips for using the app
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
@@ -56,6 +55,7 @@ import kotlin.collections.ArrayList
 * [] nextTask: 4 show message when no routes found or that the user should walk
 * [] try to draw arrows bigger, maybe change it according to zoom
 * [] add lap time
+* [] add setting for walking distance tolerance, what type? list? spinner? seekbar?
 */
 
 

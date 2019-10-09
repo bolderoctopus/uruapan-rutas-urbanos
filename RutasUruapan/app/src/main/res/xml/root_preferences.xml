@@ -1,35 +1,16 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory app:title="@string/messages_header">
-
-        <EditTextPreference
-            app:key="signature"
-            app:title="@string/signature_title"
-            app:useSimpleSummaryProvider="true" />
-
+    <PreferenceCategory app:title="@string/preference_category_general">
         <ListPreference
-            app:defaultValue="reply"
-            app:entries="@array/reply_entries"
-            app:entryValues="@array/reply_values"
-            app:key="reply"
-            app:title="@string/reply_title"
+            app:key="max_amount_results"
+            app:defaultValue="10"
+            app:allowDividerAbove="true"
+            app:allowDividerBelow="true"
+            app:entries="@array/results_to_show_labels"
+            app:entryValues="@array/results_to_show_values"
+            app:title="@string/preference_amount_results_to_show"
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/sync_header">
-
-        <SwitchPreferenceCompat
-            app:key="sync"
-            app:title="@string/sync_title" />
-
-        <SwitchPreferenceCompat
-            app:dependency="sync"
-            app:key="attachment"
-            app:summaryOff="@string/attachment_summary_off"
-            app:summaryOn="@string/attachment_summary_on"
-            app:title="@string/attachment_title" />
-
-    </PreferenceCategory>
-
 </PreferenceScreen>
