@@ -40,43 +40,19 @@ import kotlin.collections.ArrayList
 * [] modify database, add direction data
 * [] update algorithm, take into consideration direction
 * [] improve function walkingDistanceToDest, take into consideration buildings
-*
-* [x] when the phone is blocked and the app starts, the AllRoutesFragment has 0 height
+* [] i think the amount of results to show is currently not working
 * [] draw only the relevant part of the route?
-* [x] if available, use current location as origin
 * [] sort resulting routes
-* [x] improve origin/destination looks
-* [x] overall design
 * [] nextTask: 8 add settings
+* [] show tips for using the app
 * [] add missing routes 176 y 45
 * [] settings: how many results to show?
-* [x] replace Asynctasks with coroutines
-* [x] offer "Pick current location"
-* [x] update address after marker drag
-* [x] when moving the map's camera, do so taking into consideration the part of it that's visible
-* [x] prevent markers from being drawn outside bounds
-* [x] show addresses with the same format
 * [] nextTask: 6 improve color palette: bottomNavBar,
-* [x] size of searchFragment, fab touches the destination
-* [x] check the shadow of the fab
-* [x] add drag up indicator, (small view on top of the sliding panel)
-* [x] fix menu selection thing
 * [] set fragment transitions between search and results
-* [x] code origin & destination textBoxes
-* [x] fragments lose state
-* [x] switch scroll view when the thing changes
-* [x] fix issues when keyboard is shown
-* [x] implement ResultsFragment
-* [x] if current location wasn't used in origin offer it at destination
-* [x] Improve looks of the textviews, show a more meaningful hint
-* [x] onSearch: move camera to focus both markers, also if a marker is added
 * [] nextTask: 5 improve looks of outside of bounds error, possible create custom Toast
 * [] settings: add how many results to show?
 * [] nextTask: 2 find a way to differentiate between origin/dest markers
-* [x?] nextTask: 3 try a different look for the search button
-* [] show tips for using the app
 * [] nextTask: 7 what to do if search has been done but a marker is dragged
-* [x] hide keyboard if panel goes collapsed
 * [] nextTask: 4 show message when no routes found or that the user should walk
 * [] try to draw arrows bigger, maybe change it according to zoom
 * [] add lap time
