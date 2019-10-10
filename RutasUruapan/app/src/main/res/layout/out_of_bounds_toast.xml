@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/out_of_bounds_toast_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+<!--  The LinearLayout needs the FrameLayout to show its margin since the toast view is inflated with a null root view
+the FrameLayout becomes the root view and takes the whole screen width. Otherwise the left/right margins are not
+taken into consideration  -->
+    <LinearLayout
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/rectangular_shape"
+        tools:ignore="UselessParent">
+
+        <TextView
+            android:text="@string/out_of_bounds_error"
+            android:textColor="#ffffff"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingEnd="5dp"
+            android:paddingStart="10dp"
+            android:textAlignment="center"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"/>
+
+        <ImageView
+            android:paddingEnd="10dp"
+            android:paddingStart="0dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_error_white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/error_icon" />
+    </LinearLayout>
+</FrameLayout>

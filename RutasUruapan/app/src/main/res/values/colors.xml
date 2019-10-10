@@ -13,4 +13,5 @@
 
     <color name="icon_tint">#292929</color>
     <color name="settings_toolbar_background">#F3F1F1</color>
+    <color name="toast_error_background">#A81919</color>
 </resources>

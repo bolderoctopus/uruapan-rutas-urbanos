@@ -151,7 +151,7 @@ class AutoCompleteAdapter (context: Context,
         }
 
     }
-
+//todo: chekc for permission in order to prevent going to the catch block if permissions is not granted
     fun addCurrentLocation(){
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         coroutineScope.launch {

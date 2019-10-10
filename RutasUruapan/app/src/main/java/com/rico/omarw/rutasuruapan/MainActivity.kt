@@ -9,9 +9,7 @@ import android.graphics.*
 import android.graphics.Bitmap.createBitmap
 import android.os.*
 import android.util.Log
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewTreeObserver
+import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -28,6 +26,7 @@ import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.INITIAL_WALKING_DISTANCE_TOL
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
+import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
@@ -45,17 +44,19 @@ import kotlin.collections.ArrayList
 * [] sort resulting routes
 * [] show tips for using the app
 * [] add missing routes 176 y 45
-* [] settings: how many results to show?
-* [] nextTask: 6 improve color palette: bottomNavBar,
 * [] set fragment transitions between search and results
-* [] nextTask: 5 improve looks of outside of bounds error, possible create custom Toast
+* [x] improve looks of outside of bounds error, possible create custom Toast
 * [] settings: add how many results to show?
-* [] nextTask: 2 find a way to differentiate between origin/dest markers
-* [] nextTask: 7 what to do if search has been done but a marker is dragged
-* [] nextTask: 4 show message when no routes found or that the user should walk
 * [] try to draw arrows bigger, maybe change it according to zoom
 * [] add lap time
 * [] add setting for walking distance tolerance, what type? list? spinner? seekbar?
+* [] fix spacing with route items on recycler views
+* 
+* [] >>>nextTask: 1 what to do if search has been done but a marker is dragged<<<  recalculate or block markers
+* [] nextTask: 2 find a way to differentiate between origin/dest markers
+* [] nextTask: 2 SearchFragment: test with a single button "Search/Find Route", how to show all routes then?
+* [] nextTask show message when no routes found or that the user should walk
+* [] nextTask: 6 make active/inactive states more different
 */
 
 
@@ -234,7 +235,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     private fun showOutOfBoundsError(){
-        Toast.makeText(this, "position outside uruapan bounds", Toast.LENGTH_SHORT).show()
+        OutOfBoundsToast(this).show()
     }
 
     override fun onMapLongClick(pos: LatLng){
