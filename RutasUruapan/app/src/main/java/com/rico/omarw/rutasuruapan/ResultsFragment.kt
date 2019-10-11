@@ -51,8 +51,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         val view = inflater.inflate(R.layout.fragment_results, container, false)
         recyclerView = view.findViewById(R.id.recyclerView_results)
         view.findViewById<ImageButton>(R.id.imagebutton_back).setOnClickListener{
-            clearDrawnRoutes()
-            listener?.onBackFromResults()
+            backButtonPressed()
         }
         if(height != null)
             view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height!!)
@@ -63,6 +62,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         findRoutesAsync(originLatLng, destinationLatLng, tolerance!!)
 
         return view
+    }
+
+    fun backButtonPressed(){
+        clearDrawnRoutes()
+        listener?.onBackFromResults()
     }
 
     override fun onAttach(context: Context) {
@@ -125,6 +129,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
 
     private fun displayRoutes(results: ArrayList<RouteModel>){
+        recyclerView.visibility = View.VISIBLE
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = RouteListAdapter(results, this)
@@ -134,6 +139,15 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         if(drawnRoutes == null) drawnRoutes = ArrayList()
         drawnRoutes!!.add(route)
         listener?.drawRoute(route)
+    }
+
+    fun startUpdate(){
+        recyclerView.visibility = View.INVISIBLE
+        clearDrawnRoutes()
+    }
+
+    fun endUpdate(origin: LatLng, destination: LatLng){
+        findRoutesAsync(origin, destination, tolerance!!)
     }
 
     interface OnFragmentInteractionListener {

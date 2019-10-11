@@ -51,8 +51,8 @@ import kotlin.collections.ArrayList
 * [] add lap time
 * [] add setting for walking distance tolerance, what type? list? spinner? seekbar?
 * [] fix spacing with route items on recycler views
-* 
-* [] >>>nextTask: 1 what to do if search has been done but a marker is dragged<<<  recalculate or block markers
+* [x] what to do if search has been done but a marker is dragged: recalculate
+*
 * [] nextTask: 2 find a way to differentiate between origin/dest markers
 * [] nextTask: 2 SearchFragment: test with a single button "Search/Find Route", how to show all routes then?
 * [] nextTask show message when no routes found or that the user should walk
@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         slidingLayout= findViewById(R.id.sliding_layout)
         slideIndicator = findViewById(R.id.imageview_slide_indicator)
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_navigation_slide_panel)
+        bottomNavView = findViewById(R.id.bottom_navigation_slide_panel)
 
 
 
@@ -257,6 +257,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 clearMarker(SearchFragment.MarkerType.Origin)
                 clearMarker(SearchFragment.MarkerType.Destination)
                 searchFragment.clearInputs()
+                resultsFragment?.backButtonPressed()
             }
         }
 
@@ -366,17 +367,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         vibrate()
         startMarkerPosition = m.position
         searchFragment.startUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
+        resultsFragment?.startUpdate()
     }
 
     override fun onMarkerDragEnd(m: Marker?) {
         if(m == null) return
-        if(SearchFragment.uruapanLatLngBounds.contains(m.position))
-            searchFragment.endUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
-        else{
+        if(!SearchFragment.uruapanLatLngBounds.contains(m.position)){
             showOutOfBoundsError()
             m.position = startMarkerPosition
-            searchFragment.endUpdatePosition(m.tag as SearchFragment.MarkerType, startMarkerPosition)
         }
+        searchFragment.endUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
+        if(originMarker != null && destinationMarker != null)
+            resultsFragment?.endUpdate(originMarker!!.position, destinationMarker!!.position)
     }
 
     override fun onMarkerDrag(m: Marker?) {
