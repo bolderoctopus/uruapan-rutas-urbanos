@@ -11,6 +11,7 @@ import android.os.*
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -193,7 +194,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             override fun onGlobalLayout() {
                 map.setPadding(0, 0, 0, getSearchFragmentHeight() + bottomNavView.height)
                 bottomNavView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                Log.d(DEBUG_TAG, "bottomNavView.height: ${bottomNavView.height}")
             }
         }
         bottomNavView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
@@ -402,8 +402,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     @SuppressLint("NewApi")
-    private fun getBitmapDescriptor(): BitmapDescriptor?{
-        val drawable = getDrawable(R.drawable.ic_place) ?: return null
+    private fun getBitmapDescriptor(@DrawableRes id: Int): BitmapDescriptor?{
+        val drawable = getDrawable(id) ?: return null
 //        drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
         drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
         val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
@@ -459,12 +459,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker?.remove()
-            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(getBitmapDescriptor()).draggable(true))
+            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(getBitmapDescriptor(R.drawable.ic_origin_marker)).draggable(true))
             originMarker?.tag = markerType
         }
         else if(markerType == SearchFragment.MarkerType.Destination) {
             destinationMarker?.remove()
-            destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).draggable(true))
+            destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).
+                    icon(getBitmapDescriptor(R.drawable.ic_destination_marker)).draggable(true))
             destinationMarker?.tag = markerType
         }
     }
