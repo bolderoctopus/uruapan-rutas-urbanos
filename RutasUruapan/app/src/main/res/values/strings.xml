@@ -34,5 +34,6 @@
     <string name="preference_amount_results_to_show">Cantidad de resultados a mostrar</string>
     <string name="out_of_bounds_error">Selecciona una ubicación más cercana a la ciudad de Uruapan</string>
     <string name="error_icon">Error icon</string>
+    <string name="no_routes_found">No se encontraron rutas  Intenta caminar</string>
 
 </resources>

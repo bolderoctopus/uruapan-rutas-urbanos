@@ -52,11 +52,11 @@ import kotlin.collections.ArrayList
 * [] add setting for walking distance tolerance, what type? list? spinner? seekbar?
 * [] fix spacing with route items on recycler views
 * [x] what to do if search has been done but a marker is dragged: recalculate
+* [] decide if new design stays
 *
-* [] nextTask: 2 find a way to differentiate between origin/dest markers
-* [] nextTask: 2 SearchFragment: test with a single button "Search/Find Route", how to show all routes then?
-* [] nextTask show message when no routes found or that the user should walk
-* [] nextTask: 6 make active/inactive states more different
+* [x] find a way to differentiate between origin/dest markers
+* [x] SearchFragment: test with a single button "Search/Find Route", how to show all routes then?
+* [x] show message when no routes found or that the user should walk
 */
 
 

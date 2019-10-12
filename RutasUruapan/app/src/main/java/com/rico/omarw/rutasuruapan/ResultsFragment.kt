@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +25,7 @@ import kotlin.math.sqrt
 class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     lateinit var recyclerView: RecyclerView
+    private lateinit var groupWalkMessage: Group
     private var listener: OnFragmentInteractionListener? = null
     private var height: Int? = null
     public var onViewCreated: Runnable? = null
@@ -49,6 +51,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_results, container, false)
+        groupWalkMessage = view.findViewById(R.id.group_walk_message)
         recyclerView = view.findViewById(R.id.recyclerView_results)
         view.findViewById<ImageButton>(R.id.imagebutton_back).setOnClickListener{
             backButtonPressed()
@@ -92,7 +95,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         return sqrt(d1 * d1 + d2 * d2)
     }
 
-    //todo: if the distance that you need to walk to the bus stop is greater or equal than the distance, to the other point then maybe you should walk, (already on mainActivity todo list)
     private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, tolerance: Double){
         var walkingDistanceTolerance = tolerance
         if(walkingDistanceTolerance < 0) throw Exception("")
@@ -122,17 +124,27 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
                 routesInfo?.forEach{results.add(RouteModel(it))}
             }
 
-            displayRoutes(results)
+            if(results.isEmpty())
+                showNoResultsMessage()
+            else
+                displayRoutes(results)
         }
     }
 
     private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
 
     private fun displayRoutes(results: ArrayList<RouteModel>){
+        groupWalkMessage.visibility = View.GONE
+
         recyclerView.visibility = View.VISIBLE
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = RouteListAdapter(results, this)
+    }
+
+    private fun showNoResultsMessage(){
+        recyclerView.visibility = View.GONE
+        groupWalkMessage.visibility = View.VISIBLE
     }
 
     override fun drawRoute(route: RouteModel) {
