@@ -25,7 +25,7 @@ class RouteListAdapter  (private val items: List<RouteModel>,
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
         holder.checkBox.text = items[p].name
         holder.checkBox.isChecked = items[p].isDrawed
-        holder.colorTag.background.setColorFilter(Color.parseColor(items[p].color), PorterDuff.Mode.SRC)
+        holder.colorTag.setBackgroundColor(Color.parseColor(items[p].color))
         holder.checkBox.setOnClickListener {
             callback?.drawRoute(items[p])
         }

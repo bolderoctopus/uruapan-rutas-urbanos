@@ -53,6 +53,7 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
         holder.model = sortedList[p]
         holder.checkBox.text = sortedList[p].name
         holder.colorTag.background.setColorFilter(Color.parseColor(holder.model.color), PorterDuff.Mode.SRC)
+        holder.colorTag.setBackgroundColor(Color.parseColor(holder.model.color))
         holder.checkBox.isChecked = sortedList[p].isDrawed
 
         holder.checkBox.setOnClickListener {
