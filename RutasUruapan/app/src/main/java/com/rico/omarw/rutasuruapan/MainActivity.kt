@@ -504,4 +504,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    override fun onBackPressed() {
+        if(resultsFragment?.isVisible == true)
+            resultsFragment!!.backButtonPressed()
+        else
+            super.onBackPressed()
+    }
 }
