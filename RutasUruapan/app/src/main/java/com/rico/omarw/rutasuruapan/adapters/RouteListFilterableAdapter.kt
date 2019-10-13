@@ -1,5 +1,9 @@
 package com.rico.omarw.rutasuruapan.adapters
 
+import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.drawable.Drawable
+import android.text.Html
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -48,6 +52,7 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
         holder.model = sortedList[p]
         holder.checkBox.text = sortedList[p].name
+        holder.colorTag.background.setColorFilter(Color.parseColor(holder.model.color), PorterDuff.Mode.SRC)
         holder.checkBox.isChecked = sortedList[p].isDrawed
 
         holder.checkBox.setOnClickListener {
@@ -56,6 +61,7 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
     }
 
     class  MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+        var colorTag: View = itemView.findViewById(R.id.view_colorTag)
         var checkBox: CheckBox = itemView.findViewById(R.id.route_name)
         lateinit var model: RouteModel
     }

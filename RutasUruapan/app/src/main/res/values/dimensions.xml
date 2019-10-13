@@ -3,5 +3,6 @@
     <dimen name="default_fragment_height">330dp</dimen>
     <dimen name="settings_button_size">41.5dp</dimen>
     <dimen name="settings_button_marginEnd">8dp</dimen>
+    <dimen name="colorTag_width">7dp</dimen>
 
 </resources>
