@@ -9,8 +9,12 @@
 
     <SearchView
         android:id="@+id/searchview"
+        android:queryHint="@string/filter"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:iconifiedByDefault="true"
+        android:layoutDirection="rtl"/>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"

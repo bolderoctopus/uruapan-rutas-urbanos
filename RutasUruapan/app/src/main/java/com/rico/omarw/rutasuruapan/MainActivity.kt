@@ -48,9 +48,10 @@ import kotlin.collections.ArrayList
 * [] set fragment transitions between search and results
 * [] try to draw arrows bigger, maybe change it according to zoom
 * [] add setting for walking distance tolerance, what type? list? spinner? seekbar?
+* [] display lap time per route?
 * [...] improve allRoutes Fragment look
-*       [] fix spacing with route items on recycler views
-*       [] display lap time per route?
+*       [x] fix spacing with route items on recycler views
+*       [] format in a better way the labels
 *
 * [] decide if new design stays
 *

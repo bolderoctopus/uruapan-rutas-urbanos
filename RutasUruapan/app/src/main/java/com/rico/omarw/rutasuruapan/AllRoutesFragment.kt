@@ -1,13 +1,18 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ShapeDrawable
 import android.os.Bundle
+import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.SearchView
+import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,6 +20,7 @@ import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
+import java.lang.Exception
 
 
 class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener{
@@ -56,6 +62,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         recyclerView = view.findViewById(R.id.recyclerView_all_routes)
         searchView = view.findViewById(R.id.searchview)
         searchView.setOnQueryTextListener(queryTextListener)
+        removeSearchViewBackground()
 
         onViewCreated?.run()
         onViewCreated = null
@@ -75,6 +82,16 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         }
     }
 
+    fun removeSearchViewBackground(){
+        try{
+            val searchPlateId: Int = searchView.context.resources.getIdentifier("android:id/search_plate", null, null)
+            val searchPlate = searchView.findViewById<View>(searchPlateId)
+            searchPlate.setBackgroundColor(Color.TRANSPARENT)
+
+        }catch (exception: Exception){
+            Log.e(TAG, "Error on removeSearchViewBackground", exception)
+        }
+    }
 
     fun filter(models: List<RouteModel>, query: String): List<RouteModel>{
         val lowerCaseQuery = query.toLowerCase()

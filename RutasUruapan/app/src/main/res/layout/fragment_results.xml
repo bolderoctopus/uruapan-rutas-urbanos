@@ -15,7 +15,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="@id/start_guideline"
-         app:layout_constraintTop_toTopOf="parent"/>
+         app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/back_button_imageView_content_description" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView_results"

@@ -36,5 +36,7 @@
     <string name="error_icon">Error icon</string>
     <string name="no_routes_found">No se encontraron rutas, tal vez caminar sea más rápido</string>
     <string name="imageView_walking_person_content_description">Persona caminando</string>
+    <string name="back_button_imageView_content_description">Boton atrás</string>
+    <string name="filter">Filtrar</string>
 
 </resources>
