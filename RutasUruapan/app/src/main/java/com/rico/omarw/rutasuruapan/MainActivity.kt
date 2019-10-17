@@ -462,12 +462,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker?.remove()
-            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(getBitmapDescriptor()).draggable(true))
+            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).draggable(true))
             originMarker?.tag = markerType
         }
         else if(markerType == SearchFragment.MarkerType.Destination) {
             destinationMarker?.remove()
-            destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).draggable(true))
+            destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).draggable(true))
             destinationMarker?.tag = markerType
         }
     }
