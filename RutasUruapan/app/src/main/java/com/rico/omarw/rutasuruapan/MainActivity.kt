@@ -196,7 +196,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             override fun onGlobalLayout() {
                 map.setPadding(0, 0, 0, getSearchFragmentHeight() + bottomNavView.height)
                 bottomNavView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                Log.d(DEBUG_TAG, "bottomNavView.height: ${bottomNavView.height}")
             }
         }
         bottomNavView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)

@@ -18,6 +18,7 @@ import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
+import com.rico.omarw.rutasuruapan.database.Routes
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
 import kotlin.math.sqrt
@@ -52,6 +53,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         groupWalkMessage = view.findViewById(R.id.group_walk_message)
         recyclerView = view.findViewById(R.id.recyclerView_results)
         view.findViewById<ImageButton>(R.id.imagebutton_back).setOnClickListener{
+            listener?.clearMap()
             backButtonPressed()
         }
         if(height != null)
@@ -140,12 +142,18 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
             else{
                 for(routeId in commonRoutesIds){
-                    Log.d(DEBUG_TAG, "routeId: $routeId")
-//                    var startPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(routeId)}
+                    val route: Routes? = withContext(Dispatchers.IO){ routesDao?.getRoute(routeId)}
                     var startPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(originLatLng.latitude, originLatLng.longitude ,routeId)}
-//                    var endPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(destinationLatLng.latitude, destinationLatLng.longitude ,routeId)}
+                    var endPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(destinationLatLng.latitude, destinationLatLng.longitude ,routeId)}
                     listener?.drawMarker(LatLng(startPoint!!.lat, startPoint.lng))
-//                    listener?.drawMarker(LatLng(endPoint!!.lat, endPoint.lng))
+                    listener?.drawMarker(LatLng(endPoint!!.lat, endPoint.lng))
+
+                    Log.d(DEBUG_TAG, "route: ${route?.name}, routeId: ${route?.routeId}")
+                    Log.d(DEBUG_TAG, "origin: latLng= ${originLatLng.latitude}, ${originLatLng.longitude}")
+                    Log.d(DEBUG_TAG, "destination: latLng= ${destinationLatLng.latitude}, ${destinationLatLng.longitude}")
+
+                    Log.d(DEBUG_TAG, "startPoint: #${startPoint?.number} ,latLng= ${startPoint?.lat}, ${startPoint?.lng}")
+                    Log.d(DEBUG_TAG, "endPoint: #${endPoint?.number} ,latLng= ${endPoint?.lat}, ${endPoint?.lng}")
 //                  get start/end points (points from route with the least distance to origin and dest)
 //                  calculate routeWalkDist,
 //                  calculate totalWalkDist

@@ -39,9 +39,10 @@ interface RouteDAO{
     @Query("SELECT *" +
             "FROM Points " +
             "WHERE routeId = :rId " +
-//            "ORDER BY (ABS(19.41402 - lat) + ABS( -102.0606177 - lng)) ASC")
-            "ORDER BY (ABS(:latitude - lat) + ABS(:longitude - lng)) ASC ")
-            //"LIMIT 1")
-//    suspend fun getNearestPointTo(rId: Long): Point
+            "ORDER BY ((:latitude - lat)*(:latitude - lat) + (:longitude - lng)*(:longitude - lng)) ASC " +
+            "LIMIT 1")
     suspend fun getNearestPointTo(latitude: Double, longitude: Double, rId: Long): Point
+
+    @Query("SELECT * FROM Routes WHERE routeId = :rId")
+    suspend fun getRoute(rId: Long): Routes
 }
