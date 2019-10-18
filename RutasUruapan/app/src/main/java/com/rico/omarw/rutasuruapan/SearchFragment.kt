@@ -216,6 +216,7 @@ class SearchFragment : Fragment(){
     }
 
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
+        return//todo: remove
         if(!::geocoder.isInitialized) geocoder = Geocoder(context, Locale.getDefault())
 
         uiScope.launch {

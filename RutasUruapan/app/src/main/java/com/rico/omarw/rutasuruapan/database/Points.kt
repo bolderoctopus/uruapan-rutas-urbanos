@@ -3,8 +3,8 @@ package com.rico.omarw.rutasuruapan.database
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity
-data class Points(var routeId: Long,
+@Entity(tableName = "Points")
+data class Point(var routeId: Long,
                   var lat: Double,
                   var lng: Double,
                   var number: Int,

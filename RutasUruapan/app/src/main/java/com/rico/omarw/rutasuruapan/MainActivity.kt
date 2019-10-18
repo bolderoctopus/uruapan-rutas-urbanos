@@ -23,7 +23,6 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
-import com.rico.omarw.rutasuruapan.Constants.INITIAL_WALKING_DISTANCE_TOL
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
@@ -36,13 +35,15 @@ import kotlin.collections.ArrayList
 
 //todo: see below
 /*
-* [] modify database, add direction data
+* [x] modify database, add direction data
 * [] update algorithm, take into consideration direction
+* [] sort resulting routes
+* [] draw only the relevant part of the route?
+*
+* [] add indexes to speed up the db
 * [] improve function walkingDistanceToDest, take into consideration buildings
 * [] settings: add how many results to show?
 * [] i think the amount of results to show is currently not working
-* [] draw only the relevant part of the route?
-* [] sort resulting routes
 * [] show tips for using the app
 * [] add missing routes 176 y 45
 * [] set fragment transitions between search and results
@@ -74,7 +75,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private val DIRECTIONAL_ARROWS_STEP = 7
     private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
 
-    private val DEBUG_SQUARES = false
     private val VIBRATION_DURATION: Long = 75
 
     private val LOCATION_PERMISSION_REQUEST = 32
@@ -271,11 +271,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return "%.5f,  %.5f".format(pos.latitude, pos.longitude) //.toString() + ", " + pos.longitude.toString()
     }
 
-    private fun drawSquares(walkingDistance: Double){
-        if(!DEBUG_SQUARES) return
+    override fun drawSquares(walkingDistance: Double){
+        if(!Constants.DRAW_SQUARES) return
 
-        originSquare?.remove()
-        destinationSquare?.remove()
+        clearSquares()
 
         originSquare = map.addPolygon(PolygonOptions()
                 .addAll(getSquareFrom(walkingDistance, originMarker!!.position))
@@ -286,6 +285,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .strokeColor(Color.BLACK)
                 .fillColor(Color.argb(100,100,100,100)))
 
+    }
+
+    fun clearSquares(){
+        originSquare?.remove()
+        destinationSquare?.remove()
     }
 
     private fun getSquareFrom(distance: Double, center: LatLng): List<LatLng>{
@@ -337,7 +341,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     route.arrowPolylines?.add(map.addPolyline(it))
                 }
                 route.isDrawed = true
-                Log.d(DEBUG_TAG, "\npoints in route: ${points?.size} \narrows drawn: ${arrowPolylineOptions.size}")
             }
         }
     }
@@ -432,7 +435,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onSearch(origin: LatLng, destination: LatLng){
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(getLatLngBoundsFrom(destination, origin), CAMERA_PADDING_MARKER))
-        resultsFragment = ResultsFragment.newInstance(getSearchFragmentHeight(), origin, destination, INITIAL_WALKING_DISTANCE_TOL)
+        resultsFragment = ResultsFragment.newInstance(getSearchFragmentHeight(), origin, destination)
 
         supportFragmentManager.beginTransaction()
                 .add(R.id.fragment_container, resultsFragment!!, ResultsFragment.TAG)
@@ -486,6 +489,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onBackFromResults(){
+        clearSquares()
         supportFragmentManager.beginTransaction()
                 .remove(resultsFragment!!)
                 .show(searchFragment)
@@ -510,5 +514,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             resultsFragment!!.backButtonPressed()
         else
             super.onBackPressed()
+    }
+
+    override fun clearMap() {
+        map.clear()
+    }
+
+    override fun drawMarker(latLng: LatLng) {
+        map.addMarker(MarkerOptions().position(latLng).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)).draggable(false))
     }
 }
