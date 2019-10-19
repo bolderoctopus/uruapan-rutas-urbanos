@@ -327,8 +327,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
 
                 route.mainSegment = map.addPolyline(mainSegmentPolOpt)
-//                route.secondarySegment = map.addPolyline(possibleSecondaryPolOpt)
-
+                route.secondarySegment = map.addPolyline(possibleSecondaryPolOpt)
+                route.arrowPolylines = getArrowPolylines(points!!, color)
                 route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
                 route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
 
