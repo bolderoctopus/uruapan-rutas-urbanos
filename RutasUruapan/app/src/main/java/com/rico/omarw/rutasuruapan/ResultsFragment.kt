@@ -18,7 +18,7 @@ import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
-import com.rico.omarw.rutasuruapan.database.Routes
+import com.rico.omarw.rutasuruapan.database.Route
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
 import kotlin.math.sqrt
@@ -139,46 +139,39 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             if(commonRoutesIds.isNullOrEmpty()){
                  showNoResultsMessage()// todo: suggest to increase WalkDistLimit?
             }
-
             else{
+                val results = arrayListOf<RouteModel>()
                 for(routeId in commonRoutesIds){
-                    val route: Routes? = withContext(Dispatchers.IO){ routesDao?.getRoute(routeId)}
+                    val route: Route? = withContext(Dispatchers.IO){ routesDao?.getRoute(routeId)}
                     var startPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(originLatLng.latitude, originLatLng.longitude ,routeId)}
                     var endPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(destinationLatLng.latitude, destinationLatLng.longitude ,routeId)}
-                    listener?.drawMarker(LatLng(startPoint!!.lat, startPoint.lng))
-                    listener?.drawMarker(LatLng(endPoint!!.lat, endPoint.lng))
+                    val routeDist = withContext(Dispatchers.IO){ routesDao?.getRouteDist(routeId, startPoint!!.number, endPoint!!.number)} ?: 0
 
+                    val routeModel = RouteModel(route!!)
+                    routeModel.startPoint = startPoint
+                    routeModel.endPoint = endPoint
+                    routeModel.walkDist = distanceBetweenPoints(originLatLng, startPoint!!.getLatLng()) + distanceBetweenPoints(destinationLatLng, endPoint!!.getLatLng())
+                    routeModel.totalDist = routeModel.walkDist!! + routeDist
+                    results.add(routeModel)
+
+                    Log.d(DEBUG_TAG,"__________")
                     Log.d(DEBUG_TAG, "route: ${route?.name}, routeId: ${route?.routeId}")
                     Log.d(DEBUG_TAG, "origin: latLng= ${originLatLng.latitude}, ${originLatLng.longitude}")
                     Log.d(DEBUG_TAG, "destination: latLng= ${destinationLatLng.latitude}, ${destinationLatLng.longitude}")
-
                     Log.d(DEBUG_TAG, "startPoint: #${startPoint?.number} ,latLng= ${startPoint?.lat}, ${startPoint?.lng}")
                     Log.d(DEBUG_TAG, "endPoint: #${endPoint?.number} ,latLng= ${endPoint?.lat}, ${endPoint?.lng}")
-//                  get start/end points (points from route with the least distance to origin and dest)
-//                  calculate routeWalkDist,
-//                  calculate totalWalkDist
-                    break
+                    Log.d(DEBUG_TAG, "routeWalkDist: ${routeModel.walkDist}")
+                    Log.d(DEBUG_TAG, "routeTotalDist: ${routeModel.totalDist}")
+                }
+                results.sortBy {
+                    it.walkDist
                 }
 
-//             sort them by totalWalkDist
-//             display results
-                /*
-                val results = arrayListOf<RouteModel>()
-                val routesInfo = withContext(Dispatchers.IO) { routesDao?.getRoutes(commonRoutesIds.toList()) }
-                routesInfo?.forEach{results.add(RouteModel(it))}
                 displayRoutes(results)
-
-                 */
             }
 
         }
     }
-    // nota sobre condicion en la busqueda iterativa
-    // condicion 1
-    // si la distancia que caminas desde el origen hasta la parada del camion
-    // mas la distancia que caminas cuando te bajas hasta tu destino
-    // es mayor que lo que original mente recorrerias y caminaras desde el origen hacia el destino
-    // entonces deberias caminar
 
     private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
 
@@ -196,10 +189,10 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         groupWalkMessage.visibility = View.VISIBLE
     }
 
-    override fun drawRoute(route: RouteModel) {
+    override fun drawRouteResult(route: RouteModel) {
         if(drawnRoutes == null) drawnRoutes = ArrayList()
         drawnRoutes!!.add(route)
-        listener?.drawRoute(route)
+        listener?.drawRouteResult(route)
     }
 
     fun startUpdate(){
@@ -221,9 +214,8 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     interface OnFragmentInteractionListener {
         fun onBackFromResults()
-        fun drawRoute(route: RouteModel)
+        fun drawRouteResult(route: RouteModel)
         fun drawSquares(walkingDistance: Double)
-        fun drawMarker(latLng: LatLng)
         fun clearMap()
     }
 

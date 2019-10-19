@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
 import android.os.*
-import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -22,11 +21,11 @@ import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
-import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
 import com.rico.omarw.rutasuruapan.database.AppDatabase
+import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.coroutines.*
@@ -72,7 +71,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         SearchFragment.OnFragmentInteractionListener,
         ResultsFragment.OnFragmentInteractionListener,
         BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener {
-    private val DIRECTIONAL_ARROWS_STEP = 7
+    private val DIRECTIONAL_ARROWS_STEP = 3//7
     private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
 
     private val VIBRATION_DURATION: Long = 75
@@ -195,6 +194,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val layoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 map.setPadding(0, 0, 0, getSearchFragmentHeight() + bottomNavView.height)
+                // todo: remove this
+                onMapLongClick(LatLng(19.422123631224547, -102.07343347370625))
+                onMapLongClick(LatLng(19.41543181604419, -102.03406568616629))
                 bottomNavView.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         }
@@ -302,46 +304,87 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return points
     }
 
-    //.endCap(CustomCap(getEndCapIcon(Color.parseColor("#82b1ff"))))
-    override fun drawRoute(route: RouteModel) {
-        if (route.polyline != null){
-            route.showLines(route.isDrawed.not())
+    override fun drawRouteResult(route: RouteModel) {
+        if (route.mainSegment != null){
+            route.setVisibility(route.isDrawed.not())
 
         }else{
             uiScope.launch {
                 val color = Color.parseColor(route.color)
-                val arrowCap = getEndCapArrow(color)
+                val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)}
+                val mainSegmentPolOpt = PolylineOptions().apply{
+                    color(color)
+                    width(LINE_WIDTH)
+                    addAll(route.getMainSegment(points!!))
+                }
+                val possibleSecondaryPolOpt = PolylineOptions().apply {
+                    color(color)
+                    width(LINE_WIDTH)
+                    jointType(JointType.ROUND)
+                    pattern(RouteModel.dashedPatter)
+                    addAll(route.getSecondarySegment(points!!))
+                }
+
+
+                route.mainSegment = map.addPolyline(mainSegmentPolOpt)
+//                route.secondarySegment = map.addPolyline(possibleSecondaryPolOpt)
+
+                route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
+                route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
+
+                route.isDrawed = true
+            }
+        }
+    }
+
+    override fun drawRoute(route: RouteModel) {
+        if (route.polyline != null){
+            route.setVisibility(route.isDrawed.not())
+
+        }else{
+            uiScope.launch {
+                val color = Color.parseColor(route.color)
                 val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)}
                 val polylineOptions = PolylineOptions()
-                val arrowPolylineOptions = ArrayList<PolylineOptions>()
                 polylineOptions
                         .color(color)
                         .width(LINE_WIDTH)
                         .jointType(JointType.ROUND)
-                var counter = 0
-                // Add small polylines with arrow caps in order to show the direction
-                for(x in 0 until (points?.size ?: 0)){
-                    val point = points!![x]
-                    polylineOptions.add(LatLng(point.lat, point.lng))
-                    if(counter == 0 && arrowCap != null){
-                        counter = DIRECTIONAL_ARROWS_STEP
-                        if(x + 1 < points.size)
-                            arrowPolylineOptions.add(PolylineOptions()
-                                    .color(Color.TRANSPARENT)
-                                    .endCap(CustomCap(arrowCap))
-                                    .add(LatLng(point.lat, point.lng), LatLng(points[x+1].lat, points[x+1].lng)))
-
-                    }
-                    counter--
-                }
+                points?.forEach { polylineOptions.add(it.getLatLng()) }
                 route.polyline = map.addPolyline(polylineOptions)
-                route.arrowPolylines = ArrayList()
-                arrowPolylineOptions.forEach {
-                    route.arrowPolylines?.add(map.addPolyline(it))
-                }
+                route.arrowPolylines = getArrowPolylines(points!!, color)
                 route.isDrawed = true
             }
         }
+    }
+
+    /**
+     * Add small polylines with arrow caps in order to show the direction
+     */
+    private fun getArrowPolylines(points: List<Point>, color: Int ): List<Polyline>{
+        var counter = 0
+        val arrowCap = getEndCapArrow(color)
+        val arrowPolylineOptions = ArrayList<PolylineOptions>()
+        val arrowPolylines = ArrayList<Polyline>()
+
+        for(x in 0 until points.size){
+            val point = points[x]
+            if(counter == 0 && arrowCap != null){
+                counter = DIRECTIONAL_ARROWS_STEP
+                if(x + 1 < points.size)
+                    arrowPolylineOptions.add(PolylineOptions()
+                            .color(Color.TRANSPARENT)
+                            .endCap(CustomCap(arrowCap))
+                            .add(LatLng(point.lat, point.lng), LatLng(points[x+1].lat, points[x+1].lng)))
+            }
+            counter--
+        }
+
+
+        arrowPolylineOptions.forEach {
+            arrowPolylines.add(map.addPolyline(it))
+        }
+        return arrowPolylines
     }
 
     private fun locationPermissionEnabled(): Boolean {
@@ -519,7 +562,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map.clear()
     }
 
-    override fun drawMarker(latLng: LatLng) {
-        map.addMarker(MarkerOptions().position(latLng).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)).draggable(false))
+    fun drawMarker(latLng: LatLng, title: String): Marker {
+        return map.addMarker(MarkerOptions().title(title).position(latLng).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)).draggable(false))
     }
 }

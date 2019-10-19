@@ -6,5 +6,5 @@ object Constants {
     const val COMPLETION_THRESHOLD = 4
     const val CAMERA_PADDING_MARKER = 150
 
-    const val DRAW_SQUARES = true
+    const val DRAW_SQUARES = false
 }

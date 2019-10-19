@@ -1,29 +1,27 @@
 package com.rico.omarw.rutasuruapan.database
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface RouteDAO{
 
     @Insert
-    fun insertRoutes(routes: Array<Routes>)
+    fun insertRoutes(routes: Array<Route>)
 
     @Insert
     fun insertPoints(routes: List<Point>)
 
     @Insert
-    fun insertRoute(route: Routes): Long
+    fun insertRoute(route: Route): Long
 
     @Query("SELECT * FROM Points WHERE routeId = :routeId ORDER BY pointId")
     fun getPointsFrom(routeId: Long): List<Point>
 
     @Query("SELECT * FROM  Routes")
-    suspend fun getRoutes(): List<Routes>
+    suspend fun getRoutes(): List<Route>
 
     @Query("SELECT * FROM  Routes WHERE routeId IN (:routesIds)")
-    suspend fun getRoutes(routesIds: List<Long>): List<Routes>
+    suspend fun getRoutes(routesIds: List<Long>): List<Route>
 
     @Query("DELETE FROM Points")
     fun deleteAllPoints()
@@ -44,5 +42,17 @@ interface RouteDAO{
     suspend fun getNearestPointTo(latitude: Double, longitude: Double, rId: Long): Point
 
     @Query("SELECT * FROM Routes WHERE routeId = :rId")
-    suspend fun getRoute(rId: Long): Routes
+    suspend fun getRoute(rId: Long): Route
+
+    @Transaction
+    suspend  fun getRouteDist(rId: Long, startPoint: Int, endPoint: Int): Int{
+        return if (startPoint > endPoint) routeDistA(rId, startPoint, endPoint)
+                else routeDistA(rId, startPoint, endPoint)
+    }
+
+    @Query("SELECT SUM(distanceToNextPoint) FROM Points WHERE routeId = :rId AND (number >= :startPoint OR number <= :endPoint)")
+    suspend fun routeDistA(rId: Long, startPoint: Int, endPoint: Int): Int
+
+    @Query("SELECT SUM(distanceToNextPoint) FROM Points WHERE routeId = :rId AND number BETWEEN :startPoint AND :endPoint")
+    suspend fun routeDistB(rId: Long, startPoint: Int, endPoint: Int): Int
 }

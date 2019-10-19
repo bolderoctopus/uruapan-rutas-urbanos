@@ -1,7 +1,9 @@
 package com.rico.omarw.rutasuruapan.database
 
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.google.android.gms.maps.model.LatLng
 
 @Entity(tableName = "Points")
 data class Point(var routeId: Long,
@@ -12,4 +14,6 @@ data class Point(var routeId: Long,
 
     @PrimaryKey (autoGenerate = true)
     var pointId: Long = 0
+
+    fun getLatLng() = LatLng(lat, lng)
 }

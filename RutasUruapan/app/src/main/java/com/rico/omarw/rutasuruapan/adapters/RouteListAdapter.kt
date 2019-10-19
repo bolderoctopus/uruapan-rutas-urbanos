@@ -1,7 +1,6 @@
 package com.rico.omarw.rutasuruapan.adapters
 
 import android.graphics.Color
-import android.graphics.PorterDuff
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -23,11 +22,11 @@ class RouteListAdapter  (private val items: List<RouteModel>,
     override fun getItemCount() = items.size
 
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
-        holder.checkBox.text = items[p].name
+        holder.checkBox.text = items[p].name + ", " +items[p].walkDist
         holder.checkBox.isChecked = items[p].isDrawed
         holder.colorTag.setBackgroundColor(Color.parseColor(items[p].color))
         holder.checkBox.setOnClickListener {
-            callback?.drawRoute(items[p])
+            callback?.drawRouteResult(items[p])
         }
     }
 
@@ -37,6 +36,6 @@ class RouteListAdapter  (private val items: List<RouteModel>,
     }
 
     interface DrawRouteListener{
-        fun drawRoute(route: RouteModel)
+        fun drawRouteResult(route: RouteModel)
     }
 }
