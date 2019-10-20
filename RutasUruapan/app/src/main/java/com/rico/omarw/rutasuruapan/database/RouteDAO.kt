@@ -39,20 +39,20 @@ interface RouteDAO{
             "WHERE routeId = :rId " +
             "ORDER BY ((:latitude - lat)*(:latitude - lat) + (:longitude - lng)*(:longitude - lng)) ASC " +
             "LIMIT 1")
-    suspend fun getNearestPointTo(latitude: Double, longitude: Double, rId: Long): Point
+    suspend fun     getNearestPointTo(latitude: Double, longitude: Double, rId: Long): Point
 
     @Query("SELECT * FROM Routes WHERE routeId = :rId")
     suspend fun getRoute(rId: Long): Route
 
     @Transaction
     suspend  fun getRouteDist(rId: Long, startPoint: Int, endPoint: Int): Int{
-        return if (startPoint > endPoint) routeDistA(rId, startPoint, endPoint)
-                else routeDistA(rId, startPoint, endPoint)
+        return if (startPoint > endPoint) routeDistStartGreaterThanEnd(rId, startPoint, endPoint)
+                else routeDistStartLesserThanEnd(rId, startPoint, endPoint)
     }
 
     @Query("SELECT SUM(distanceToNextPoint) FROM Points WHERE routeId = :rId AND (number >= :startPoint OR number <= :endPoint)")
-    suspend fun routeDistA(rId: Long, startPoint: Int, endPoint: Int): Int
+    suspend fun routeDistStartGreaterThanEnd(rId: Long, startPoint: Int, endPoint: Int): Int
 
     @Query("SELECT SUM(distanceToNextPoint) FROM Points WHERE routeId = :rId AND number BETWEEN :startPoint AND :endPoint")
-    suspend fun routeDistB(rId: Long, startPoint: Int, endPoint: Int): Int
+    suspend fun routeDistStartLesserThanEnd(rId: Long, startPoint: Int, endPoint: Int): Int
 }
