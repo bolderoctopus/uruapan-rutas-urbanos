@@ -44,15 +44,6 @@ interface RouteDAO{
     @Query("SELECT * FROM Routes WHERE routeId = :rId")
     suspend fun getRoute(rId: Long): Route
 
-    @Transaction
-    suspend  fun getRouteDist(rId: Long, startPoint: Int, endPoint: Int): Int{
-        return if (startPoint > endPoint) routeDistStartGreaterThanEnd(rId, startPoint, endPoint)
-                else routeDistStartLesserThanEnd(rId, startPoint, endPoint)
-    }
-
-    @Query("SELECT SUM(distanceToNextPoint) FROM Points WHERE routeId = :rId AND (number >= :startPoint OR number <= :endPoint)")
-    suspend fun routeDistStartGreaterThanEnd(rId: Long, startPoint: Int, endPoint: Int): Int
-
-    @Query("SELECT SUM(distanceToNextPoint) FROM Points WHERE routeId = :rId AND number BETWEEN :startPoint AND :endPoint")
-    suspend fun routeDistStartLesserThanEnd(rId: Long, startPoint: Int, endPoint: Int): Int
+    @Query("SELECT SUM(distanceToNextPoint) FROM Points WHERE routeId = :rId AND ( ((:startPoint > :endPoint) AND (number >= :startPoint OR number <= :endPoint)) OR ((:startPoint < :endPoint) AND (number BETWEEN :startPoint AND :endPoint)))")
+    suspend  fun getRouteDist(rId: Long, startPoint: Int, endPoint: Int): Int
 }
