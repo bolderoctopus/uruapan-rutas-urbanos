@@ -22,7 +22,7 @@ class RouteListAdapter  (private val items: List<RouteModel>,
     override fun getItemCount() = items.size
 
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
-        holder.checkBox.text = items[p].name + ", " +items[p].walkDist
+        holder.checkBox.text = items[p].name + ", " +items[p].totalDist
         holder.checkBox.isChecked = items[p].isDrawed
         holder.colorTag.setBackgroundColor(Color.parseColor(items[p].color))
         holder.checkBox.setOnClickListener {

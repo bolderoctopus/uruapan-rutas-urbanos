@@ -57,24 +57,31 @@ class RouteModel (private val routeDb : Route){
 
 
     private fun getRouteSegment(start: Int, end: Int, points: List<Point>): Iterable<LatLng>{
-        val stringBuilder = StringBuilder()
         val segment = ArrayList<LatLng>()
         if(start > end){
             val part1 = points.filter {it.number >= start}.sortedBy {it.number}
             val part2 = points.filter {it.number <= end }.sortedBy {it.number}
             (part1 + part2).forEach {
                 segment.add(LatLng(it.lat, it.lng))
-                stringBuilder.append(it.number).append(",")
             }
         }else{
             points.filter {it.number in start..end}.sortedBy {it.number}.forEach{
                 segment.add(LatLng(it.lat, it.lng))
-                stringBuilder.append(it.number).append(",")
             }
         }
-        Log.d(DEBUG_TAG, "getRouteSegment(start: $start, end: $end), pointNumbers: ")
-        Log.d(DEBUG_TAG, stringBuilder.toString())
         return segment
+    }
+
+    fun getMainSegmentPoints(points: List<Point>) = getRouteSegmentPoints(startPoint!!.number, endPoint!!.number, points)
+    private fun getRouteSegmentPoints(start: Int, end: Int, points: List<Point>): List<Point>{
+        val segment = ArrayList<LatLng>()
+        if(start > end){
+            val part1 = points.filter {it.number >= start}.sortedBy {it.number}
+            val part2 = points.filter {it.number <= end }.sortedBy {it.number}
+            return (part1 + part2)
+        }else{
+            return points.filter {it.number in start..end}.sortedBy {it.number}
+        }
     }
 
     companion object{

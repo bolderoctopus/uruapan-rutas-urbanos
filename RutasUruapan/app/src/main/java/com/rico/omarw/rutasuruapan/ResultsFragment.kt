@@ -143,25 +143,33 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
                 val results = arrayListOf<RouteModel>()
                 for(routeId in commonRoutesIds){
                     val route: Route? = withContext(Dispatchers.IO){ routesDao?.getRoute(routeId)}
-                    var startPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(originLatLng.latitude, originLatLng.longitude ,routeId)}
-                    var endPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(destinationLatLng.latitude, destinationLatLng.longitude ,routeId)}
-                    val routeDist = withContext(Dispatchers.IO){ routesDao?.getRouteDist(routeId, startPoint!!.number, endPoint!!.number)} ?: 0
+
+                    var startPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(routeId, originLatLng.latitude, originLatLng.longitude, walkDistLimit)}
+                    val endPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(routeId, destinationLatLng.latitude, destinationLatLng.longitude, walkDistLimit)}
+
+                    val betterEndPoint: Point? = withContext(Dispatchers.IO){routesDao?.findBestEndPoint(routeId, destinationLatLng.latitude, destinationLatLng.longitude, startPoint!!.number, walkDistLimit)}
+                    val betterStartPoint  = withContext(Dispatchers.IO){routesDao?.findBestStartPoint(routeId, originLatLng.latitude, originLatLng.longitude, endPoint!!.number, walkDistLimit)}
+
+                    val routeDist = withContext(Dispatchers.IO){ routesDao?.getRouteDist(routeId, betterStartPoint!!.number, betterEndPoint!!.number)} ?: 0
 
                     val routeModel = RouteModel(route!!)
-                    routeModel.startPoint = startPoint
-                    routeModel.endPoint = endPoint
-                    routeModel.walkDist = distanceBetweenPoints(originLatLng, startPoint!!.getLatLng()) + distanceBetweenPoints(destinationLatLng, endPoint!!.getLatLng())
+                    routeModel.startPoint = betterStartPoint
+                    routeModel.endPoint = betterEndPoint
+                    routeModel.walkDist = distanceBetweenPoints(originLatLng, betterStartPoint!!.getLatLng()) + distanceBetweenPoints(destinationLatLng, betterEndPoint!!.getLatLng())
                     routeModel.totalDist = routeModel.walkDist!! + routeDist
                     results.add(routeModel)
 
                     Log.d(DEBUG_TAG,"__________")
-                    Log.d(DEBUG_TAG, "route: ${route?.name}, routeId: ${route?.routeId}")
+                    Log.d(DEBUG_TAG, "route: ${route.name}, routeId: ${route.routeId}")
                     Log.d(DEBUG_TAG, "origin: latLng= ${originLatLng.latitude}, ${originLatLng.longitude}")
                     Log.d(DEBUG_TAG, "destination: latLng= ${destinationLatLng.latitude}, ${destinationLatLng.longitude}")
-                    Log.d(DEBUG_TAG, "startPoint: #${startPoint?.number} ,latLng= ${startPoint?.lat}, ${startPoint?.lng}")
-                    Log.d(DEBUG_TAG, "endPoint: #${endPoint?.number} ,latLng= ${endPoint?.lat}, ${endPoint?.lng}")
+                    Log.d(DEBUG_TAG, "startPoint: #${startPoint!!.number} ,latLng= ${startPoint.lat}, ${startPoint.lng}")
+                    Log.d(DEBUG_TAG, "endPoint: #${endPoint!!.number} ,latLng= ${endPoint.lat}, ${endPoint.lng}")
+                    Log.d(DEBUG_TAG , "betterStartPoint: ${betterStartPoint?.number}")
+                    Log.d(DEBUG_TAG , "betterEndPoint: ${betterEndPoint?.number}")
                     Log.d(DEBUG_TAG, "routeWalkDist: ${routeModel.walkDist}")
                     Log.d(DEBUG_TAG, "routeTotalDist: ${routeModel.totalDist}")
+//                    break
                 }
                 results.sortBy {
                     it.walkDist

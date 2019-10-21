@@ -319,7 +319,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 }
                 val possibleSecondaryPolOpt = PolylineOptions().apply {
                     color(color)
-                    width(LINE_WIDTH)
+                    width(LINE_WIDTH/4)
                     jointType(JointType.ROUND)
                     pattern(RouteModel.dashedPatter)
                     addAll(route.getSecondarySegment(points!!))
@@ -328,7 +328,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                 route.mainSegment = map.addPolyline(mainSegmentPolOpt)
                 route.secondarySegment = map.addPolyline(possibleSecondaryPolOpt)
-                route.arrowPolylines = getArrowPolylines(points!!, color)
+                route.arrowPolylines = getArrowPolylines(route.getMainSegmentPoints(points!!), color)
                 route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
                 route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
 
