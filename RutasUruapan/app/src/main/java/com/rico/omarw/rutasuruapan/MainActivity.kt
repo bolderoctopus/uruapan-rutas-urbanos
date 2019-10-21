@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
@@ -273,7 +274,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun drawSquares(walkingDistance: Double){
-        if(!Constants.DRAW_SQUARES) return
+        if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean("draw_squares", Constants.DRAW_SQUARES_DEFAULT)) return
 
         clearSquares()
 
@@ -556,10 +557,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             resultsFragment!!.backButtonPressed()
         else
             super.onBackPressed()
-    }
-
-    override fun clearMap() {
-        map.clear()
     }
 
     fun drawMarker(latLng: LatLng, title: String): Marker {

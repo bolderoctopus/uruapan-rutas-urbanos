@@ -36,6 +36,10 @@ class RouteModel (private val routeDb : Route){
     }
 
     public fun remove(){
+        startMarker?.remove()
+        endMarker?.remove()
+        mainSegment?.remove()
+        secondarySegment?.remove()
         polyline?.remove()
         arrowPolylines?.forEach {
             it.remove()

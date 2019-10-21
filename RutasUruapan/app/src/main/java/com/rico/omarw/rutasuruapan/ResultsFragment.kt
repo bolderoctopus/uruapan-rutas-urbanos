@@ -53,7 +53,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         groupWalkMessage = view.findViewById(R.id.group_walk_message)
         recyclerView = view.findViewById(R.id.recyclerView_results)
         view.findViewById<ImageButton>(R.id.imagebutton_back).setOnClickListener{
-            listener?.clearMap()
             backButtonPressed()
         }
         if(height != null)
@@ -94,25 +93,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         val d2 = (p1.longitude - p2.longitude)
         return sqrt(d1 * d1 + d2 * d2)
     }
-    /**
-     * what unit am I using? degrees?
-     * new variables:
-     * walkDistanceLimit: distance the user is willing to walk between buses and origin/destination
-     * walkDistToDest: distance that you'd have to walk to reach the destination
-     * routeWalkDisk: given a certain route, it's distance you'd have to walk from origin/busstop + bustop/destination
-     *                  must be leser than walkDistLimit
-     * totalDistRoute: give a certain route, it's its routeWalkDisk + the distance travelled on the bus, for ordering purpouses
-     *
-     * delete preference for amount of results to show?
-     */
-
-    /**
-     * note on getting the mutual routes linearly:
-     * supposing a walkDistLimit greater than walkDistToDest
-     * it'd wouldnt matter if the totalRouteDist is greater than walkDistLimit, as long as routeWalkDisk still be lesser than it
-     * we'd show the routes anyway, even tho you'd be travelling a greater ditance on bus rather than walking
-     * found routes would still be sorted totalDistRoute desc
-     */
 
     /**
      *
@@ -224,7 +204,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         fun onBackFromResults()
         fun drawRouteResult(route: RouteModel)
         fun drawSquares(walkingDistance: Double)
-        fun clearMap()
     }
 
     companion object{

@@ -55,7 +55,7 @@ interface RouteDAO{
             "p1.routeId = :rId " +
             "AND p1.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance)  " +
             "AND p1.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) " +
-            "ORDER BY ((:latitude - p1.lat)*(:latitude - p1.lat) + (:longitude - p1.lng)*(:longitude - p1.lng)) +  " +
+            "ORDER BY ((:latitude - p1.lat)*(:latitude - p1.lat) + (:longitude - p1.lng)*(:longitude - p1.lng)),  " +
             "(SELECT SUM(p2.distanceToNextPoint)  " +
             "FROM Points  p2 " +
             "WHERE p2.routeId = :rId " +
@@ -69,7 +69,7 @@ interface RouteDAO{
             "p1.routeId = :rId " +
             "AND p1.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance)  " +
             "AND p1.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) " +
-            "ORDER BY ((:latitude - p1.lat)*(:latitude - p1.lat) + (:longitude - p1.lng)*(:longitude - p1.lng)) +  " +
+            "ORDER BY ((:latitude - p1.lat)*(:latitude - p1.lat) + (:longitude - p1.lng)*(:longitude - p1.lng)),  " +
             "(SELECT SUM(p2.distanceToNextPoint)  " +
             "FROM Points  p2 " +
             "WHERE p2.routeId = :rId " +

@@ -13,4 +13,13 @@
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="Debug">
+        <SwitchPreferenceCompat
+            app:key="draw_squares"
+            app:title="Dibujar cuadrados alrededor de origen, destino"
+            app:defaultValue="false"
+            />
+
+    </PreferenceCategory>
 </PreferenceScreen>
