@@ -17,7 +17,19 @@
     <PreferenceCategory app:title="Debug">
         <SwitchPreferenceCompat
             app:key="draw_squares"
-            app:title="Dibujar cuadrados alrededor de origen, destino"
+            app:summary="Dibujar cuadrados alrededor de origen, destino"
+            app:defaultValue="false"
+            />
+
+        <SwitchPreferenceCompat
+            app:key="draw_route_points"
+            app:summary="Agregar un marcador color morado por cada punto en la ruta del segmento principal"
+            app:defaultValue="false"
+            />
+
+        <SwitchPreferenceCompat
+            app:key="draw_startend_points"
+            app:summary="Agregar un marcador color amarillo correspondiente a start y end point de la ruta"
             app:defaultValue="false"
             />
 

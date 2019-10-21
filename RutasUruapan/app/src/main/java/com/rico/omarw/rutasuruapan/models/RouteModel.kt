@@ -22,6 +22,7 @@ class RouteModel (private val routeDb : Route){
     var totalDist: Double? = null
     var startMarker: Marker? = null
     var endMarker: Marker? = null
+    var mainSegmentMarkers: List<Marker>? = null
 
     public fun setVisibility(visible: Boolean){
         startMarker?.isVisible = visible
@@ -32,6 +33,7 @@ class RouteModel (private val routeDb : Route){
         arrowPolylines?.forEach {
             it.isVisible = visible
         }
+        mainSegmentMarkers?.forEach { it.isVisible = visible }
         isDrawed = visible
     }
 
@@ -44,6 +46,7 @@ class RouteModel (private val routeDb : Route){
         arrowPolylines?.forEach {
             it.remove()
         }
+        mainSegmentMarkers?.forEach { it.remove() }
         isDrawed = false
     }
 

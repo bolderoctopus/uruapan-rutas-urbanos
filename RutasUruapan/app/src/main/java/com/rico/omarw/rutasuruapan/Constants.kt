@@ -7,4 +7,6 @@ object Constants {
     const val CAMERA_PADDING_MARKER = 150
 
     const val DRAW_SQUARES_DEFAULT = false
+    const val DRAW_ROUTE_POINTS = false
+    const val DRAW_STARTEND_POINTS = false
 }

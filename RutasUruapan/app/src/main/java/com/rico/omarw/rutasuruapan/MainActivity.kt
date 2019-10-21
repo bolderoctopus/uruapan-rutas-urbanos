@@ -332,6 +332,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 route.arrowPolylines = getArrowPolylines(route.getMainSegmentPoints(points!!), color)
                 route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
                 route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
+                route.mainSegmentMarkers = drawMarkers(route.getMainSegmentPoints(points))
 
                 route.isDrawed = true
             }
@@ -559,7 +560,24 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             super.onBackPressed()
     }
 
-    fun drawMarker(latLng: LatLng, title: String): Marker {
-        return map.addMarker(MarkerOptions().title(title).position(latLng).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)).draggable(false))
+    /**
+     * For debug purpouses
+     */
+    fun drawMarker(latLng: LatLng, title: String): Marker? {
+        return if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean("draw_startend_points", Constants.DRAW_STARTEND_POINTS)) null
+        else map.addMarker(MarkerOptions().title(title).position(latLng).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)).draggable(false))
+    }
+
+    fun drawMarkers(points: List<Point>): List<Marker>? {
+        if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean("draw_route_points", Constants.DRAW_ROUTE_POINTS))
+            return null
+        else {
+            val markers = ArrayList<Marker>()
+            points.forEach{
+                markers.add(map.addMarker(MarkerOptions().title(it.number.toString()).position(it.getLatLng()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)).draggable(false)))
+            }
+
+            return markers
+        }
     }
 }
