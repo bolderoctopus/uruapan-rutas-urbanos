@@ -49,31 +49,62 @@ interface RouteDAO{
     @Query("SELECT SUM(distanceToNextPoint) FROM Points WHERE routeId = :rId AND ( ((:startPoint > :endPoint) AND (number >= :startPoint OR number <= :endPoint)) OR ((:startPoint < :endPoint) AND (number BETWEEN :startPoint AND :endPoint)))")
     suspend  fun getRouteDist(rId: Long, startPoint: Int, endPoint: Int): Int
 
-    @Query("SELECT * " +
-            "FROM Points p1 " +
-            "WHERE  " +
-            "p1.routeId = :rId " +
-            "AND p1.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance)  " +
-            "AND p1.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) " +
-            "ORDER BY ((:latitude - p1.lat)*(:latitude - p1.lat) + (:longitude - p1.lng)*(:longitude - p1.lng)),  " +
+    @Query("INSERT INTO bestPoints " +
+            "SELECT p1.pointId, p1.routeId, p1.lat, p1.lng, p1.number, p1.distanceToNextPoint, " +
+            "((:latitude - p1.lat)*(:latitude - p1.lat) + (:longitude - p1.lng)*(:longitude - p1.lng))  [wd], " +
             "(SELECT SUM(p2.distanceToNextPoint)  " +
-            "FROM Points  p2 " +
+            "FROM Points p2 " +
             "WHERE p2.routeId = :rId " +
-            "AND ( ((:startPoint > p1.number) AND (p2.number >= :startPoint OR p2.number <= p1.number)) OR ((:startPoint < p1.number) AND (p2.number BETWEEN :startPoint AND p1.number)))) " +
-            "LIMIT 1 ")
-    suspend fun findBestEndPoint(rId: Long, latitude: Double, longitude: Double, startPoint: Int, distance: Double): Point
+            "AND ( ((:startPoint > p1.number) AND (p2.number >= :startPoint OR p2.number <= p1.number))  " +
+            "   OR ((:startPoint < p1.number) AND (p2.number BETWEEN :startPoint AND p1.number))) " +
+            ") [rd], " +
+            "null " +
+            "FROM Points p1 " +
+            "WHERE p1.routeId = :rId " +
+            "AND p1.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance) " +
+            "AND p1.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) ")
+    suspend fun fillResultsTableEndPoint(rId: Long, latitude: Double, longitude: Double, startPoint: Int, distance: Double)
 
-    @Query("SELECT * " +
-            "FROM Points p1 " +
-            "WHERE  " +
-            "p1.routeId = :rId " +
-            "AND p1.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance)  " +
-            "AND p1.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) " +
-            "ORDER BY ((:latitude - p1.lat)*(:latitude - p1.lat) + (:longitude - p1.lng)*(:longitude - p1.lng)),  " +
+    @Query("DELETE FROM bestPoints")
+    suspend fun clearResultsTable()
+
+    @Query("INSERT INTO bestPoints " +
+            "SELECT p1.pointId, p1.routeId, p1.lat, p1.lng, p1.number, p1.distanceToNextPoint, " +
+            "((:latitude - p1.lat)*(:latitude - p1.lat) + (:longitude - p1.lng)*(:longitude - p1.lng))  [wd], " +
             "(SELECT SUM(p2.distanceToNextPoint)  " +
-            "FROM Points  p2 " +
+            "FROM Points p2 " +
             "WHERE p2.routeId = :rId " +
-            "AND ( ((p1.number > :endPoint) AND (p2.number >= p1.number OR p2.number <= :endPoint)) OR ((p1.number < :endPoint) AND (p2.number BETWEEN p1.number AND :endPoint)))) " +
-            "LIMIT 1 ")
-    suspend fun findBestStartPoint(rId: Long, latitude: Double, longitude: Double, endPoint: Int, distance: Double): Point
+            "AND ( ((p1.number > :endPoint) AND (p2.number >= p1.number OR p2.number <= :endPoint))  " +
+            "   OR ((p1.number < :endPoint) AND (p2.number BETWEEN p1.number AND :endPoint))) " +
+            ") [rd], " +
+            "null " +
+            "FROM Points p1 " +
+            "WHERE p1.routeId = :rId " +
+            "AND p1.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance) " +
+            "AND p1.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) ")
+    suspend fun fillResultsTableStartPoint(rId: Long, latitude: Double, longitude: Double, endPoint: Int, distance: Double)
+
+    @Query("UPDATE bestPoints SET betterness = ((((SELECT MIN(wd) FROM bestPoints)/wd)*0.3) + ((((SELECT MIN(rd) FROM bestPoints)/rd)*0.7))) ")
+    suspend fun updateResultsTable()
+    //todo: refactor the weights
+    //todo: re enable sql inspection
+    @Query("SELECT pointId, routeId, lat, lng, number, distanceToNextPoint  FROM bestPoints ORDER BY betterness DESC LIMIT 1")
+    suspend fun getBestPoint(): Point
+
+
+    @Transaction
+    suspend fun findBestStartPoint(rId: Long, latitude: Double, longitude: Double, endPoint: Int, distance: Double): Point{
+        clearResultsTable()
+        fillResultsTableStartPoint(rId, latitude, longitude, endPoint, distance)
+        updateResultsTable()
+        return getBestPoint()
+    }
+
+    @Transaction
+    suspend fun findBestEndPoint(rId: Long, latitude: Double, longitude: Double, startPoint: Int, distance: Double): Point{
+        clearResultsTable()
+        fillResultsTableEndPoint(rId, latitude, longitude, startPoint, distance)
+        updateResultsTable()
+        return getBestPoint()
+    }
 }

@@ -124,11 +124,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
                 for(routeId in commonRoutesIds){
                     val route: Route? = withContext(Dispatchers.IO){ routesDao?.getRoute(routeId)}
 
-                    var startPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(routeId, originLatLng.latitude, originLatLng.longitude, walkDistLimit)}
+                    val startPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(routeId, originLatLng.latitude, originLatLng.longitude, walkDistLimit)}
                     val endPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(routeId, destinationLatLng.latitude, destinationLatLng.longitude, walkDistLimit)}
 
                     val betterEndPoint: Point? = withContext(Dispatchers.IO){routesDao?.findBestEndPoint(routeId, destinationLatLng.latitude, destinationLatLng.longitude, startPoint!!.number, walkDistLimit)}
-                    val betterStartPoint  = withContext(Dispatchers.IO){routesDao?.findBestStartPoint(routeId, originLatLng.latitude, originLatLng.longitude, endPoint!!.number, walkDistLimit)}
+                    val betterStartPoint: Point? = withContext(Dispatchers.IO){routesDao?.findBestStartPoint(routeId, originLatLng.latitude, originLatLng.longitude, endPoint!!.number, walkDistLimit)}
 
                     val routeDist = withContext(Dispatchers.IO){ routesDao?.getRouteDist(routeId, betterStartPoint!!.number, betterEndPoint!!.number)} ?: 0
 
@@ -149,9 +149,9 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
                     Log.d(DEBUG_TAG , "betterEndPoint: ${betterEndPoint?.number}")
                     Log.d(DEBUG_TAG, "routeWalkDist: ${routeModel.walkDist}")
                     Log.d(DEBUG_TAG, "routeTotalDist: ${routeModel.totalDist}")
-//                    break
                 }
                 results.sortBy {
+                    //todo: try sort by betterness
                     it.walkDist
                 }
 
