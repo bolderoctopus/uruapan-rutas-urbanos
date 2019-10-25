@@ -35,32 +35,36 @@ import kotlin.collections.ArrayList
 
 //todo: see below
 /*
-* [x] modify database, add direction data
-* [] update algorithm, take into consideration direction
-* [] sort resulting routes
-* [] draw only the relevant part of the route?
-*
+* [x] sort resulting routes
+* [] add progressBar for results fragment
+* [] try to draw arrows bigger, maybe change it according to zoom
+* [] add setting for walking distance tolerance, what type? list? spinner? seekbar?
+* [] improve looks of the route_item_layout
 * [] add indexes to speed up the db
 * [] improve function walkingDistanceToDest, take into consideration buildings
-* [] settings: add how many results to show?
-* [] i think the amount of results to show is currently not working
+* [] add end and start caps for the drawn part of the route
+
 * [] show tips for using the app
 * [] add missing routes 176 y 45
 * [] set fragment transitions between search and results
-* [] try to draw arrows bigger, maybe change it according to zoom
-* [] add setting for walking distance tolerance, what type? list? spinner? seekbar?
 * [] display lap time per route?
 * [...] improve allRoutes Fragment look
 *       [x] fix spacing with route items on recycler views
 *       [] format in a better way the labels
 *
 * [] decide if new design stays
+* [] add a disclaimer
 *
 * [x] improve looks of outside of bounds error, possible create custom Toast
 * [x] what to do if search has been done but a marker is dragged: recalculate
 * [x] find a way to differentiate between origin/dest markers
 * [x] SearchFragment: test with a single button "Search/Find Route", how to show all routes then?
 * [x] show message when no routes found or that the user should walk
+* [x] modify database, add direction data
+* [x] update algorithm, take into consideration direction
+* [x] draw only the relevant part of the route
+* [-] settings: add how many results to show?
+* [-] i think the amount of results to show is currently not working
 */
 
 

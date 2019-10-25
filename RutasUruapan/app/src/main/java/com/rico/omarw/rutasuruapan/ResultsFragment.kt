@@ -101,7 +101,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
      * @param walkDistLimit How much the user is willing to walk between the route start/end point and the given origin/destination respectively
      */
     private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){
-//        if(walkDistLimit < 1) throw Exception("walkDistLimit must be a greater than 1")
+        if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener?.drawSquares(walkDistLimit)
         val walkDistToDest = distanceBetweenPoints(originLatLng, destinationLatLng)
 
@@ -113,7 +113,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             val routesNearDest = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, destinationLatLng.latitude, destinationLatLng.longitude)}
             awaitAll(routesNearDest, routesNearOrigin)
 
-            //if(routesNearDest.await().isNullOrEmpty() || routesNearOrigin.await().isNullOrEmpty())// todo: suggest to increase WalkDistLimit?
             commonRoutesIds = routesNearOrigin.await()!!.intersect(routesNearDest.await()!!)
 
             if(commonRoutesIds.isNullOrEmpty()){
@@ -151,7 +150,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
                     Log.d(DEBUG_TAG, "routeTotalDist: ${routeModel.totalDist}")
                 }
                 results.sortBy {
-                    //todo: try sort by betterness
                     it.walkDist
                 }
 

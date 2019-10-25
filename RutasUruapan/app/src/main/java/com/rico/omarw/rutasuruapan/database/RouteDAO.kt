@@ -1,6 +1,9 @@
 package com.rico.omarw.rutasuruapan.database
 
 import androidx.room.*
+import com.rico.omarw.rutasuruapan.Constants
+import com.rico.omarw.rutasuruapan.Constants.RD_WEIGHT
+import com.rico.omarw.rutasuruapan.Constants.WD_WEIGHT
 
 @Dao
 interface RouteDAO{
@@ -31,7 +34,7 @@ interface RouteDAO{
 
     @Query("SELECT distinct routeId FROM Points " +
             "WHERE Points.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance) " +
-                "AND Points.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance)")//todo: calculate range before sending it to the db?
+                "AND Points.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance)")
     suspend fun getRoutesIntercepting(distance: Double, latitude: Double, longitude: Double): List<Long>
 
     @Query("SELECT *" +
@@ -41,7 +44,7 @@ interface RouteDAO{
             "AND Points.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) " +
             "ORDER BY ((:latitude - lat)*(:latitude - lat) + (:longitude - lng)*(:longitude - lng)) ASC " +
             "LIMIT 1")
-    suspend fun getNearestPointTo(rId: Long, latitude: Double, longitude: Double, distance: Double): Point// todo: filter with range too like in routeIntercepting
+    suspend fun getNearestPointTo(rId: Long, latitude: Double, longitude: Double, distance: Double): Point
 
     @Query("SELECT * FROM Routes WHERE routeId = :rId")
     suspend fun getRoute(rId: Long): Route
@@ -84,10 +87,9 @@ interface RouteDAO{
             "AND p1.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) ")
     suspend fun fillResultsTableStartPoint(rId: Long, latitude: Double, longitude: Double, endPoint: Int, distance: Double)
 
-    @Query("UPDATE bestPoints SET betterness = ((((SELECT MIN(wd) FROM bestPoints)/wd)*0.3) + ((((SELECT MIN(rd) FROM bestPoints)/rd)*0.7))) ")
+    @Query("UPDATE bestPoints SET betterness = ((((SELECT MIN(wd) FROM bestPoints)/wd)*$WD_WEIGHT) + ((((SELECT MIN(rd) FROM bestPoints)/rd)*$RD_WEIGHT))) ")
     suspend fun updateResultsTable()
-    //todo: refactor the weights
-    //todo: re enable sql inspection
+
     @Query("SELECT pointId, routeId, lat, lng, number, distanceToNextPoint  FROM bestPoints ORDER BY betterness DESC LIMIT 1")
     suspend fun getBestPoint(): Point
 
