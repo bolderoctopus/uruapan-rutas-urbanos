@@ -1,11 +1,11 @@
 package com.rico.omarw.rutasuruapan.adapters
 
 import android.graphics.Color
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import androidx.recyclerview.widget.RecyclerView
 import com.rico.omarw.rutasuruapan.R
 import com.rico.omarw.rutasuruapan.models.RouteModel
 
@@ -23,7 +23,7 @@ class RouteListAdapter  (private val items: List<RouteModel>,
 
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
         holder.checkBox.text = items[p].name
-        holder.checkBox.isChecked = items[p].isDrawed
+        holder.checkBox.isChecked = items[p].isDrawn
         holder.colorTag.setBackgroundColor(Color.parseColor(items[p].color))
         holder.checkBox.setOnClickListener {
             callback?.drawRouteResult(items[p])

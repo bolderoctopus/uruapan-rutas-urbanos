@@ -1,15 +1,13 @@
 package com.rico.omarw.rutasuruapan.models
 
-import android.util.Log
 import com.google.android.gms.maps.model.*
-import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.database.Route
 
 class RouteModel (private val routeDb : Route){
     var mainSegment: Polyline? = null
     var secondarySegment: Polyline? = null
-    var isDrawed: Boolean = false
+    var isDrawn: Boolean = false
     val name: String = routeDb.name
     val color: String = routeDb.color
     val id: Long = routeDb.routeId
@@ -34,7 +32,7 @@ class RouteModel (private val routeDb : Route){
             it.isVisible = visible
         }
         mainSegmentMarkers?.forEach { it.isVisible = visible }
-        isDrawed = visible
+        isDrawn = visible
     }
 
     public fun remove(){
@@ -47,7 +45,7 @@ class RouteModel (private val routeDb : Route){
             it.remove()
         }
         mainSegmentMarkers?.forEach { it.remove() }
-        isDrawed = false
+        isDrawn = false
     }
 
     override fun equals(other: Any?): Boolean {

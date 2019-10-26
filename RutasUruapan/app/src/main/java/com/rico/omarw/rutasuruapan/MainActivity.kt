@@ -7,9 +7,17 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
-import android.os.*
-import android.view.*
-import android.widget.*
+import android.os.Build
+import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.util.Log
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewTreeObserver
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -17,11 +25,15 @@ import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
+import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
@@ -31,7 +43,6 @@ import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.coroutines.*
 import java.lang.Runnable
-import kotlin.collections.ArrayList
 
 //todo: see below
 /*
@@ -311,7 +322,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun drawRouteResult(route: RouteModel) {
         if (route.mainSegment != null){
-            route.setVisibility(route.isDrawed.not())
+            route.setVisibility(route.isDrawn.not())
 
         }else{
             uiScope.launch {
@@ -338,14 +349,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
                 route.mainSegmentMarkers = drawMarkers(route.getMainSegmentPoints(points))
 
-                route.isDrawed = true
+                route.isDrawn = true
             }
         }
     }
 
     override fun drawRoute(route: RouteModel) {
         if (route.polyline != null){
-            route.setVisibility(route.isDrawed.not())
+            route.setVisibility(route.isDrawn.not())
 
         }else{
             uiScope.launch {
@@ -359,7 +370,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 points?.forEach { polylineOptions.add(it.getLatLng()) }
                 route.polyline = map.addPolyline(polylineOptions)
                 route.arrowPolylines = getArrowPolylines(points!!, color)
-                route.isDrawed = true
+                route.isDrawn = true
             }
         }
     }
