@@ -7,13 +7,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.appbar.MaterialToolbar
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
@@ -33,6 +34,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private lateinit var originLatLng: LatLng
     private lateinit var destinationLatLng: LatLng
     private var drawnRoutes: ArrayList<RouteModel>? = null
+    private lateinit var progressBar: ProgressBar
 
     private var uiScope = CoroutineScope(Dispatchers.Main)
 
@@ -50,11 +52,15 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_results, container, false)
+
+        view.findViewById<MaterialToolbar>(R.id.toolbar).apply {
+            setNavigationOnClickListener { backButtonPressed() }
+        }
+
+        progressBar = view.findViewById(R.id.progressBar)
         groupWalkMessage = view.findViewById(R.id.group_walk_message)
         recyclerView = view.findViewById(R.id.recyclerView_results)
-        view.findViewById<ImageButton>(R.id.imagebutton_back).setOnClickListener{
-            backButtonPressed()
-        }
+
         if(height != null)
             view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height!!)
 
@@ -101,6 +107,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
      * @param walkDistLimit How much the user is willing to walk between the route start/end point and the given origin/destination respectively
      */
     private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){
+        showProgressBar()
         if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener?.drawSquares(walkDistLimit)
         val walkDistToDest = distanceBetweenPoints(originLatLng, destinationLatLng)
@@ -155,7 +162,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
                 displayRoutes(results)
             }
-
         }
     }
 
@@ -163,6 +169,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     private fun displayRoutes(results: ArrayList<RouteModel>){
         groupWalkMessage.visibility = View.GONE
+        hideProgressBar()
 
         recyclerView.visibility = View.VISIBLE
         recyclerView.setHasFixedSize(true)
@@ -171,8 +178,22 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     }
 
     private fun showNoResultsMessage(){
+        hideProgressBar()
+        progressBar.visibility = View.GONE
         recyclerView.visibility = View.GONE
         groupWalkMessage.visibility = View.VISIBLE
+    }
+
+    private fun hideProgressBar(){
+        if(progressBar.visibility == View.VISIBLE)
+            progressBar.animate().scaleY(0f).withEndAction { progressBar.visibility = View.GONE }.start()
+    }
+
+    private fun showProgressBar(){
+        if(progressBar.visibility != View.VISIBLE) {
+            progressBar.visibility = View.VISIBLE
+            progressBar.animate().scaleY(1f).start()
+        }
     }
 
     override fun drawRouteResult(route: RouteModel) {
