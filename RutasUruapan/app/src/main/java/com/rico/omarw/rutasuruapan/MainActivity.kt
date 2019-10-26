@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewTreeObserver
@@ -33,7 +32,6 @@ import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
-import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
@@ -46,10 +44,14 @@ import java.lang.Runnable
 
 //todo: see below
 /*
-* [x] sort resulting routes
-* [] add progressBar for results fragment
+*
 * [] try to draw arrows bigger, maybe change it according to zoom
-* [] add setting for walking distance tolerance, what type? list? spinner? seekbar?
+*   1. try to replace polylines with markers to show direction
+*   1.5 test memory usage between polylines and markers
+*   2. try to increase the size of the arrows by 1 or 2 pixels
+*   3. show/hide markers according to zoom
+*   4. decide when to update shown markers: onCameraUpdate or onCameraIdle?
+*
 * [] improve looks of the route_item_layout
 * [] add indexes to speed up the db
 * [] improve function walkingDistanceToDest, take into consideration buildings
@@ -66,6 +68,10 @@ import java.lang.Runnable
 * [] decide if new design stays
 * [] add a disclaimer
 *
+* [x] add setting for walking distance limit
+* [x] sort resulting routes
+* [x] add progressBar for results fragment
+* [x] animate recycler view
 * [x] improve looks of outside of bounds error, possible create custom Toast
 * [x] what to do if search has been done but a marker is dragged: recalculate
 * [x] find a way to differentiate between origin/dest markers
@@ -86,7 +92,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         AllRoutesFragment.InteractionsInterface,
         SearchFragment.OnFragmentInteractionListener,
         ResultsFragment.OnFragmentInteractionListener,
-        BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener {
+        BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, GoogleMap.OnCameraMoveListener {
+
     private val DIRECTIONAL_ARROWS_STEP = 3//7
     private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
 
@@ -189,6 +196,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map.setOnMarkerDragListener(this)
         //map.setLatLngBoundsForCameraTarget(SearchFragment.uruapanLatLngBounds)// restrict camera to just uruapan?
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(URUAPAN_LATLNG, 13f))
+        zoomLevel = map.cameraPosition.zoom
+        map.setOnCameraMoveListener(this)
         if (locationPermissionEnabled()){
             map.isMyLocationEnabled = true
         }else {
@@ -344,7 +353,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                 route.mainSegment = map.addPolyline(mainSegmentPolOpt)
                 route.secondarySegment = map.addPolyline(possibleSecondaryPolOpt)
-                route.arrowPolylines = getArrowPolylines(route.getMainSegmentPoints(points!!), color)
+                route.directionalMarkers = getDirectionalMarkers(route.getMainSegmentPoints(points!!), color)
                 route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
                 route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
                 route.mainSegmentMarkers = drawMarkers(route.getMainSegmentPoints(points))
@@ -369,39 +378,38 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         .jointType(JointType.ROUND)
                 points?.forEach { polylineOptions.add(it.getLatLng()) }
                 route.polyline = map.addPolyline(polylineOptions)
-                route.arrowPolylines = getArrowPolylines(points!!, color)
+                route.directionalMarkers = getDirectionalMarkers(points!!, color)
                 route.isDrawn = true
             }
         }
     }
 
-    /**
-     * Add small polylines with arrow caps in order to show the direction
-     */
-    private fun getArrowPolylines(points: List<Point>, color: Int ): List<Polyline>{
+    private fun getDirectionalMarkers(points: List<Point>, color: Int ): List<Marker>{
         var counter = 0
         val arrowCap = getEndCapArrow(color)
-        val arrowPolylineOptions = ArrayList<PolylineOptions>()
-        val arrowPolylines = ArrayList<Polyline>()
+        val directionalMarkerOptions = ArrayList<MarkerOptions>()
+        val directionalMarkers = ArrayList<Marker>()
 
-        for(x in 0 until points.size){
+        for(x in points.indices){
             val point = points[x]
             if(counter == 0 && arrowCap != null){
                 counter = DIRECTIONAL_ARROWS_STEP
                 if(x + 1 < points.size)
-                    arrowPolylineOptions.add(PolylineOptions()
-                            .color(Color.TRANSPARENT)
-                            .endCap(CustomCap(arrowCap))
-                            .add(LatLng(point.lat, point.lng), LatLng(points[x+1].lat, points[x+1].lng)))
+                    directionalMarkerOptions.add(MarkerOptions()
+                            .icon(arrowCap)
+                            .position(point.getLatLng())
+                            .rotation(point.bearingTo(points[x+1].lat, points[x+1].lng ))
+                            .draggable(false)
+                            .flat(true)
+                    )
             }
             counter--
         }
 
-
-        arrowPolylineOptions.forEach {
-            arrowPolylines.add(map.addPolyline(it))
+        directionalMarkerOptions.forEach {
+            directionalMarkers.add(map.addMarker(it))
         }
-        return arrowPolylines
+        return directionalMarkers
     }
 
     private fun locationPermissionEnabled(): Boolean {
@@ -525,6 +533,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker?.remove()
             originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).draggable(true))
+//            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(getEndCapArrow(Color.RED)).flat(true)// todo: remove
             originMarker?.tag = markerType
         }
         else if(markerType == SearchFragment.MarkerType.Destination) {
@@ -573,6 +582,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             resultsFragment!!.backButtonPressed()
         else
             super.onBackPressed()
+    }
+
+    private var zoomLevel: Float? = null
+    override fun onCameraMove() {
+//        if(zoomLevel != map.cameraPosition.zoom){
+//            zoomLevel = map.cameraPosition.zoom
+//            Log.d(DEBUG_TAG, "zoom Level changed: $zoomLevel")
+//        }
     }
 
     /**

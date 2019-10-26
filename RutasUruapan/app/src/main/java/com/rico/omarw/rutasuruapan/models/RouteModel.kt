@@ -12,7 +12,7 @@ class RouteModel (private val routeDb : Route){
     val color: String = routeDb.color
     val id: Long = routeDb.routeId
     var polyline: Polyline? = null
-    var arrowPolylines: List<Polyline>? = null
+    var directionalMarkers: List<Marker>? = null
 
     var startPoint: Point? = null
     var endPoint: Point? = null
@@ -28,10 +28,8 @@ class RouteModel (private val routeDb : Route){
         mainSegment?.isVisible = visible
         secondarySegment?.isVisible = visible
         polyline?.isVisible = visible
-        arrowPolylines?.forEach {
-            it.isVisible = visible
-        }
         mainSegmentMarkers?.forEach { it.isVisible = visible }
+        directionalMarkers?.forEach { it.isVisible = visible }
         isDrawn = visible
     }
 
@@ -41,10 +39,8 @@ class RouteModel (private val routeDb : Route){
         mainSegment?.remove()
         secondarySegment?.remove()
         polyline?.remove()
-        arrowPolylines?.forEach {
-            it.remove()
-        }
         mainSegmentMarkers?.forEach { it.remove() }
+        directionalMarkers?.forEach { it.remove() }
         isDrawn = false
     }
 
