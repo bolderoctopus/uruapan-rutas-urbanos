@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,9 +14,12 @@ import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Slide
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.appbar.MaterialToolbar
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
+import com.rico.omarw.rutasuruapan.Constants.METER_IN_ANGULAR_LAT_LNG
+import com.rico.omarw.rutasuruapan.Constants.WALK_DIST_LIMIT_DEFFAULT
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
@@ -111,6 +115,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener?.drawSquares(walkDistLimit)
         val walkDistToDest = distanceBetweenPoints(originLatLng, destinationLatLng)
+        Log.d(DEBUG_TAG, "walkDistToDest: $walkDistToDest ")
 
         uiScope.launch {
             val routesDao = AppDatabase.getInstance(context!!)?.routesDAO()
@@ -213,9 +218,9 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
 
     fun getWalkDistLimit() : Double {
-        val s = PreferenceManager.getDefaultSharedPreferences(context).getString("walk_dist_limit", Constants.WALK_DIST_LIMIT_DEFFAULT.toString())
-        return s?.toDouble() ?: Constants.WALK_DIST_LIMIT_DEFFAULT
-
+        val string = PreferenceManager.getDefaultSharedPreferences(context).getString("walk_dist_limit", WALK_DIST_LIMIT_DEFFAULT.toString())
+        return if(string == null) WALK_DIST_LIMIT_DEFFAULT * METER_IN_ANGULAR_LAT_LNG
+                else (string.toDouble()  * METER_IN_ANGULAR_LAT_LNG)
     }
 
 

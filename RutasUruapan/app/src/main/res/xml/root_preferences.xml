@@ -1,20 +1,21 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <PreferenceCategory app:title="@string/preference_category_general">
+    <PreferenceCategory app:title="@string/search">
         <ListPreference
-            app:key="max_amount_results"
-            app:defaultValue="10"
+            app:key="walk_dist_limit"
+            android:entryValues="@array/results_to_show_values"
+            android:entries="@array/results_to_show_labels"
+            app:defaultValue="600"
             app:allowDividerAbove="true"
             app:allowDividerBelow="true"
-            app:entries="@array/results_to_show_labels"
-            app:entryValues="@array/results_to_show_values"
-            app:title="@string/preference_amount_results_to_show"
-            app:useSimpleSummaryProvider="true" />
+            app:title="@string/preference_limit_distance"
+            tools:summary="Buscar rutas 150m al rededor del punto de origen"/>
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Debug">
+    <PreferenceCategory app:title="Debug" app:isPreferenceVisible="true">
         <SwitchPreferenceCompat
             app:key="draw_squares"
             app:summary="Dibujar cuadrados alrededor de origen, destino"

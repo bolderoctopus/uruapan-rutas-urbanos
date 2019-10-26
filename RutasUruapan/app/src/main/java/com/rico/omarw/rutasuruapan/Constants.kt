@@ -1,7 +1,12 @@
 package com.rico.omarw.rutasuruapan
 object Constants {
     const val DEBUG_TAG = "debug_tag"
-    const val WALK_DIST_LIMIT_DEFFAULT = 0.006
+    /**
+     * In meters
+     */
+    const val WALK_DIST_LIMIT_DEFFAULT = 600
+    const val METER_IN_ANGULAR_LAT_LNG = 0.000009229349583
+
     const val COMPLETION_THRESHOLD = 4
     const val CAMERA_PADDING_MARKER = 150
     const val WD_WEIGHT = 0.3

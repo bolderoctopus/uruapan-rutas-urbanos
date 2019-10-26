@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/my_divider"
-        app:layout_constraintBottom_toBottomOf="@id/toolbar"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         />
 
     <ProgressBar

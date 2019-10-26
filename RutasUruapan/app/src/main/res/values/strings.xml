@@ -38,5 +38,8 @@
     <string name="imageView_walking_person_content_description">Persona caminando</string>
     <string name="back_button_imageView_content_description">Boton atrás</string>
     <string name="filter">Filtrar</string>
+    <string name="search">Búsqueda</string>
+    <string name="preference_limit_distance">Distancia límite</string>
+    <string name="preference_summary_limit_distance">Buscar rutas %1$s alrededor del punto de origen</string>
 
 </resources>
