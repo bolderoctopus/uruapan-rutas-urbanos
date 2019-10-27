@@ -5,7 +5,6 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "Routes")
 data class Route (var name: String,
-                  var line: String,
                   var color: String,
                   var shortName: String){
     @PrimaryKey (autoGenerate = true)

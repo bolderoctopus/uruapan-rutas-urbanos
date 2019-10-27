@@ -47,19 +47,19 @@ import java.lang.Runnable
 /*
 *
 * [] show directional arrows according to zoom
+* [...] improve looks of the route_item_layout
 *
-* [] improve looks of the route_item_layout
 * [] add indexes to speed up the db
 * [] improve function walkingDistanceToDest, take into consideration buildings
 * [] set fragment transitions between search and results?
-
+* [] research about offline maps
 * [] show tips for using the app
-* [] add missing routes 176 y 45
 * [] display lap time per route?
 *
 * [] decide if new design stays
 * [] add a disclaimer
 *
+* [-] add missing routes 176 y 45
 * [-] increase size of directional arrows
 * [x] add end and start caps for the drawn part of the route
 * [x] add setting for walking distance limit
