@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewTreeObserver
@@ -34,7 +33,6 @@ import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
-import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
@@ -62,7 +60,7 @@ import java.lang.Runnable
 * [] decide if new design stays
 * [] add a disclaimer
 *
-* [] increase size of directional arrows?
+* [-] increase size of directional arrows
 * [x] add end and start caps for the drawn part of the route
 * [x] add setting for walking distance limit
 * [x] sort resulting routes
@@ -79,6 +77,11 @@ import java.lang.Runnable
 * [-] settings: add how many results to show?
 * [-] i think the amount of results to show is currently not working
 */
+/*
+* After collecting location data:
+* + decide how many directional arrows to show
+*
+ */
 
 
 
@@ -90,7 +93,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ResultsFragment.OnFragmentInteractionListener,
         BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, GoogleMap.OnCameraMoveListener {
 
-    private val DIRECTIONAL_ARROWS_STEP = 3//7
+    /**
+     * Create an arrow to show the direction of a route for every X points.
+     */
+    private val DIRECTIONAL_ARROWS_STEP = 6
     private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
 
     private val VIBRATION_DURATION: Long = 75
@@ -352,16 +358,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                 route.mainSegment = map.addPolyline(mainSegmentPolOpt)
                 route.secondarySegment = map.addPolyline(secondarySegmentPolOpt)
-                route.directionalMarkers = drawDirectionalMarkers(route.getMainSegmentPoints(points!!), color)
+                route.directionalMarkers = drawDirectionalMarkers(route.getMainSegmentPoints(points!!), color, false)
                 // for debug purposes
                 route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
                 route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
                 route.mainSegmentMarkers = drawMarkers(route.getMainSegmentPoints(points!!))
 
                 route.isDrawn = true
-
-                Log.d(DEBUG_TAG, "zIndex secondary segment: ${route.secondarySegment?.zIndex}")
-                Log.d(DEBUG_TAG, "zIndex secondary main: ${route.mainSegment?.zIndex}")
             }
         }
     }
@@ -387,7 +390,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    private fun drawDirectionalMarkers(points: List<Point>, color: Int ): List<Marker>{
+    private fun drawDirectionalMarkers(points: List<Point>, color: Int, includeEnds: Boolean = true ): List<Marker>{
         var counter = 0
         val arrowCap = getBitmapDescriptor(R.drawable.ic_arrow, color)
         val directionalMarkerOptions = ArrayList<MarkerOptions>()
@@ -395,7 +398,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         for(x in points.indices){
             val point = points[x]
-            if(counter == 0 && arrowCap != null){
+            if(counter == 0){
                 counter = DIRECTIONAL_ARROWS_STEP
                 if(x + 1 < points.size)
                     directionalMarkerOptions.add(MarkerOptions()
@@ -407,6 +410,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     )
             }
             counter--
+        }
+
+        if(includeEnds) {
+            directionalMarkerOptions.removeAt(0)
+            directionalMarkerOptions.removeAt(directionalMarkerOptions.lastIndex)
         }
 
         directionalMarkerOptions.forEach {

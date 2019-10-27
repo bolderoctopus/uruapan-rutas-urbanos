@@ -18,7 +18,9 @@ class RouteModel (private val routeDb : Route){
     var endPoint: Point? = null
     var walkDist: Double? = null
     var totalDist: Double? = null
+    @Deprecated("No longer needed since a route result now includes a startCap")
     var startMarker: Marker? = null
+    @Deprecated("No longer needed since a route result now includes an endCap")
     var endMarker: Marker? = null
     var mainSegmentMarkers: List<Marker>? = null
 
