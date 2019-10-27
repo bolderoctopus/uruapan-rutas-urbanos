@@ -11,12 +11,14 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -32,6 +34,7 @@ import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
+import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
@@ -45,29 +48,22 @@ import java.lang.Runnable
 //todo: see below
 /*
 *
-* [] try to draw arrows bigger, maybe change it according to zoom
-*   1. try to replace polylines with markers to show direction
-*   1.5 test memory usage between polylines and markers
-*   2. try to increase the size of the arrows by 1 or 2 pixels
-*   3. show/hide markers according to zoom
-*   4. decide when to update shown markers: onCameraUpdate or onCameraIdle?
+* [] show directional arrows according to zoom
 *
 * [] improve looks of the route_item_layout
 * [] add indexes to speed up the db
 * [] improve function walkingDistanceToDest, take into consideration buildings
-* [] add end and start caps for the drawn part of the route
+* [] set fragment transitions between search and results?
 
 * [] show tips for using the app
 * [] add missing routes 176 y 45
-* [] set fragment transitions between search and results
 * [] display lap time per route?
-* [...] improve allRoutes Fragment look
-*       [x] fix spacing with route items on recycler views
-*       [] format in a better way the labels
 *
 * [] decide if new design stays
 * [] add a disclaimer
 *
+* [] increase size of directional arrows?
+* [x] add end and start caps for the drawn part of the route
 * [x] add setting for walking distance limit
 * [x] sort resulting routes
 * [x] add progressBar for results fragment
@@ -340,11 +336,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 val mainSegmentPolOpt = PolylineOptions().apply{
                     color(color)
                     width(LINE_WIDTH)
+                    zIndex(0.5f)
+                    endCap(CustomCap(getBitmapDescriptor(R.drawable.ic_route_endpoint, color)!!))
+                    startCap(CustomCap(getBitmapDescriptor(R.drawable.ic_route_startpoint, color)!!))
                     addAll(route.getMainSegment(points!!))
                 }
-                val possibleSecondaryPolOpt = PolylineOptions().apply {
+                val secondarySegmentPolOpt = PolylineOptions().apply {
                     color(color)
-                    width(LINE_WIDTH/4)
+                    width(LINE_WIDTH/3)
                     jointType(JointType.ROUND)
                     pattern(RouteModel.dashedPatter)
                     addAll(route.getSecondarySegment(points!!))
@@ -352,13 +351,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
 
                 route.mainSegment = map.addPolyline(mainSegmentPolOpt)
-                route.secondarySegment = map.addPolyline(possibleSecondaryPolOpt)
-                route.directionalMarkers = getDirectionalMarkers(route.getMainSegmentPoints(points!!), color)
+                route.secondarySegment = map.addPolyline(secondarySegmentPolOpt)
+                route.directionalMarkers = drawDirectionalMarkers(route.getMainSegmentPoints(points!!), color)
+                // for debug purposes
                 route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
                 route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
-                route.mainSegmentMarkers = drawMarkers(route.getMainSegmentPoints(points))
+                route.mainSegmentMarkers = drawMarkers(route.getMainSegmentPoints(points!!))
 
                 route.isDrawn = true
+
+                Log.d(DEBUG_TAG, "zIndex secondary segment: ${route.secondarySegment?.zIndex}")
+                Log.d(DEBUG_TAG, "zIndex secondary main: ${route.mainSegment?.zIndex}")
             }
         }
     }
@@ -378,15 +381,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                         .jointType(JointType.ROUND)
                 points?.forEach { polylineOptions.add(it.getLatLng()) }
                 route.polyline = map.addPolyline(polylineOptions)
-                route.directionalMarkers = getDirectionalMarkers(points!!, color)
+                route.directionalMarkers = drawDirectionalMarkers(points!!, color)
                 route.isDrawn = true
             }
         }
     }
 
-    private fun getDirectionalMarkers(points: List<Point>, color: Int ): List<Marker>{
+    private fun drawDirectionalMarkers(points: List<Point>, color: Int ): List<Marker>{
         var counter = 0
-        val arrowCap = getEndCapArrow(color)
+        val arrowCap = getBitmapDescriptor(R.drawable.ic_arrow, color)
         val directionalMarkerOptions = ArrayList<MarkerOptions>()
         val directionalMarkers = ArrayList<Marker>()
 
@@ -463,21 +466,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     @SuppressLint("NewApi")
-    private fun getEndCapArrow(color: Int): BitmapDescriptor?{
-        val drawable = getDrawable(R.drawable.ic_arrow) ?: return null
+    private fun getBitmapDescriptor(@DrawableRes idRes: Int, color: Int): BitmapDescriptor?{
+        val drawable = getDrawable(idRes) ?: return null
         drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
-        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
-        val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        drawable.draw(canvas)
-
-        return BitmapDescriptorFactory.fromBitmap(bitmap)
-    }
-
-    @SuppressLint("NewApi")
-    private fun getBitmapDescriptor(): BitmapDescriptor?{
-        val drawable = getDrawable(R.drawable.ic_place) ?: return null
-//        drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
         drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
         val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -533,7 +524,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker?.remove()
             originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).draggable(true))
-//            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(getEndCapArrow(Color.RED)).flat(true)// todo: remove
             originMarker?.tag = markerType
         }
         else if(markerType == SearchFragment.MarkerType.Destination) {

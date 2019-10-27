@@ -1,7 +1,9 @@
 package com.rico.omarw.rutasuruapan.database
 
-import androidx.room.*
-import com.rico.omarw.rutasuruapan.Constants
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Transaction
 import com.rico.omarw.rutasuruapan.Constants.RD_WEIGHT
 import com.rico.omarw.rutasuruapan.Constants.WD_WEIGHT
 
@@ -85,7 +87,7 @@ interface RouteDAO{
             "WHERE p1.routeId = :rId " +
             "AND p1.lat BETWEEN (:latitude - :distance) AND (:latitude + :distance) " +
             "AND p1.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) ")
-    suspend fun fillResultsTableStartPoint(rId: Long, latitude: Double, longitude: Double, endPoint: Int, distance: Double)
+    suspend fun fillResultsTableStartPoint(rId: Long, latitude: Double, longitude: Double, endPoint: Int, distance: Double)// todo: instead of minimum wd, try with the diff between wd and min wd?
 
     @Query("UPDATE bestPoints SET betterness = ((((SELECT MIN(wd) FROM bestPoints)/wd)*$WD_WEIGHT) + ((((SELECT MIN(rd) FROM bestPoints)/rd)*$RD_WEIGHT))) ")
     suspend fun updateResultsTable()
