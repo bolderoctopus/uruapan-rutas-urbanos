@@ -5,8 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.rico.omarw.rutasuruapan.R
+import com.rico.omarw.rutasuruapan.Utils.formatRouteTitle
 import com.rico.omarw.rutasuruapan.models.RouteModel
 
 class RouteListAdapter  (private val items: List<RouteModel>,
@@ -22,7 +24,7 @@ class RouteListAdapter  (private val items: List<RouteModel>,
     override fun getItemCount() = items.size
 
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
-        holder.checkBox.text = items[p].name
+        holder.checkBox.setText(formatRouteTitle(items[p].routeDb.name, items[p].routeDb.shortName), TextView.BufferType.SPANNABLE)
         holder.checkBox.isChecked = items[p].isDrawn
         holder.colorTag.setBackgroundColor(Color.parseColor(items[p].color))
         holder.checkBox.setOnClickListener {

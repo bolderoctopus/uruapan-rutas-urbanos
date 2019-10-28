@@ -22,7 +22,7 @@ interface RouteDAO{
     @Query("SELECT * FROM Points WHERE routeId = :routeId ORDER BY pointId")
     fun getPointsFrom(routeId: Long): List<Point>
 
-    @Query("SELECT * FROM  Routes")
+    @Query("SELECT * FROM  Routes ORDER BY color")//todo: sorting is not working
     suspend fun getRoutes(): List<Route>
 
     @Query("SELECT * FROM  Routes WHERE routeId IN (:routesIds)")

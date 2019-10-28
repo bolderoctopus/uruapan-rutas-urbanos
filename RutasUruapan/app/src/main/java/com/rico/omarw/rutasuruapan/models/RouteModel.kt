@@ -4,7 +4,7 @@ import com.google.android.gms.maps.model.*
 import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.database.Route
 
-class RouteModel (private val routeDb : Route){
+class RouteModel (val routeDb : Route){
     var mainSegment: Polyline? = null
     var secondarySegment: Polyline? = null
     var isDrawn: Boolean = false

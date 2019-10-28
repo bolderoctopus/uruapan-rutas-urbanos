@@ -1,15 +1,16 @@
 package com.rico.omarw.rutasuruapan.adapters
 
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
 import androidx.recyclerview.widget.SortedListAdapterCallback
 import com.rico.omarw.rutasuruapan.R
+import com.rico.omarw.rutasuruapan.Utils.formatRouteTitle
 import com.rico.omarw.rutasuruapan.models.RouteModel
 
 class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
@@ -48,21 +49,18 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
     override fun getItemCount() = sortedList.size()
 
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
-        holder.model = sortedList[p]
-        holder.checkBox.text = sortedList[p].name
-        holder.colorTag.background.setColorFilter(Color.parseColor(holder.model.color), PorterDuff.Mode.SRC)
-        holder.colorTag.setBackgroundColor(Color.parseColor(holder.model.color))
+        holder.checkBox.setText(formatRouteTitle(sortedList[p].routeDb.name, sortedList[p].routeDb.shortName), TextView.BufferType.SPANNABLE)
+        holder.colorTag.setBackgroundColor(Color.parseColor(sortedList[p].color))
         holder.checkBox.isChecked = sortedList[p].isDrawn
 
         holder.checkBox.setOnClickListener {
-            callback?.drawRoute(holder.model)
+            callback?.drawRoute(sortedList[p])
         }
     }
 
     class  MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         var colorTag: View = itemView.findViewById(R.id.view_colorTag)
         var checkBox: CheckBox = itemView.findViewById(R.id.route_name)
-        lateinit var model: RouteModel
     }
 
     interface DrawRouteListener{
