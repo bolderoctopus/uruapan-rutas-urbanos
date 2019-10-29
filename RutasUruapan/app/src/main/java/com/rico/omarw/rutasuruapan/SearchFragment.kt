@@ -331,8 +331,6 @@ class SearchFragment : Fragment(){
                 uruapanBounds.northeast)
         @JvmStatic
         fun newInstance() = SearchFragment().apply {
-//            enterTransition = androidx.transition.Explode()
-//            exitTransition = androidx.transition.Explode()
         }
 
         val PlaceFields = ArrayList<Place.Field>().apply{

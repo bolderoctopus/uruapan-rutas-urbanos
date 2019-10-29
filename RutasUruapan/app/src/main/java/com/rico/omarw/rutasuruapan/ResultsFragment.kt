@@ -241,8 +241,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
                     putParcelable(ORIGIN_LATLNG_KEY, originLatLng)
                     putParcelable(DESTINATION_LATLNG_KEY, destinationLatLng)
                 }
-//            enterTransition = Slide(Gravity.RIGHT)
-//            exitTransition = Slide(Gravity.LEFT)
         }
     }
 

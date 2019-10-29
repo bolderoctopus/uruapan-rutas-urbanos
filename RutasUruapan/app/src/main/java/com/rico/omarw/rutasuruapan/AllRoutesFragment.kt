@@ -2,17 +2,14 @@ package com.rico.omarw.rutasuruapan
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ShapeDrawable
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.SearchView
-import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,7 +17,6 @@ import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
-import java.lang.Exception
 
 
 class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener{
@@ -144,11 +140,10 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     companion object {
         val TAG = "AllRoutesFragment"
         @JvmStatic
-        fun newInstance() =
-                AllRoutesFragment().apply {
-                    arguments = Bundle().apply {
-                    }
+        fun newInstance() =AllRoutesFragment().apply {
+                arguments = Bundle().apply {
                 }
+        }
     }
 
     interface InteractionsInterface : RouteListFilterableAdapter.DrawRouteListener

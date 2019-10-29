@@ -43,6 +43,27 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.coroutines.*
 import java.lang.Runnable
 
+//todo: see below
+/*
+*
+* [] show directional arrows according to zoom
+*
+* [] improve function walkingDistanceToDest, take into consideration buildings
+* [] research about offline maps
+* [] show tips for using the app
+* [] decide if new design stays
+* [] add a disclaimer
+* [] display lap time per route?
+*
+* [-] set fragment transitions between search and results?
+* [x] add indexes to speed up the db
+*/
+
+/*
+* After collecting location data:
+* + decide how many directional arrows to show
+*
+ */
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
