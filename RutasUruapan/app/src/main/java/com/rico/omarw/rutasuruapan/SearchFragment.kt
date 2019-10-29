@@ -4,6 +4,7 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -216,7 +217,9 @@ class SearchFragment : Fragment(){
     }
 
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
-        return//todo: remove
+        if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean("resolve_locations_to_addresses", false))
+            return
+
         if(!::geocoder.isInitialized) geocoder = Geocoder(context, Locale.getDefault())
 
         uiScope.launch {
