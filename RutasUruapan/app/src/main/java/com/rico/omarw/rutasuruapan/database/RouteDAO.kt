@@ -19,14 +19,11 @@ interface RouteDAO{
     @Insert
     fun insertRoute(route: Route): Long
 
-    @Query("SELECT * FROM Points WHERE routeId = :routeId ORDER BY pointId")
+    @Query("SELECT * FROM Points WHERE routeId = :routeId ORDER BY number")
     fun getPointsFrom(routeId: Long): List<Point>
 
-    @Query("SELECT * FROM  Routes ORDER BY color")//todo: sorting is not working
+    @Query("SELECT * FROM Routes ORDER BY color")
     suspend fun getRoutes(): List<Route>
-
-    @Query("SELECT * FROM  Routes WHERE routeId IN (:routesIds)")
-    suspend fun getRoutes(routesIds: List<Long>): List<Route>
 
     @Query("DELETE FROM Points")
     fun deleteAllPoints()

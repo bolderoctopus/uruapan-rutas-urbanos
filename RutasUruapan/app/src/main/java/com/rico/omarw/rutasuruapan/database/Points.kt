@@ -1,13 +1,17 @@
 package com.rico.omarw.rutasuruapan.database
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.android.gms.maps.model.LatLng
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
-@Entity(tableName = "Points")
+@Entity(tableName = "Points", indices = [
+    Index(name = "index_Points_latRouteId", value = ["lat","routeId"], unique = false),
+    Index(name = "index_Points_routeIdLat", value = ["routeId","lat"], unique = false),
+    Index(name = "index_Points_routeIdNumberDistNextPoint", value = ["routeId", "number", "distanceToNextPoint"], unique = false)])
 data class Point(var routeId: Long,
                   var lat: Double,
                   var lng: Double,

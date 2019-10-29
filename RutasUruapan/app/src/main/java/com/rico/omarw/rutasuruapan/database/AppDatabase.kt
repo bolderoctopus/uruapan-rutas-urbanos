@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Route::class, Point::class,BestPoint::class], version = 3)
+@Database(entities = [Route::class, Point::class,BestPoint::class], version = 4)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun routesDAO(): RouteDAO
 
@@ -22,7 +22,7 @@ abstract class AppDatabase: RoomDatabase() {
                     INSTANCE = Room.databaseBuilder(context.applicationContext,  AppDatabase::class.java, "routes_database")
                             .createFromAsset("databases/pre_packaged_routes.db")
                             .fallbackToDestructiveMigration()
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                             .build()
                 }
             }
@@ -43,6 +43,14 @@ abstract class AppDatabase: RoomDatabase() {
                 database.execSQL("INSERT INTO new_Routes (routeId, name, color, shortName)  SELECT routeId, name, color, shortName FROM Routes")
                 database.execSQL("DROP TABLE Routes")
                 database.execSQL("ALTER TABLE new_Routes RENAME TO Routes")
+            }
+        }
+
+        private val MIGRATION_3_4 = object: Migration(3, 4){
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE INDEX `index_Points_latRouteId` on `Points` (lat, routeId)")
+                database.execSQL("create index `index_Points_routeIdLat` on `Points` (routeId, lat)")
+                database.execSQL("CREATE INDEX `index_Points_routeIdNumberDistNextPoint` on `Points` (routeId, number, distanceToNextPoint) ")
             }
         }
 

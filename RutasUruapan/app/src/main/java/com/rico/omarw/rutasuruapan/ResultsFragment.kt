@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +13,6 @@ import androidx.constraintlayout.widget.Group
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.Slide
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.appbar.MaterialToolbar
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
@@ -111,6 +109,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
      * @param walkDistLimit How much the user is willing to walk between the route start/end point and the given origin/destination respectively
      */
     private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){
+        val SQL_TAG = "sql_tag"
         showProgressBar()
         if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener?.drawSquares(walkDistLimit)
@@ -119,12 +118,12 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
         uiScope.launch {
             val routesDao = AppDatabase.getInstance(context!!)?.routesDAO()
-            var commonRoutesIds: Set<Long>? = null
-
+            val commonRoutesIds: Set<Long>?
+            val startTime = System.currentTimeMillis()
             val routesNearOrigin = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, originLatLng.latitude, originLatLng.longitude)}
             val routesNearDest = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, destinationLatLng.latitude, destinationLatLng.longitude)}
             awaitAll(routesNearDest, routesNearOrigin)
-
+            Log.d(SQL_TAG, "time of getRoutesIntercepting both start and end: ${System.currentTimeMillis() - startTime}")
             commonRoutesIds = routesNearOrigin.await()!!.intersect(routesNearDest.await()!!)
 
             if(commonRoutesIds.isNullOrEmpty()){

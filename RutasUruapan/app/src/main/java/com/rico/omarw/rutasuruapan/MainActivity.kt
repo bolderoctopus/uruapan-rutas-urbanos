@@ -43,46 +43,6 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.coroutines.*
 import java.lang.Runnable
 
-//todo: see below
-/*
-*
-* [] show directional arrows according to zoom
-* [...] improve looks of the route_item_layout
-*
-* [] add indexes to speed up the db
-* [] improve function walkingDistanceToDest, take into consideration buildings
-* [] set fragment transitions between search and results?
-* [] research about offline maps
-* [] show tips for using the app
-* [] display lap time per route?
-*
-* [] decide if new design stays
-* [] add a disclaimer
-*
-* [-] add missing routes 176 y 45
-* [-] increase size of directional arrows
-* [x] add end and start caps for the drawn part of the route
-* [x] add setting for walking distance limit
-* [x] sort resulting routes
-* [x] add progressBar for results fragment
-* [x] animate recycler view
-* [x] improve looks of outside of bounds error, possible create custom Toast
-* [x] what to do if search has been done but a marker is dragged: recalculate
-* [x] find a way to differentiate between origin/dest markers
-* [x] SearchFragment: test with a single button "Search/Find Route", how to show all routes then?
-* [x] show message when no routes found or that the user should walk
-* [x] modify database, add direction data
-* [x] update algorithm, take into consideration direction
-* [x] draw only the relevant part of the route
-* [-] settings: add how many results to show?
-* [-] i think the amount of results to show is currently not working
-*/
-/*
-* After collecting location data:
-* + decide how many directional arrows to show
-*
- */
-
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
