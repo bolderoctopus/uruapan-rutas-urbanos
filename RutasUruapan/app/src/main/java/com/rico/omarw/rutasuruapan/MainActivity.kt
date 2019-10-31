@@ -46,10 +46,9 @@ import java.lang.Runnable
 //todo: see below
 /*
 *
-* [] show directional arrows according to zoom
+* [...] show directional arrows according to zoom
 *
 * [] improve function walkingDistanceToDest, take into consideration buildings
-* [] research about offline maps
 * [] show tips for using the app
 * [] decide if new design stays
 * [] add a disclaimer
@@ -57,6 +56,7 @@ import java.lang.Runnable
 *
 * [-] set fragment transitions between search and results?
 * [x] add indexes to speed up the db
+* [x] offline maps: maybe, on a second version
 */
 
 /*
@@ -570,7 +570,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 //            Log.d(DEBUG_TAG, "zoom Level changed: $zoomLevel")
 //        }
     }
-
+    
     /**
      * For debug purpouses
      */

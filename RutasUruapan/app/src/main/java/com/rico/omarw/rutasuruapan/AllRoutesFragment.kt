@@ -129,13 +129,13 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         super.onDetach()
     }
 
-    override fun drawRoute(route: RouteModel) {
+    override fun drawRoute(route: RouteModel) {//todo: don't they get added twice?
         if(drawnRoutes == null) drawnRoutes = ArrayList()
         drawnRoutes!!.add(route)
         interactionsListener?.drawRoute(route)
     }
 
-    private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
+    private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}// todo: this might be no longer needed since the fragment remains attached the whole time?
 
     companion object {
         val TAG = "AllRoutesFragment"
