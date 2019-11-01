@@ -1,5 +1,6 @@
 package com.rico.omarw.rutasuruapan.models
 
+import android.util.SparseArray
 import com.google.android.gms.maps.model.*
 import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.database.Route
@@ -12,7 +13,7 @@ class RouteModel (val routeDb : Route){
     val color: String = routeDb.color
     val id: Long = routeDb.routeId
     var polyline: Polyline? = null
-    var directionalMarkers: List<Marker>? = null
+    var directionalMarkers: SparseArray<Array<Marker>>? = null
 
     var startPoint: Point? = null
     var endPoint: Point? = null
@@ -31,7 +32,13 @@ class RouteModel (val routeDb : Route){
         secondarySegment?.isVisible = visible
         polyline?.isVisible = visible
         mainSegmentMarkers?.forEach { it.isVisible = visible }
-        directionalMarkers?.forEach { it.isVisible = visible }
+
+//        if(directionalMarkers != null) {
+//            for (x in 0 until directionalMarkers!!.size()){
+//                directionalMarkers!!.valueAt(x).forEach { it.isVisible = visible }
+//            }
+//        }
+
         isDrawn = visible
     }
 
@@ -42,7 +49,13 @@ class RouteModel (val routeDb : Route){
         secondarySegment?.remove()
         polyline?.remove()
         mainSegmentMarkers?.forEach { it.remove() }
-        directionalMarkers?.forEach { it.remove() }
+
+        if(directionalMarkers != null) {
+            for (x in 0 until directionalMarkers!!.size()){
+                directionalMarkers!!.valueAt(x).forEach { it.remove() }
+            }
+        }
+
         isDrawn = false
     }
 
@@ -51,7 +64,7 @@ class RouteModel (val routeDb : Route){
         if(other == null || javaClass != other.javaClass) return false
         val model = other as RouteModel
 
-        if(id != model.id) return false;
+        if(id != model.id) return false
         return name.equals(model.name) && color.equals(model.color)
     }
 

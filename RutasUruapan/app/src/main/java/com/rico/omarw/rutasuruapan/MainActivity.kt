@@ -11,6 +11,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
+import android.util.SparseArray
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewTreeObserver
@@ -33,6 +35,8 @@ import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
+import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
+import com.rico.omarw.rutasuruapan.Constants.INITIAL_ZOOM
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
@@ -47,6 +51,8 @@ import java.lang.Runnable
 /*
 *
 * [...] show directional arrows according to zoom
+*   finish the segment function / directionalArrows
+*   refactor names
 *
 * [] improve function walkingDistanceToDest, take into consideration buildings
 * [] show tips for using the app
@@ -77,7 +83,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     /**
      * Create an arrow to show the direction of a route for every X points.
      */
-    private val DIRECTIONAL_ARROWS_STEP = 6
+    private val DIRECTIONAL_ARROWS_STEP = 4
     private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
 
     private val VIBRATION_DURATION: Long = 75
@@ -104,6 +110,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var startMarkerPosition: LatLng
     private var uiScope = CoroutineScope(Dispatchers.Main)
     private lateinit var bottomNavView: BottomNavigationView
+    private val drawnRoutes = ArrayList<RouteModel>()
+    private var zoomLevel: Int = INITIAL_ZOOM.toInt()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -178,8 +186,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map.setOnMapLongClickListener(this)
         map.setOnMarkerDragListener(this)
         //map.setLatLngBoundsForCameraTarget(SearchFragment.uruapanLatLngBounds)// restrict camera to just uruapan?
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(URUAPAN_LATLNG, 13f))
-        zoomLevel = map.cameraPosition.zoom
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(URUAPAN_LATLNG, INITIAL_ZOOM))
         map.setOnCameraMoveListener(this)
         if (locationPermissionEnabled()){
             map.isMyLocationEnabled = true
@@ -313,11 +320,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun drawRouteResult(route: RouteModel) {
-        if (route.mainSegment != null){
-            route.setVisibility(route.isDrawn.not())
+        uiScope.launch {
+            if (route.mainSegment != null){
+                route.setVisibility(route.isDrawn.not())
 
-        }else{
-            uiScope.launch {
+            }else{
                 val color = Color.parseColor(route.color)
                 val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)}
                 val mainSegmentPolOpt = PolylineOptions().apply{
@@ -336,10 +343,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     addAll(route.getSecondarySegment(points!!))
                 }
 
-
                 route.mainSegment = map.addPolyline(mainSegmentPolOpt)
                 route.secondarySegment = map.addPolyline(secondarySegmentPolOpt)
                 route.directionalMarkers = drawDirectionalMarkers(route.getMainSegmentPoints(points!!), color, false)
+                drawnRoutes.add(route)
+
                 // for debug purposes
                 route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
                 route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
@@ -347,35 +355,42 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                 route.isDrawn = true
             }
+            //todo: there could be a better way to updte the visible directionalArrows at the current zoom lvl
+            updateShownDirectionalArrows(0, zoomLevel, route, routeVisible = route.isDrawn)
         }
     }
 
     override fun drawRoute(route: RouteModel) {
-        if (route.polyline != null){
-            route.setVisibility(route.isDrawn.not())
+        uiScope.launch {
+            if (route.polyline != null){
+                route.setVisibility(route.isDrawn.not())
 
-        }else{
-            uiScope.launch {
-                val color = Color.parseColor(route.color)
-                val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)}
-                val polylineOptions = PolylineOptions()
-                polylineOptions
-                        .color(color)
-                        .width(LINE_WIDTH)
-                        .jointType(JointType.ROUND)
-                points?.forEach { polylineOptions.add(it.getLatLng()) }
-                route.polyline = map.addPolyline(polylineOptions)
-                route.directionalMarkers = drawDirectionalMarkers(points!!, color)
-                route.isDrawn = true
+            }else{
+                    val color = Color.parseColor(route.color)
+                    val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)}
+                    val polylineOptions = PolylineOptions()
+                    polylineOptions
+                            .color(color)
+                            .width(LINE_WIDTH)
+                            .jointType(JointType.ROUND)
+                    points?.forEach { polylineOptions.add(it.getLatLng()) }
+                    route.polyline = map.addPolyline(polylineOptions)
+
+                    route.directionalMarkers = drawDirectionalMarkers(points!!, color)
+                    drawnRoutes.add(route)
+
+                    route.isDrawn = true
             }
+            //todo: there could be a better way to updte the visible directionalArrows at the current zoom lvl
+            updateShownDirectionalArrows(0, zoomLevel, route, routeVisible = route.isDrawn)
         }
     }
 
-    private fun drawDirectionalMarkers(points: List<Point>, color: Int, includeEnds: Boolean = true ): List<Marker>{
+    private fun drawDirectionalMarkers(points: List<Point>, color: Int, includeEnds: Boolean = true ): SparseArray<Array<Marker>> {
+        val sparseArray = SparseArray<Array<Marker>>()
         var counter = 0
         val arrowCap = getBitmapDescriptor(R.drawable.ic_arrow, color)
         val directionalMarkerOptions = ArrayList<MarkerOptions>()
-        val directionalMarkers = ArrayList<Marker>()
 
         for(x in points.indices){
             val point = points[x]
@@ -388,6 +403,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                             .rotation(point.bearingTo(points[x+1].lat, points[x+1].lng ))
                             .draggable(false)
                             .flat(true)
+                            .visible(false)
                     )
             }
             counter--
@@ -398,10 +414,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             directionalMarkerOptions.removeAt(directionalMarkerOptions.lastIndex)
         }
 
+        sparseArray.append(13, emptyArray())
+        sparseArray.append(14, emptyArray())
+        sparseArray.append(15, emptyArray())
+
+
+        val maxZoom = 15
+        var zoomLvl = 13
         directionalMarkerOptions.forEach {
-            directionalMarkers.add(map.addMarker(it))
+            sparseArray.put(zoomLvl, sparseArray[zoomLvl].plus(map.addMarker(it)))
+
+
+            zoomLvl++
+            if(zoomLvl > maxZoom) zoomLvl = 13
         }
-        return directionalMarkers
+
+        return sparseArray
     }
 
     private fun locationPermissionEnabled(): Boolean {
@@ -535,7 +563,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    override fun onBackFromResults(){
+    override fun onBackFromResults(removedRoutes: List<RouteModel>?){
+        if(removedRoutes != null){
+            for(removedRoute in removedRoutes)
+                drawnRoutes.remove(removedRoute)
+        }
+
+
         clearSquares()
         supportFragmentManager.beginTransaction()
                 .remove(resultsFragment!!)
@@ -563,13 +597,37 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             super.onBackPressed()
     }
 
-    private var zoomLevel: Float? = null
     override fun onCameraMove() {
-//        if(zoomLevel != map.cameraPosition.zoom){
-//            zoomLevel = map.cameraPosition.zoom
-//            Log.d(DEBUG_TAG, "zoom Level changed: $zoomLevel")
-//        }
+        if (zoomLevel != map.cameraPosition.zoom.toInt()) {
+            if(drawnRoutes != null){
+                for (route in drawnRoutes!!){
+                    if(route.isDrawn)
+                        updateShownDirectionalArrows(zoomLevel, map.cameraPosition.zoom.toInt(), route)
+                }
+            }
+
+            zoomLevel = map.cameraPosition.zoom.toInt()
+            Log.d(DEBUG_TAG, "zoom Level changed: $zoomLevel")
+        }
     }
+    //currentZoomLvl hasta que nivel de zoom estan visibles los marcadores
+    private fun updateShownDirectionalArrows(currentZoomLvl: Int, newZoomLvl: Int, route: RouteModel, routeVisible: Boolean = true){
+        if(route.directionalMarkers == null) return
+
+        if(currentZoomLvl < newZoomLvl){
+            //routeVisible markers between current and new
+            for(x in (currentZoomLvl+1)..newZoomLvl){
+                if(route.directionalMarkers!![x] != null) route.directionalMarkers!![x].forEach { it.isVisible = routeVisible }
+            }
+        }
+        else{
+            //hide markers between new and current
+            for(x in (newZoomLvl+1)..currentZoomLvl){
+                if(route.directionalMarkers!![x] != null) route.directionalMarkers!![x].forEach { it.isVisible = false }
+            }
+        }
+    }
+
     
     /**
      * For debug purpouses

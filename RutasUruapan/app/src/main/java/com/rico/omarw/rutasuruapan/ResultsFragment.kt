@@ -76,7 +76,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     fun backButtonPressed(){
         clearDrawnRoutes()
-        listener?.onBackFromResults()
+        listener?.onBackFromResults(drawnRoutes)
     }
 
     override fun onAttach(context: Context) {
@@ -224,7 +224,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
 
     interface OnFragmentInteractionListener {
-        fun onBackFromResults()
+        fun onBackFromResults(removedRoutes: List<RouteModel>?)
         fun drawRouteResult(route: RouteModel)
         fun drawSquares(walkingDistance: Double)
     }

@@ -15,4 +15,6 @@ object Constants {
     const val DRAW_SQUARES_DEFAULT = false
     const val DRAW_ROUTE_POINTS = false
     const val DRAW_STARTEND_POINTS = false
+
+    const val INITIAL_ZOOM = 13f
 }
