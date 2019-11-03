@@ -129,7 +129,7 @@ class SearchFragment : Fragment(){
             }
         }
         autocompleteTextview.isEnabled = false
-        autocompleteTextview.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))// todo, if resultsFragment is active and you move a marker, this crashes the app
+        autocompleteTextview.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
     }
 
     fun updatePosition(markerType: MarkerType, latLng: LatLng){
@@ -189,7 +189,10 @@ class SearchFragment : Fragment(){
             title = getString(R.string.origin)
             origin.error = null
             markerType = MarkerType.Origin
-            destinationAutoCompleteTextView.requestFocus()
+            if (item.kind != AutocompleteItemModel.ItemKind.PickLocation) destinationAutoCompleteTextView.requestFocus()//todo: only if the user clicked Use Current location or a Prediction
+            else {originAutoCompleteTextView.clearFocus()
+                hideKeyboard(context!!, originAutoCompleteTextView.windowToken)
+            }
         }else{
             title = getString(R.string.destination)
             destination.error = null

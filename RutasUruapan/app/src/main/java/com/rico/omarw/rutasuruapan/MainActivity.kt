@@ -49,20 +49,17 @@ import java.lang.Runnable
 
 //todo: see below
 /*
-*
+* [] improve geographic data
 * [...] show directional arrows according to zoom
 *   finish the segment function / directionalArrows
 *   refactor names
-*
+* [] solve bug 1
+* [] solve bug 2
 * [] improve function walkingDistanceToDest, take into consideration buildings
 * [] show tips for using the app
 * [] decide if new design stays
 * [] add a disclaimer
 * [] display lap time per route?
-*
-* [-] set fragment transitions between search and results?
-* [x] add indexes to speed up the db
-* [x] offline maps: maybe, on a second version
 */
 
 /*
@@ -70,7 +67,19 @@ import java.lang.Runnable
 * + decide how many directional arrows to show
 *
  */
-
+/*
+* bug 1
+* bug definition:
+* when an autocomplete textView is focused
+* and you long pressed on the map
+* it opens up the drop down list, even if panel is collapsed
+*
+* focus should go to the next textField?
+*
+*
+* bug 2:
+* after clicking "Select location on map" on the origin textView focus goes to destination
+* */
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
@@ -522,7 +531,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private fun getDummyLatLng(): LatLng{
         val latlng: LatLng
-        val increment = 0.002
+        val increment = 0.01
         if(originMarker != null) latlng = LatLng(originMarker!!.position.latitude - increment, originMarker!!.position.longitude)
         else if(destinationMarker != null) latlng = LatLng(destinationMarker!!.position.latitude - increment, destinationMarker!!.position.longitude)
         else latlng = URUAPAN_LATLNG
