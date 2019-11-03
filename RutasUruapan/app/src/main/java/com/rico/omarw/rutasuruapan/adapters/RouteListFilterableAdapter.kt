@@ -49,16 +49,18 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
     override fun getItemCount() = sortedList.size()
 
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
-        holder.checkBox.setText(formatRouteTitle(sortedList[p].routeDb.name, sortedList[p].routeDb.shortName), TextView.BufferType.SPANNABLE)
-        holder.colorTag.setBackgroundColor(Color.parseColor(sortedList[p].color))
-        holder.checkBox.isChecked = sortedList[p].isDrawn
+        holder.model = sortedList[p]
+        holder.checkBox.setText(formatRouteTitle(holder.model.routeDb.name, holder.model.routeDb.shortName), TextView.BufferType.SPANNABLE)
+        holder.colorTag.setBackgroundColor(Color.parseColor(holder.model.color))
+        holder.checkBox.isChecked = holder.model.isDrawn
 
         holder.checkBox.setOnClickListener {
-            callback?.drawRoute(sortedList[p])
+            callback?.drawRoute(holder.model)
         }
     }
 
     class  MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+        lateinit var model: RouteModel
         var colorTag: View = itemView.findViewById(R.id.view_colorTag)
         var checkBox: CheckBox = itemView.findViewById(R.id.route_name)
     }
