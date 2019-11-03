@@ -94,7 +94,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         val filteredList = ArrayList<RouteModel>()
         for(model in models){
             val name = model.name.toLowerCase()
-            if(name.contains(lowerCaseQuery))
+            if(name.contains(lowerCaseQuery) || model.routeDb.shortName.contains(lowerCaseQuery))
                 filteredList.add(model)
         }
 
