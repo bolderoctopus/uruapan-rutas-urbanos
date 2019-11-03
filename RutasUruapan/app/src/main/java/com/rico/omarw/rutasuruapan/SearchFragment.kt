@@ -24,6 +24,7 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputLayout
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
+import com.rico.omarw.rutasuruapan.Utils.checkInternetConnection
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
@@ -217,21 +218,24 @@ class SearchFragment : Fragment(){
     }
 
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
-        if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean("resolve_locations_to_addresses", false))
+        if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean("resolve_locations_to_addresses", false)
+                || (context != null && !checkInternetConnection(context!!)))
             return
 
         if(!::geocoder.isInitialized) geocoder = Geocoder(context, Locale.getDefault())
 
         uiScope.launch {
-            val addresses: List<Address>? = withContext(Dispatchers.IO) {geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)}
-            Log.d(DEBUG_TAG, "setting textView text to ${getShortAddress(addresses!![0])}")
-            if(!addresses.isNullOrEmpty())
-                when(markerType){
-                    MarkerType.Origin -> originAutoCompleteTextView.setText(getShortAddress(addresses[0]))
-                    MarkerType.Destination -> destinationAutoCompleteTextView.setText(getShortAddress(addresses[0]))
-                }
+            try {
+                val addresses: List<Address>? = withContext(Dispatchers.IO) { geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1) }
+                if (!addresses.isNullOrEmpty())
+                    when (markerType) {
+                        MarkerType.Origin -> originAutoCompleteTextView.setText(getShortAddress(addresses[0]))
+                        MarkerType.Destination -> destinationAutoCompleteTextView.setText(getShortAddress(addresses[0]))
+                    }
+            }catch (exception: java.lang.Exception){
+                Log.e(TAG, "findPlaceByLatLng", exception)
+            }
             ignoreFiltering(false)
-            Log.d(DEBUG_TAG, "setting ignoreFiltering to false")
         }
     }
 
