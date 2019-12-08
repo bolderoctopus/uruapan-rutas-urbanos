@@ -43,16 +43,15 @@ import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.models.RouteModel
+import com.rico.omarw.rutasuruapan.models.ZoomLevel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.coroutines.*
 import java.lang.Runnable
 
 //todo: see below
 /*
-* [] improve geographic data
-* [...] show directional arrows according to zoom
-*   finish the segment function / directionalArrows
-*   refactor names
+
+
 * [] solve bug 1
 * [] solve bug 2
 * [] improve function walkingDistanceToDest, take into consideration buildings
@@ -60,6 +59,9 @@ import java.lang.Runnable
 * [] decide if new design stays
 * [] add a disclaimer
 * [] display lap time per route?
+*
+* [x] improve geographic data
+* [x] show directional arrows according to zoom
 */
 
 /*
@@ -80,6 +82,11 @@ import java.lang.Runnable
 * bug 2:
 * after clicking "Select location on map" on the origin textView focus goes to destination
 * */
+/*
+bug3:
+a veces la mejor ruta sugerida no es la mas optima, probablemente hay
+que ajustar los parametros del algoritmo o modificarlo
+ */
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
@@ -89,10 +96,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ResultsFragment.OnFragmentInteractionListener,
         BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, GoogleMap.OnCameraMoveListener {
 
-    /**
-     * Create an arrow to show the direction of a route for every X points.
-     */
-    private val DIRECTIONAL_ARROWS_STEP = 4
     private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
 
     private val VIBRATION_DURATION: Long = 75
@@ -120,7 +123,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var uiScope = CoroutineScope(Dispatchers.Main)
     private lateinit var bottomNavView: BottomNavigationView
     private val drawnRoutes = ArrayList<RouteModel>()
-    private var zoomLevel: Int = INITIAL_ZOOM.toInt()
+    private var mapZoomLevel: Int = INITIAL_ZOOM.toInt()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -354,7 +357,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                 route.mainSegment = map.addPolyline(mainSegmentPolOpt)
                 route.secondarySegment = map.addPolyline(secondarySegmentPolOpt)
-                route.directionalMarkers = drawDirectionalMarkers(route.getMainSegmentPoints(points!!), color, false)
+                route.directionalMarkers = drawDirectionalMarkers(route.getMainSegmentPoints(points!!), color)
                 drawnRoutes.add(route)
 
                 // for debug purposes
@@ -365,7 +368,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 route.isDrawn = true
             }
             //todo: there could be a better way to updte the visible directionalArrows at the current zoom lvl
-            updateShownDirectionalArrows(0, zoomLevel, route, routeVisible = route.isDrawn)
+            updateShownDirectionalArrows(0, mapZoomLevel, route, routeVisible = route.isDrawn)
         }
     }
 
@@ -391,51 +394,51 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     route.isDrawn = true
             }
             //todo: there could be a better way to updte the visible directionalArrows at the current zoom lvl
-            updateShownDirectionalArrows(0, zoomLevel, route, routeVisible = route.isDrawn)
+            updateShownDirectionalArrows(0, mapZoomLevel, route, routeVisible = route.isDrawn)
         }
     }
 
-    private fun drawDirectionalMarkers(points: List<Point>, color: Int, includeEnds: Boolean = true ): SparseArray<Array<Marker>> {
-        val sparseArray = SparseArray<Array<Marker>>()
-        var counter = 0
+    private fun drawDirectionalMarkers(sourcePoints: List<Point>, color: Int): SparseArray<Iterable<Marker>> {
         val arrowCap = getBitmapDescriptor(R.drawable.ic_arrow, color)
-        val directionalMarkerOptions = ArrayList<MarkerOptions>()
-
-        for(x in points.indices){
-            val point = points[x]
-            if(counter == 0){
-                counter = DIRECTIONAL_ARROWS_STEP
-                if(x + 1 < points.size)
-                    directionalMarkerOptions.add(MarkerOptions()
+        val totalRouteDist = sourcePoints.let{
+            var dist = 0
+            it.forEach{p-> dist += p.distanceToNextPoint}
+            dist
+        }
+        Log.d(DEBUG_TAG, "totalRouteDist: $totalRouteDist")
+        val zoomLvls: List<ZoomLevel> = ArrayList<ZoomLevel>().apply{
+            add(ZoomLevel(12, 3200, 0, ArrayList()))
+            add(ZoomLevel(13, 1600, 0, ArrayList()))
+            add(ZoomLevel(14, 800, 0, ArrayList()))
+            add(ZoomLevel(16, 400, 0, ArrayList()))
+            add(ZoomLevel(17, 200, 0, ArrayList()))
+            add(ZoomLevel(18, 100, 0, ArrayList()))
+        }
+        var distCounter = 0
+        for(x in sourcePoints.indices){
+            val point = sourcePoints[x]
+            distCounter += point.distanceToNextPoint
+            for(z in zoomLvls){
+                z.counter += point.distanceToNextPoint
+                if(z.counter >= z.distanceInterval && (x + 1 < sourcePoints.size)){
+                    Log.d(DEBUG_TAG, "point added, at: $distCounter")
+                    z.markers.add(map.addMarker(MarkerOptions()
                             .icon(arrowCap)
                             .position(point.getLatLng())
-                            .rotation(point.bearingTo(points[x+1].lat, points[x+1].lng ))
+                            .rotation(point.bearingTo(sourcePoints[x+1].lat, sourcePoints[x+1].lng ))
                             .draggable(false)
                             .flat(true)
-                            .visible(false)
-                    )
+                            .visible(false)))
+                    val d = z.counter - z.distanceInterval
+                    zoomLvls.forEach { if(it.zoomLevel >= z.zoomLevel) it.counter = d }
+                    break
+                }
             }
-            counter--
         }
 
-        if(includeEnds) {
-            directionalMarkerOptions.removeAt(0)
-            directionalMarkerOptions.removeAt(directionalMarkerOptions.lastIndex)
-        }
-
-        sparseArray.append(13, emptyArray())
-        sparseArray.append(14, emptyArray())
-        sparseArray.append(15, emptyArray())
-
-
-        val maxZoom = 15
-        var zoomLvl = 13
-        directionalMarkerOptions.forEach {
-            sparseArray.put(zoomLvl, sparseArray[zoomLvl].plus(map.addMarker(it)))
-
-
-            zoomLvl++
-            if(zoomLvl > maxZoom) zoomLvl = 13
+        val sparseArray = SparseArray<Iterable<Marker>>()
+        for(z in zoomLvls){
+            sparseArray.append(z.zoomLevel, z.markers)
         }
 
         return sparseArray
@@ -607,16 +610,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onCameraMove() {
-        if (zoomLevel != map.cameraPosition.zoom.toInt()) {
-            if(drawnRoutes != null){
-                for (route in drawnRoutes!!){
-                    if(route.isDrawn)
-                        updateShownDirectionalArrows(zoomLevel, map.cameraPosition.zoom.toInt(), route)
-                }
+        if (mapZoomLevel != map.cameraPosition.zoom.toInt()) {
+            for (route in drawnRoutes){
+                if(route.isDrawn)
+                    updateShownDirectionalArrows(mapZoomLevel, map.cameraPosition.zoom.toInt(), route)
             }
 
-            zoomLevel = map.cameraPosition.zoom.toInt()
-            Log.d(DEBUG_TAG, "zoom Level changed: $zoomLevel")
+            mapZoomLevel = map.cameraPosition.zoom.toInt()
+            Log.d(DEBUG_TAG, "zoom Level changed: $mapZoomLevel")
         }
     }
     //currentZoomLvl hasta que nivel de zoom estan visibles los marcadores

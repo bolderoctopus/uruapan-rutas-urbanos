@@ -13,7 +13,7 @@ class RouteModel (val routeDb : Route){
     val color: String = routeDb.color
     val id: Long = routeDb.routeId
     var polyline: Polyline? = null
-    var directionalMarkers: SparseArray<Array<Marker>>? = null
+    var directionalMarkers: SparseArray<Iterable<Marker>>? = null
 
     var startPoint: Point? = null
     var endPoint: Point? = null
@@ -25,7 +25,7 @@ class RouteModel (val routeDb : Route){
     var endMarker: Marker? = null
     var mainSegmentMarkers: List<Marker>? = null
 
-    public fun setVisibility(visible: Boolean){
+    fun setVisibility(visible: Boolean){
         startMarker?.isVisible = visible
         endMarker?.isVisible = visible
         mainSegment?.isVisible = visible
@@ -33,16 +33,10 @@ class RouteModel (val routeDb : Route){
         polyline?.isVisible = visible
         mainSegmentMarkers?.forEach { it.isVisible = visible }
 
-//        if(directionalMarkers != null) {
-//            for (x in 0 until directionalMarkers!!.size()){
-//                directionalMarkers!!.valueAt(x).forEach { it.isVisible = visible }
-//            }
-//        }
-
         isDrawn = visible
     }
 
-    public fun remove(){
+    fun remove(){
         startMarker?.remove()
         endMarker?.remove()
         mainSegment?.remove()
@@ -90,13 +84,12 @@ class RouteModel (val routeDb : Route){
 
     fun getMainSegmentPoints(points: List<Point>) = getRouteSegmentPoints(startPoint!!.number, endPoint!!.number, points)
     private fun getRouteSegmentPoints(start: Int, end: Int, points: List<Point>): List<Point>{
-        val segment = ArrayList<LatLng>()
-        if(start > end){
+        return if(start > end){
             val part1 = points.filter {it.number >= start}.sortedBy {it.number}
             val part2 = points.filter {it.number <= end }.sortedBy {it.number}
-            return (part1 + part2)
+            (part1 + part2)
         }else{
-            return points.filter {it.number in start..end}.sortedBy {it.number}
+            points.filter {it.number in start..end}.sortedBy {it.number}
         }
     }
 
