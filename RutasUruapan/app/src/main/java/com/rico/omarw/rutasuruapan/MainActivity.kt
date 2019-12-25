@@ -52,8 +52,9 @@ import java.lang.Runnable
 /*
 
 
-* [] solve bug 1
+* [x] solve bug 1
 * [] solve bug 2
+* [] solve bug 3
 * [] improve function walkingDistanceToDest, take into consideration buildings
 * [] show tips for using the app
 * [] decide if new design stays
@@ -70,15 +71,6 @@ import java.lang.Runnable
 *
  */
 /*
-* bug 1
-* bug definition:
-* when an autocomplete textView is focused
-* and you long pressed on the map
-* it opens up the drop down list, even if panel is collapsed
-*
-* focus should go to the next textField?
-*
-*
 * bug 2:
 * after clicking "Select location on map" on the origin textView focus goes to destination
 * */

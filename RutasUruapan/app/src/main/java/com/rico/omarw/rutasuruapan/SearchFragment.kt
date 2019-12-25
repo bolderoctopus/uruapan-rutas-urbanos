@@ -167,11 +167,13 @@ class SearchFragment : Fragment(){
         ignoreFiltering(true)
         when(markerType){
             MarkerType.Origin -> {
+                if(originAutoCompleteTextView.hasFocus()) originAutoCompleteTextView.clearFocus()
                 originLatLng = latLng
                 origin.error = null
                 originAutoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
             }
             MarkerType.Destination -> {
+                if(destinationAutoCompleteTextView.hasFocus()) destinationAutoCompleteTextView.clearFocus()
                 destinationLatLng = latLng
                 destination.error = null
                 destinationAutoCompleteTextView.setText(getString(R.string.lat_lng, latLng.latitude, latLng.longitude))
