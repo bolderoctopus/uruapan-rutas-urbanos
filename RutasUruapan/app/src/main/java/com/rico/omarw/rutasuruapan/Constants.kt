@@ -17,4 +17,6 @@ object Constants {
     const val DRAW_STARTEND_POINTS = false
 
     const val INITIAL_ZOOM = 13f
+
+    const val BOUNCE_DURATION = 2000f
 }

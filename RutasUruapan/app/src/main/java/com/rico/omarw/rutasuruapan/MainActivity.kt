@@ -7,15 +7,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
-import android.os.Build
-import android.os.Bundle
-import android.os.VibrationEffect
-import android.os.Vibrator
+import android.os.*
 import android.util.Log
 import android.util.SparseArray
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewTreeObserver
+import android.view.animation.BounceInterpolator
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.Toast
@@ -34,6 +32,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.rico.omarw.rutasuruapan.Constants.BOUNCE_DURATION
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.INITIAL_ZOOM
@@ -50,11 +49,7 @@ import java.lang.Runnable
 
 //todo: see below
 /*
-
-
-* [x] solve bug 1
-* [] solve bug 2
-* [] solve bug 3
+* [] bug: algorithm not working properly
 * [] improve function walkingDistanceToDest, take into consideration buildings
 * [] show tips for using the app
 * [] decide if new design stays
@@ -64,16 +59,6 @@ import java.lang.Runnable
 * [x] improve geographic data
 * [x] show directional arrows according to zoom
 */
-
-/*
-* After collecting location data:
-* + decide how many directional arrows to show
-*
- */
-/*
-* bug 2:
-* after clicking "Select location on map" on the origin textView focus goes to destination
-* */
 /*
 bug3:
 a veces la mejor ruta sugerida no es la mas optima, probablemente hay
@@ -184,6 +169,24 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    private fun setMarkerBounce(marker: Marker) {
+        val handler = Handler()
+        val startTime = SystemClock.uptimeMillis()
+        val interpolator = BounceInterpolator()
+        handler.post(object : Runnable {
+            override fun run() {
+                val elapsed = SystemClock.uptimeMillis() - startTime
+                val t = Math.max(1 - interpolator.getInterpolation((elapsed/ BOUNCE_DURATION)), 0f)
+
+                marker.setAnchor(0.5f, 1.0f +  t)
+
+                if (t > 0f) {
+                    handler.postDelayed(this, 16)
+                }
+            }
+        })
+    }
+
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
@@ -269,11 +272,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
         when {
             originMarker == null -> {
-                drawMarker(pos, "Origin", SearchFragment.MarkerType.Origin, false)
+                drawMarker(pos, "Origin", SearchFragment.MarkerType.Origin, animate = false, bounce = false)
                 searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Origin, pos)
             }
             destinationMarker == null -> {
-                drawMarker(pos, "Destination", SearchFragment.MarkerType.Destination, false)
+                drawMarker(pos, "Destination", SearchFragment.MarkerType.Destination, animate = false, bounce = false)
                 searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Destination, pos)
             }
             else -> {// remove both
@@ -534,9 +537,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return latlng
     }
 
-    override fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType) = drawMarker(position, title, markerType, true)
+    override fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType, bounce: Boolean) = drawMarker(position, title, markerType, true, bounce)
 
-    private fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType, animate: Boolean) {
+    private fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType, animate: Boolean, bounce: Boolean) {
         val pos = position ?: getDummyLatLng()
 
         if(animate)
@@ -544,13 +547,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker?.remove()
-            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).draggable(true))
+            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).snippet("345353").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).draggable(true))
             originMarker?.tag = markerType
+            if(bounce) setMarkerBounce(originMarker!!)
         }
         else if(markerType == SearchFragment.MarkerType.Destination) {
             destinationMarker?.remove()
             destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).draggable(true))
             destinationMarker?.tag = markerType
+            if(bounce) setMarkerBounce(destinationMarker!!)
         }
     }
 
@@ -609,7 +614,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
 
             mapZoomLevel = map.cameraPosition.zoom.toInt()
-            Log.d(DEBUG_TAG, "zoom Level changed: $mapZoomLevel")
         }
     }
     //currentZoomLvl hasta que nivel de zoom estan visibles los marcadores
