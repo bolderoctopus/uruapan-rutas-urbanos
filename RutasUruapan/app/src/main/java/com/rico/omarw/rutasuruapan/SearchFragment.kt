@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.AutoCompleteTextView
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
@@ -21,7 +22,6 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputLayout
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Utils.checkInternetConnection
@@ -60,7 +60,7 @@ class SearchFragment : Fragment(){
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
-        view.findViewById<FloatingActionButton>(R.id.fab_search).setOnClickListener{search()}
+        view.findViewById<Button>(R.id.search_button).setOnClickListener{search()}
 
         origin = view.findViewById(R.id.custom_actv_origin)
         originAutoCompleteTextView = view.findViewById(R.id.autocompletetextview_origin)

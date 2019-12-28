@@ -6,51 +6,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".SearchFragment">
 
-    <ImageView
-        android:id="@+id/imageview_origin"
-        android:src="@drawable/ic_origin_marker"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="12dp"
-        android:tint="#007468"
-        app:layout_constraintTop_toTopOf="@id/custom_actv_origin"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <ImageView
-        android:id="@+id/imageview_destination"
-        android:src="@drawable/ic_destination_marker"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginBottom="12dp"
-        android:tint="#007468"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/custom_actv_destination"
-        />
-
-    <View
-        android:id="@+id/view_conector"
-        android:layout_width="1.5dp"
-        android:layout_height="0dp"
-        android:background="@color/my_divider"
-        android:layout_marginStart="8dp"
-        app:layout_constraintTop_toBottomOf="@id/imageview_origin"
-        app:layout_constraintBottom_toTopOf="@id/imageview_destination"
-        app:layout_constraintStart_toStartOf="@id/imageview_origin"/>
-
     <com.google.android.material.textfield.TextInputLayout
         style="@style/autocompletetextvew_style"
         android:id="@+id/custom_actv_origin"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:layout_marginStart="6dp"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        app:layout_constraintStart_toEndOf="@id/imageview_origin"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:hint="@string/origin"
@@ -70,11 +35,11 @@
         android:id="@+id/custom_actv_destination"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="6dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintStart_toEndOf="@id/imageview_destination"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/custom_actv_origin"
         android:hint="@string/destination"
@@ -102,7 +67,7 @@
 
     <Button
         style="@style/bottom_button"
-        android:id="@+id/button"
+        android:id="@+id/search_button"
         android:text="Buscar Ruta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -112,11 +77,5 @@
         app:layout_constraintTop_toBottomOf="@id/custom_actv_destination"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-
-    <androidx.constraintlayout.widget.Group
-        android:visibility="visible"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:constraint_referenced_ids="imageview_origin,view_conector,imageview_destination"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

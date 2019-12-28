@@ -10,7 +10,6 @@ import android.graphics.Bitmap.createBitmap
 import android.os.*
 import android.util.Log
 import android.util.SparseArray
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.animation.BounceInterpolator
@@ -31,7 +30,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.Constants.BOUNCE_DURATION
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
@@ -44,6 +43,7 @@ import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.rico.omarw.rutasuruapan.models.ZoomLevel
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import java.lang.Runnable
 
@@ -52,10 +52,10 @@ import java.lang.Runnable
 * [] bug: algorithm not working properly
 * [] improve function walkingDistanceToDest, take into consideration buildings
 * [] show tips for using the app
-* [] decide if new design stays
 * [] add a disclaimer
 * [] display lap time per route?
 *
+* [x] decide if new design stays
 * [x] improve geographic data
 * [x] show directional arrows according to zoom
 */
@@ -71,7 +71,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         AllRoutesFragment.InteractionsInterface,
         SearchFragment.OnFragmentInteractionListener,
         ResultsFragment.OnFragmentInteractionListener,
-        BottomNavigationView.OnNavigationItemSelectedListener, SlidingUpPanelLayout.PanelSlideListener, GoogleMap.OnCameraMoveListener {
+        SlidingUpPanelLayout.PanelSlideListener, GoogleMap.OnCameraMoveListener,
+        TabLayout.OnTabSelectedListener {
 
     private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
 
@@ -98,7 +99,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private val REFRESH_INTERVAL: Int = 300// in milliseconds
     private lateinit var startMarkerPosition: LatLng
     private var uiScope = CoroutineScope(Dispatchers.Main)
-    private lateinit var bottomNavView: BottomNavigationView
     private val drawnRoutes = ArrayList<RouteModel>()
     private var mapZoomLevel: Int = INITIAL_ZOOM.toInt()
 
@@ -114,11 +114,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         slidingLayout= findViewById(R.id.sliding_layout)
         slideIndicator = findViewById(R.id.imageview_slide_indicator)
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        bottomNavView = findViewById(R.id.bottom_navigation_slide_panel)
 
+        tablayout.addOnTabSelectedListener(this)
 
-
-        bottomNavView.setOnNavigationItemSelectedListener (this)
         slidingLayout.addPanelSlideListener(this)
 
         searchFragment = SearchFragment.newInstance()
@@ -137,21 +135,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private fun getSearchFragmentHeight(): Int{
         return if(searchFragment.view == null || searchFragment.view!!.height == 0) resources.getDimensionPixelSize(R.dimen.default_fragment_height) else searchFragment.view!!.height
-    }
-
-    override fun onNavigationItemSelected(menuitem: MenuItem): Boolean {
-        when(menuitem.itemId){
-            R.id.menu_item_all_routes ->{
-                allRoutesFragment.setHeight(searchFragment.view?.height!!)
-                showFragment(allRoutesFragment, AllRoutesFragment.TAG)
-            }
-
-            R.id.menu_item_find_route -> if(resultsFragment != null)
-                                            showFragment(resultsFragment!!, ResultsFragment.TAG)
-                                        else
-                                            showFragment(searchFragment, SearchFragment.TAG)
-        }
-        return true
     }
 
     private fun showFragment(newFragment: Fragment, tag: String){
@@ -212,17 +195,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         setupSettingsButton()
 
-        // Observes the drawing events of the bottomNavigationBar to know its height and take it into consideration for the map's bottom padding, then it removes itself.
+        // Observes the drawing events of the slideIndicator to know its height and take it into consideration for the map's bottom padding, then it removes itself.
         val layoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
-                map.setPadding(0, 0, 0, getSearchFragmentHeight() + bottomNavView.height)
+                map.setPadding(0, 0, 0, getSearchFragmentHeight() + slideIndicator.height)
                 // todo: remove this
                 onMapLongClick(LatLng(19.422123631224547, -102.07343347370625))
                 onMapLongClick(LatLng(19.41543181604419, -102.03406568616629))
-                bottomNavView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                slideIndicator.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         }
-        bottomNavView.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+        slideIndicator.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
     }
 
     private fun setupSettingsButton(){
@@ -616,6 +599,26 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             mapZoomLevel = map.cameraPosition.zoom.toInt()
         }
     }
+
+    override fun onTabReselected(tab: TabLayout.Tab?) = Unit
+
+    override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
+
+    override fun onTabSelected(tab: TabLayout.Tab?) {
+        when(tab?.position){
+            1 ->{
+                allRoutesFragment.setHeight(searchFragment.view?.height!!)
+                showFragment(allRoutesFragment, AllRoutesFragment.TAG)
+            }
+            0 -> {
+                if (resultsFragment != null)
+                    showFragment(resultsFragment!!, ResultsFragment.TAG)
+                else
+                    showFragment(searchFragment, SearchFragment.TAG)
+            }
+        }
+    }
+
     //currentZoomLvl hasta que nivel de zoom estan visibles los marcadores
     private fun updateShownDirectionalArrows(currentZoomLvl: Int, newZoomLvl: Int, route: RouteModel, routeVisible: Boolean = true){
         if(route.directionalMarkers == null) return
