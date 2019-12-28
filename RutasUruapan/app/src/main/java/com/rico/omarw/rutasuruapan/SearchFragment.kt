@@ -164,7 +164,6 @@ class SearchFragment : Fragment(){
     }
 
     fun oneTimeUpdatePosition(markerType: MarkerType, latLng: LatLng){
-        ignoreFiltering(true)
         when(markerType){
             MarkerType.Origin -> {
                 if(originAutoCompleteTextView.hasFocus()) originAutoCompleteTextView.clearFocus()
