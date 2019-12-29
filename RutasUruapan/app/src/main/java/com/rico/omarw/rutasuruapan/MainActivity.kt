@@ -368,6 +368,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                     route.directionalMarkers = drawDirectionalMarkers(points!!, color)
                     drawnRoutes.add(route)
+                    // for debug
+                    route.mainSegmentMarkers = drawMarkers(points!!)
 
                     route.isDrawn = true
             }
