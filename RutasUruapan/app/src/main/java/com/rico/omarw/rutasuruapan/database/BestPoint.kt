@@ -13,4 +13,4 @@ data class BestPoint(
                      var distanceToNextPoint: Int,
                      var wd: Double?,
                      var rd: Double?,
-                     var betterness: Double?)
+                     var rt: Double?)

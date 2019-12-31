@@ -22,7 +22,7 @@ interface RouteDAO{
     @Query("SELECT * FROM Points WHERE routeId = :routeId ORDER BY number")
     fun getPointsFrom(routeId: Long): List<Point>
 
-    @Query("SELECT * FROM Routes ORDER BY color")
+    @Query("SELECT * FROM Routes")
     suspend fun getRoutes(): List<Route>
 
     @Query("DELETE FROM Points")
@@ -86,10 +86,10 @@ interface RouteDAO{
             "AND p1.lng BETWEEN (:longitude - :distance) AND (:longitude + :distance) ")
     suspend fun fillResultsTableStartPoint(rId: Long, latitude: Double, longitude: Double, endPoint: Int, distance: Double)
 
-    @Query("UPDATE bestPoints SET betterness =  (rd * rd) + (wd * $WD_WEIGHT)")// rename betterness to routeDistTotal?
+    @Query("UPDATE bestPoints SET rt =  (rd * rd) + (wd * $WD_WEIGHT)")
     suspend fun updateResultsTable()
 
-    @Query("SELECT pointId, routeId, lat, lng, number, distanceToNextPoint  FROM bestPoints ORDER BY betterness ASC LIMIT 1")
+    @Query("SELECT pointId, routeId, lat, lng, number, distanceToNextPoint  FROM bestPoints ORDER BY rt ASC LIMIT 1")
     suspend fun getBestPoint(): Point
 
 

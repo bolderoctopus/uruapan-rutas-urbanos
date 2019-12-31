@@ -33,7 +33,7 @@ abstract class AppDatabase: RoomDatabase() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE TABLE bestPoints( " +
                         "pointId INTEGER PRIMARY KEY NOT NULL, routeId INTEGER NOT NULL, lat REAL NOT NULL, lng REAL NOT NULL, number INTEGER NOT NULL, distanceToNextPoint INTEGER NOT NULL, " +
-                        "wd REAL NULL, rd REAL NULL, betterness REAL NULL);")
+                        "wd REAL NULL, rd REAL NULL, rt REAL NULL);")
             }
         }
 
