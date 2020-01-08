@@ -21,7 +21,7 @@ import kotlinx.coroutines.*
 
 class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener{
     private val comparator = Comparator<RouteModel>{ routeModel1: RouteModel, routeModel2: RouteModel ->
-        routeModel1.name.compareTo(routeModel2.name)
+        (routeModel1.color + routeModel1.name).compareTo((routeModel2.color + routeModel2.name))
     }
     private val queryTextListener = object : SearchView.OnQueryTextListener{
         override fun onQueryTextChange(query: String?): Boolean {
@@ -78,7 +78,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         }
     }
 
-    fun removeSearchViewBackground(){
+    private fun removeSearchViewBackground(){
         try{
             val searchPlateId: Int = searchView.context.resources.getIdentifier("android:id/search_plate", null, null)
             val searchPlate = searchView.findViewById<View>(searchPlateId)

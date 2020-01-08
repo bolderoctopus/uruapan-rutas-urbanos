@@ -93,7 +93,6 @@ class AutoCompleteAdapter (context: Context,
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): FilterResults {
-//                Log.d(DEBUG_TAG, "performFiltering")
 
                 val results = FilterResults()
                 var filterData: MutableList<AutocompletePrediction>? = null
@@ -133,7 +132,7 @@ class AutoCompleteAdapter (context: Context,
     private fun getAutocomplete(query: String): MutableList<AutocompletePrediction>?{
         if(ignoreFiltering) return null
 
-        Log.d(DEBUG_TAG, "Starting autocomplete query for: $query")
+//        Log.d(DEBUG_TAG, "Starting autocomplete query for: $query")
         val request = FindAutocompletePredictionsRequest.builder()
                 .setLocationRestriction(bounds)
                 .setCountry("mx")
@@ -151,7 +150,7 @@ class AutoCompleteAdapter (context: Context,
         }
 
     }
-//todo: chekc for permission in order to prevent going to the catch block if permissions is not granted
+//todo: check for permission in order to prevent going to the catch block if permissions is not granted
     fun addCurrentLocation(){
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         coroutineScope.launch {
