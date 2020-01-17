@@ -136,7 +136,6 @@ class AutoCompleteAdapter (context: Context,
         val request = FindAutocompletePredictionsRequest.builder()
                 .setLocationRestriction(bounds)
                 .setCountry("mx")
-                .setTypeFilter(TypeFilter.GEOCODE)
                 .setSessionToken(AutocompleteSessionToken.newInstance())
                 .setQuery(query)
                 .build()

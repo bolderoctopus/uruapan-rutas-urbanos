@@ -3,9 +3,9 @@
     <string name="title_activity_main">@string/app_name</string>
 
     <string name="lat_lng">%1.5f, %2.5f</string>
-    <string name="origin">Desde</string>
+    <string name="origin">¿Dónde estás?</string>
     <string name="to">hacia</string>
-    <string name="destination">Hacia</string>
+    <string name="destination">¿Hacia dónde vas?</string>
     <string name="empty_textview_error">Selecciona una ubicación</string>
     <string name="slide_indicator_content_description">Ocultar o mostrar panel</string>
     <string name="menu_all_routes">Mostrar Todas</string>
