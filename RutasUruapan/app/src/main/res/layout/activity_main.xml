@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent">
     <com.google.android.material.tabs.TabLayout
-        style="@style/Widget.MaterialComponents.TabLayout.Colored"
+        style="@style/Widget.MaterialComponents.TabLayout"
         android:id="@+id/tablayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -54,6 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
+                android:tint="@color/primaryDark"
                 android:contentDescription="@string/slide_indicator_content_description" />
         </RelativeLayout>
 

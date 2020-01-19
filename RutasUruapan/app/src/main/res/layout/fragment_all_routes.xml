@@ -11,8 +11,8 @@
         android:queryHint="@string/filter"
         android:layout_width="match_parent"
         android:layout_height="@dimen/toolbar_height"
-        android:iconifiedByDefault="true"
-        android:layoutDirection="rtl"/>
+        android:iconifiedByDefault="false"
+        />
 
     <View
         android:layout_width="match_parent"
