@@ -13,7 +13,6 @@ class OutOfBoundsToast(context: Context): Toast(context){
         view.animate().alpha(1f).setDuration(300).withEndAction {
             view.animate().alpha(0f).setDuration(300).setStartDelay(2_800).start()
         }.start()
-
         duration = LENGTH_LONG
     }
 

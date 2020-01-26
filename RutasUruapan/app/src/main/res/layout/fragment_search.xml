@@ -53,17 +53,6 @@
             />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:visibility="gone"
-        style="@style/Widget.MaterialComponents.FloatingActionButton"
-        android:id="@+id/fab_search"
-        android:src="@drawable/ic_search_black_24dp"
-        android:layout_width="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_height="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/custom_actv_destination"
-        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <Button
         style="@style/bottom_button"

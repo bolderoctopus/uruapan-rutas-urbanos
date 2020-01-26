@@ -17,5 +17,5 @@ object Constants {
 
     const val INITIAL_ZOOM = 13f
 
-    const val BOUNCE_DURATION = 2000f
+    const val BOUNCE_DURATION = 2500f
 }
