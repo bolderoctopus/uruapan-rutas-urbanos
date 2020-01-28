@@ -7,11 +7,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
+import android.graphics.drawable.ColorDrawable
 import android.os.*
 import android.util.Log
 import android.util.SparseArray
-import android.view.View
-import android.view.ViewTreeObserver
+import android.view.*
 import android.view.animation.BounceInterpolator
 import android.widget.ImageView
 import android.widget.RelativeLayout
@@ -30,6 +30,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.Constants.BOUNCE_DURATION
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
@@ -49,21 +50,31 @@ import java.lang.Runnable
 
 //todo: see below
 /*
-* [] bug: algorithm not working properly
-* [] improve function walkingDistanceToDest, take into consideration buildings
-* [] show tips for using the app
-* [] add a disclaimer
-* [] display lap time per route?
+
+* [] test the app offline
+* [] add missing routes 45, 176
 *
-* [x] decide if new design stays
-* [x] improve geographic data
-* [x] show directional arrows according to zoom
+* [] show tips for using the app
+*   * how to show/hide routes
+*   * edit markeres
+* [] add a disclaimer
+* [] suggest to increase distance limit if no routes are found
+* [] publish the beta
+* [] add some delay while searching and typing
+* [] try to improve the looks of every row (route)
+* [] add the dummy marker at the center of the visible map
+* [] make the whole fragment scrollable, both allRoutesFragment and resultsFragment
+*
+* [] display lap time per route?
+* - group shown routes somewhere up like chips?
+* - compass button overlaps google logo
+* [] slide upwards the filter bar when scrolling
+* [x] change origin/destination labels
+* [x] search places too
+* [x] forbid landscape orientation
+* [x] adjust the color of the search button
+*
 */
-/*
-bug3:
-a veces la mejor ruta sugerida no es la mas optima, probablemente hay
-que ajustar los parametros del algoritmo o modificarlo
- */
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
@@ -175,7 +186,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         map = googleMap
         map.setOnMapLongClickListener(this)
         map.setOnMarkerDragListener(this)
-        //map.setLatLngBoundsForCameraTarget(SearchFragment.uruapanLatLngBounds)// restrict camera to just uruapan?
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(URUAPAN_LATLNG, INITIAL_ZOOM))
         map.setOnCameraMoveListener(this)
         if (locationPermissionEnabled()){
@@ -199,9 +209,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val layoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 map.setPadding(0, 0, 0, getSearchFragmentHeight() + slideIndicator.height)
-                // todo: remove this
-                onMapLongClick(LatLng(19.422123631224547, -102.07343347370625))
-                onMapLongClick(LatLng(19.41543181604419, -102.03406568616629))
                 slideIndicator.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         }
@@ -247,9 +254,35 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         OutOfBoundsToast(this).show()
     }
 
+    private fun showHelpDialog(){
+//todo: try to remark the row in the adapter
+        val dialog = MaterialAlertDialogBuilder(this)
+                .setView(R.layout.dialog_help)
+                .create()
+        dialog.window?.decorView?.background = ColorDrawable(Color.TRANSPARENT)
+        dialog.window?.decorView?.setPadding(0,0,0,0)
+
+        dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        dialog.window!!.requestFeature(Window.FEATURE_NO_TITLE)
+        dialog.window!!.attributes.apply {
+            gravity = Gravity.BOTTOM
+            y = allRoutesFragment.recyclerView.height
+            y -= 50
+
+        }
+
+        dialog.show()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        vibrate()
+        showHelpDialog()
+    }
+
     override fun onMapLongClick(pos: LatLng){
         vibrate()
-        if(!SearchFragment.uruapanLatLngBounds.contains(pos)){
+        if(!SearchFragment  .uruapanLatLngBounds.contains(pos)){
             showOutOfBoundsError()
             return
         }
@@ -373,7 +406,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                     route.isDrawn = true
             }
-            //todo: there could be a better way to updte the visible directionalArrows at the current zoom lvl
+            //todo: there could be a better way to update the visible directionalArrows at the current zoom lvl
             updateShownDirectionalArrows(0, mapZoomLevel, route, routeVisible = route.isDrawn)
         }
     }
@@ -385,7 +418,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             it.forEach{p-> dist += p.distanceToNextPoint}
             dist
         }
-        Log.d(DEBUG_TAG, "totalRouteDist: $totalRouteDist")
+        //Log.d(DEBUG_TAG, "totalRouteDist: $totalRouteDist")
         val zoomLvls: List<ZoomLevel> = ArrayList<ZoomLevel>().apply{
             add(ZoomLevel(12, 3200, 0, ArrayList()))
             add(ZoomLevel(13, 1600, 0, ArrayList()))
@@ -401,7 +434,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             for(z in zoomLvls){
                 z.counter += point.distanceToNextPoint
                 if(z.counter >= z.distanceInterval && (x + 1 < sourcePoints.size)){
-                    Log.d(DEBUG_TAG, "point added, at: $distCounter")
+                    //Log.d(DEBUG_TAG, "point added, at: $distCounter")
                     z.markers.add(map.addMarker(MarkerOptions()
                             .icon(arrowCap)
                             .position(point.getLatLng())
