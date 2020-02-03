@@ -7,15 +7,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.Bitmap.createBitmap
-import android.graphics.drawable.ColorDrawable
 import android.os.*
-import android.util.Log
 import android.util.SparseArray
 import android.view.*
 import android.view.animation.BounceInterpolator
-import android.widget.ImageView
-import android.widget.RelativeLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -30,11 +26,9 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.Constants.BOUNCE_DURATION
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
-import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.INITIAL_ZOOM
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
@@ -64,7 +58,7 @@ import java.lang.Runnable
 * [] try to improve the looks of every row (route)
 * [] add the dummy marker at the center of the visible map
 * [] make the whole fragment scrollable, both allRoutesFragment and resultsFragment
-*
+* [] refactor preferences
 * [] display lap time per route?
 * - group shown routes somewhere up like chips?
 * - compass button overlaps google logo
@@ -112,6 +106,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var uiScope = CoroutineScope(Dispatchers.Main)
     private val drawnRoutes = ArrayList<RouteModel>()
     private var mapZoomLevel: Int = INITIAL_ZOOM.toInt()
+    var showInformativeDialog: Boolean = true
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,6 +117,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             Places.initialize(this, resources.getString(R.string.google_maps_key))
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        showInformativeDialog = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("show_informative_dialog", true)
 
         slidingLayout= findViewById(R.id.sliding_layout)
         slideIndicator = findViewById(R.id.imageview_slide_indicator)
@@ -254,31 +252,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         OutOfBoundsToast(this).show()
     }
 
-    private fun showHelpDialog(){
-//todo: try to remark the row in the adapter
-        val dialog = MaterialAlertDialogBuilder(this)
-                .setView(R.layout.dialog_help)
-                .create()
-        dialog.window?.decorView?.background = ColorDrawable(Color.TRANSPARENT)
-        dialog.window?.decorView?.setPadding(0,0,0,0)
-
-        dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-        dialog.window!!.requestFeature(Window.FEATURE_NO_TITLE)
-        dialog.window!!.attributes.apply {
-            gravity = Gravity.BOTTOM
-            y = allRoutesFragment.recyclerView.height
-            y -= 50
-
-        }
-
-        dialog.show()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        vibrate()
-        showHelpDialog()
-    }
 
     override fun onMapLongClick(pos: LatLng){
         vibrate()

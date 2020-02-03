@@ -66,6 +66,9 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         if(height != null)
             view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height!!)
 
+        if ((activity as MainActivity).showInformativeDialog)
+            addRecyclerViewLayoutListener()
+
         onViewCreated?.run()
         onViewCreated = null
 
@@ -93,6 +96,20 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         uiScope.cancel()
         listener = null
         super.onDetach()
+    }
+
+    private fun addRecyclerViewLayoutListener(){
+        val listener = object : View.OnLayoutChangeListener {
+            override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
+                if((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v!= null
+                        && (recyclerView.adapter?.itemCount ?: 0) > 0 ){
+                    InformativeDialog.show(v.context, recyclerView.height, R.string.how_to_show_routes_message)
+                    recyclerView.removeOnLayoutChangeListener(this)
+                    (activity as MainActivity).showInformativeDialog = false
+                }
+            }
+        }
+        recyclerView.addOnLayoutChangeListener(listener)
     }
 
     //todo: take in consideration streets

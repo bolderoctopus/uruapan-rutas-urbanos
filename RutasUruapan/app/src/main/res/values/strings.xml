@@ -41,5 +41,6 @@
     <string name="search">Búsqueda</string>
     <string name="preference_limit_distance">Distancia límite</string>
     <string name="preference_summary_limit_distance">Buscar rutas %1$s alrededor del punto de origen</string>
+    <string name="how_to_show_routes_message">Haz click en el nombre de una ruta para mostrar u ocultarla en el mapa</string>
 
 </resources>

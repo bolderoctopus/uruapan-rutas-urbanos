@@ -60,6 +60,9 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         searchView.setOnQueryTextListener(queryTextListener)
         removeSearchViewBackground()
 
+        if ((activity as MainActivity).showInformativeDialog)
+            addRecyclerViewLayoutListener()
+
         onViewCreated?.run()
         onViewCreated = null
 
@@ -68,6 +71,19 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
             setAdapterRoutes(routes)
         }
         return view
+    }
+
+    private fun addRecyclerViewLayoutListener(){
+        val listener = object : View.OnLayoutChangeListener {
+            override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
+                if((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v!= null){
+                    InformativeDialog.show(v.context, recyclerView.height, R.string.how_to_show_routes_message)
+                    recyclerView.removeOnLayoutChangeListener(this)
+                    (activity as MainActivity).showInformativeDialog = false
+                }
+            }
+        }
+        recyclerView.addOnLayoutChangeListener(listener)
     }
 
     private suspend fun getRoutes(): List<RouteModel> {
