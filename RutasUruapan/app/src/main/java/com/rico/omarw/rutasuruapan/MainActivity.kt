@@ -9,9 +9,12 @@ import android.graphics.*
 import android.graphics.Bitmap.createBitmap
 import android.os.*
 import android.util.SparseArray
-import android.view.*
+import android.view.View
+import android.view.ViewTreeObserver
 import android.view.animation.BounceInterpolator
-import android.widget.*
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -42,33 +45,30 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import java.lang.Runnable
 
-//todo: see below
 /*
-
+* put some title or something at the top of results fragment?
+*
+* [x] show tips for using the app: how to show/hide routes
+* [...] show tips for using the app: edit markers
+* [x] add the dummy marker at the center of the visible map
+* [] add a disclaimer
+* [] add donation button
+* [] add option to display again initial tips
 * [] test the app offline
 * [] add missing routes 45, 176
-*
-* [] show tips for using the app
-*   * how to show/hide routes
-*   * edit markeres
-* [] add a disclaimer
 * [] suggest to increase distance limit if no routes are found
-* [] publish the beta
 * [] add some delay while searching and typing
 * [] try to improve the looks of every row (route)
-* [] add the dummy marker at the center of the visible map
 * [] make the whole fragment scrollable, both allRoutesFragment and resultsFragment
 * [] refactor preferences
-* [] display lap time per route?
+* [] publish the beta
+* [] when switching tabs: check if the panel is down in order to pull it upwards
+* - display lap time per route?
 * - group shown routes somewhere up like chips?
 * - compass button overlaps google logo
-* [] slide upwards the filter bar when scrolling
-* [x] change origin/destination labels
-* [x] search places too
-* [x] forbid landscape orientation
-* [x] adjust the color of the search button
-*
 */
+
+//todo: see below
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
@@ -519,21 +519,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     private fun getDummyLatLng(): LatLng{
-        val latlng: LatLng
-        val increment = 0.01
-        if(originMarker != null) latlng = LatLng(originMarker!!.position.latitude - increment, originMarker!!.position.longitude)
-        else if(destinationMarker != null) latlng = LatLng(destinationMarker!!.position.latitude - increment, destinationMarker!!.position.longitude)
-        else latlng = URUAPAN_LATLNG
-
-        return latlng
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
+        val mapCenter = android.graphics.Point(mapFragment.view!!.width/2, mapFragment.view!!.height/2)
+        return map.projection.fromScreenLocation(mapCenter)
     }
 
-    override fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType, bounce: Boolean) = drawMarker(position, title, markerType, true, bounce)
 
-    private fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType, animate: Boolean, bounce: Boolean) {
-        val pos = position ?: getDummyLatLng()
+    override fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType, animate: Boolean, bounce: Boolean) {
+        var pos = position ?: getDummyLatLng()
+        var shouldAnimate = animate
 
-        if(animate)
+        if(!SearchFragment.uruapanLatLngBounds.contains(pos)){
+            pos = URUAPAN_LATLNG
+            shouldAnimate = true
+        }
+
+        if(shouldAnimate)
             map.animateCamera(CameraUpdateFactory.newLatLng(pos))
 
         if(markerType == SearchFragment.MarkerType.Origin) {

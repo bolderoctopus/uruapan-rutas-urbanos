@@ -206,13 +206,13 @@ class SearchFragment : Fragment(){
                 val fetchPlaceRequest = FetchPlaceRequest.builder(item.autocompletePrediction!!.placeId, PlaceFields)
                         .setSessionToken(AutocompleteSessionToken.newInstance()).build()
                 placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
-                    if(it.isSuccessful && it.result != null) drawMarker(markerType, it.result?.place?.latLng, title, false)
+                    if(it.isSuccessful && it.result != null) drawMarker(markerType, it.result?.place?.latLng, title,true, false)
                     else Log.d(DEBUG_TAG, "We're having trouble fetching the coordinates from this address, try again later or instead drag the marker")//todo: should I display this to the user?
                 }
             }
-            AutocompleteItemModel.ItemKind.PickLocation -> drawMarker(markerType, null, title, bounce = true)
+            AutocompleteItemModel.ItemKind.PickLocation -> drawMarker(markerType, null, title,false, true)
             AutocompleteItemModel.ItemKind.CurrentLocation -> {
-                drawMarker(markerType, item.currentLatLng, title, false)
+                drawMarker(markerType, item.currentLatLng, title, true, false)
                 currentLocationOwner = markerType
                 // Si la opcion de "Use Current Location" es seleccionada en un textView esta ya no se mostrara hasta que se presione el boton de limpiar o cambie de ubicacion el marcador
                 //correspondiente al textview
@@ -288,13 +288,13 @@ class SearchFragment : Fragment(){
         }
     }
 
-    private fun drawMarker(markerType: MarkerType, latLng: LatLng?, title: String, bounce: Boolean){
+    private fun drawMarker(markerType: MarkerType, latLng: LatLng?, title: String, animate: Boolean, bounce: Boolean){
         if(markerType == MarkerType.Origin)
             originLatLng = latLng
         else
             destinationLatLng = latLng
 
-        listener?.drawMarker(latLng, title, markerType, bounce)
+        listener?.drawMarker(latLng, title, markerType, animate, bounce)
     }
 
     private fun ignoreFiltering(ignore: Boolean){
@@ -325,7 +325,7 @@ class SearchFragment : Fragment(){
     interface OnFragmentInteractionListener {
         fun onSearch(origin: LatLng, destination: LatLng)
 //        fun onGetCurLocation(onSuccess: (Location) -> Unit)
-        fun drawMarker(position: LatLng?, title: String, markerType: MarkerType, bounce: Boolean)
+        fun drawMarker(position: LatLng?, title: String, markerType: MarkerType, animate: Boolean, bounce: Boolean)
         fun clearMarker(markerType: MarkerType)
     }
     companion object {
