@@ -1,6 +1,7 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
+import android.content.DialogInterface.OnDismissListener
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
@@ -10,19 +11,25 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.preference.PreferenceManager
 
 class InformativeDialog{
+    enum class Style{
+        Left,
+        Center
+    }
+
     companion object{
-        fun show(context: Context,verticalOffset: Int, message: Int){
-
-            val preferenceEditor = PreferenceManager.getDefaultSharedPreferences(context).edit()
-            preferenceEditor.putBoolean("show_informative_dialog", false)
-            preferenceEditor.apply()
-
+        fun show(context: Context,verticalOffset: Int, style: Style, message: Int, onDismissListener: OnDismissListener? ){
             val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_help, null)
+
+            when(style){
+                Style.Left -> dialogView.setBackgroundResource(R.drawable.dialog_background_left)
+                Style.Center -> dialogView.setBackgroundResource(R.drawable.dialog_background_center)
+            }
+
             val dialog = AlertDialog.Builder(context)
                     .setView(dialogView)
+                    .setOnDismissListener(onDismissListener)
                     .create()
 
             dialog.window?.decorView?.background = ColorDrawable(Color.TRANSPARENT)

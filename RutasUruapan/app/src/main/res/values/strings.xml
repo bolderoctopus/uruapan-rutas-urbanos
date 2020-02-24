@@ -11,7 +11,7 @@
     <string name="menu_all_routes">Mostrar Todas</string>
     <string name="menu_search_fragment">Buscar Ruta</string>
     <string name="pick_location_primary">Seleccionar ubicación en el mapa</string>
-    <string name="pick_location_secondary">Ajústala arratrando el marcador</string>
+    <string name="pick_location_secondary">Ajústala arrastrando el marcador</string>
     <string name="current_location_primary">Usar ubicación actual</string>
     <string name="settings">Configuración</string>
     <string name="title_activity_settings">Configuración</string>
@@ -42,5 +42,6 @@
     <string name="preference_limit_distance">Distancia límite</string>
     <string name="preference_summary_limit_distance">Buscar rutas %1$s alrededor del punto de origen</string>
     <string name="how_to_show_routes_message">Haz click en el nombre de una ruta para mostrar u ocultarla en el mapa</string>
+    <string name="how_to_move_markers_message">Puedes agregar o quitar los marcadores al dejar el dedo presionado sobre el mapa.\nTtambién puedes modificar su posición.</string>
 
 </resources>

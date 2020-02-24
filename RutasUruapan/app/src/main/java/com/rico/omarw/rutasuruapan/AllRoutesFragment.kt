@@ -1,6 +1,7 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -77,9 +78,10 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         val listener = object : View.OnLayoutChangeListener {
             override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
                 if((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v!= null){
-                    InformativeDialog.show(v.context, recyclerView.height, R.string.how_to_show_routes_message)
+                    InformativeDialog.show(v.context,
+                            recyclerView.height, InformativeDialog.Style.Left, R.string.how_to_show_routes_message,
+                            DialogInterface.OnDismissListener {(activity as MainActivity).informativeDialog1Shown()})
                     recyclerView.removeOnLayoutChangeListener(this)
-                    (activity as MainActivity).showInformativeDialog = false
                 }
             }
         }
