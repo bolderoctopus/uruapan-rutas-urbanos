@@ -41,7 +41,7 @@
     <string name="search">Búsqueda</string>
     <string name="preference_limit_distance">Distancia límite</string>
     <string name="preference_summary_limit_distance">Buscar rutas %1$s alrededor del punto de origen</string>
-    <string name="how_to_show_routes_message">Haz click en el nombre de una ruta para mostrar u ocultarla en el mapa</string>
-    <string name="how_to_move_markers_message">Puedes agregar o quitar los marcadores al dejar el dedo presionado sobre el mapa.\nTtambién puedes modificar su posición.</string>
+    <string name="how_to_show_routes_message">Haz click en el nombre de una ruta para mostrar u ocultarla.</string>
+    <string name="how_to_move_markers_message">También puedes agregar o quitar un marcador al dejar presionado el dedo sobre el mapa.</string>
 
 </resources>

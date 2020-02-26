@@ -45,16 +45,15 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import java.lang.Runnable
-
 /*
 * put some title or something at the top of results fragment?
 *
 * [x] show tips for using the app: how to show/hide routes
-* [...] show tips for using the app: edit markers
+* [x] show tips for using the app: edit markers
 * [x] add the dummy marker at the center of the visible map
+* [...] add option to display again initial tips
 * [] add a disclaimer
 * [] add donation button
-* [] add option to display again initial tips
 * [] test the app offline
 * [] add missing routes 45, 176
 * [] suggest to increase distance limit if no routes are found
@@ -69,6 +68,7 @@ import java.lang.Runnable
 * - group shown routes somewhere up like chips?
 * - compass button overlaps google logo
 */
+
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
