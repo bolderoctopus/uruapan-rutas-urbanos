@@ -3,6 +3,7 @@ package com.rico.omarw.rutasuruapan
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
@@ -63,12 +64,11 @@ import java.lang.Runnable
 * [] refactor preferences
 * [] publish the beta
 * [] when switching tabs: check if the panel is down in order to pull it upwards
+* [] during the first use he use current location is missing
 * - display lap time per route?
 * - group shown routes somewhere up like chips?
 * - compass button overlaps google logo
 */
-
-//todo: see below
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
@@ -106,6 +106,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var uiScope = CoroutineScope(Dispatchers.Main)
     private val drawnRoutes = ArrayList<RouteModel>()
     private var mapZoomLevel: Int = INITIAL_ZOOM.toInt()
+    private var mapHeight: Int? = null
     var showInformativeDialog: Boolean = true
 
 
@@ -118,7 +119,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        showInformativeDialog = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("show_informative_dialog", true)
+        showInformativeDialog = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean("has_inf_dialog1_been_shown", false)
 
         slidingLayout= findViewById(R.id.sliding_layout)
         slideIndicator = findViewById(R.id.imageview_slide_indicator)
@@ -204,9 +205,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         setupSettingsButton()
 
         // Observes the drawing events of the slideIndicator to know its height and take it into consideration for the map's bottom padding, then it removes itself.
+        // also takes the point on screen of where to show the informative dialog 2
         val layoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 map.setPadding(0, 0, 0, getSearchFragmentHeight() + slideIndicator.height)
+                if(searchFragment.getHasInformativeDialogBeenShown())
+                    mapHeight = (supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment).view?.height
+
                 slideIndicator.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
         }
@@ -518,6 +523,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         resultsFragment?.onViewCreated = Runnable {slidingLayout.setScrollableView(resultsFragment?.recyclerView)}
     }
 
+    fun informativeDialog1Shown(){
+        val preferenceEditor = androidx.preference.PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
+        preferenceEditor.putBoolean("has_inf_dialog1_been_shown", true)
+        preferenceEditor.apply()
+        showInformativeDialog = false
+    }
+
     private fun getDummyLatLng(): LatLng{
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
         val mapCenter = android.graphics.Point(mapFragment.view!!.width/2, mapFragment.view!!.height/2)
@@ -539,7 +551,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         if(markerType == SearchFragment.MarkerType.Origin) {
             originMarker?.remove()
-            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).snippet("345353").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).draggable(true))
+            originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).draggable(true))
             originMarker?.tag = markerType
             if(bounce) setMarkerBounce(originMarker!!)
         }
@@ -548,6 +560,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).draggable(true))
             destinationMarker?.tag = markerType
             if(bounce) setMarkerBounce(destinationMarker!!)
+        }
+
+
+        if((searchFragment.getShowInformativeDialog() && mapHeight != null)){
+            // use the map initial height as vertical offset from the bottom
+            // because the keyboard doesn't hide immediately and there's no easy way to find out the keyboard's height
+            var verticalOffset = mapHeight!!/2
+            verticalOffset += resources.getDimension(R.dimen.collapsed_panel_height).toInt()
+            verticalOffset += resources.getDimension(R.dimen.default_marker_height).toInt()
+
+            InformativeDialog.show(this, verticalOffset, InformativeDialog.Style.Center, R.string.how_to_move_markers_message,
+                DialogInterface.OnDismissListener {
+                    searchFragment.setHasInformativeDialogBeenShown(true)
+                }
+            )
         }
     }
 

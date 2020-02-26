@@ -103,8 +103,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         val listener = object : View.OnLayoutChangeListener {
             override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
                 if((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v!= null && (recyclerView.adapter?.itemCount ?: 0) > 0 ){
+                    var verticalOffset = recyclerView.height
+                    verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
+
                     InformativeDialog.show(v.context,
-                            recyclerView.height,
+                            verticalOffset,
                             InformativeDialog.Style.Left,
                             R.string.how_to_show_routes_message,
                             DialogInterface.OnDismissListener { (activity as MainActivity).informativeDialog1Shown() })

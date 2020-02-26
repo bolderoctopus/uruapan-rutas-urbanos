@@ -48,12 +48,15 @@ class SearchFragment : Fragment(){
     private lateinit var geocoder: Geocoder
     private var uiScope = CoroutineScope(Dispatchers.Main)
     private var currentLocationOwner: MarkerType? = null
+    private var showInformativeDialog: Boolean = false
+    private var hasInformativeDialogBeenShown: Boolean = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if(context == null) return
         placesClient = Places.createClient(context!!)
+        hasInformativeDialogBeenShown = true//androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getBoolean("has_inf_dialog2_been_shown", false)
         if(!uiScope.isActive)
             uiScope = CoroutineScope(Dispatchers.Main)
     }
@@ -190,8 +193,10 @@ class SearchFragment : Fragment(){
             title = getString(R.string.origin)
             origin.error = null
             markerType = MarkerType.Origin
-            if (item.kind != AutocompleteItemModel.ItemKind.PickLocation) destinationAutoCompleteTextView.requestFocus()//todo: only if the user clicked Use Current location or a Prediction
-            else {originAutoCompleteTextView.clearFocus()
+            if (item.kind != AutocompleteItemModel.ItemKind.PickLocation)
+                destinationAutoCompleteTextView.requestFocus()//todo: only if the user clicked Use Current location or a Prediction
+            else {
+                originAutoCompleteTextView.clearFocus()
                 hideKeyboard(context!!, originAutoCompleteTextView.windowToken)
             }
         }else{
@@ -210,7 +215,10 @@ class SearchFragment : Fragment(){
                     else Log.d(DEBUG_TAG, "We're having trouble fetching the coordinates from this address, try again later or instead drag the marker")//todo: should I display this to the user?
                 }
             }
-            AutocompleteItemModel.ItemKind.PickLocation -> drawMarker(markerType, null, title,false, true)
+            AutocompleteItemModel.ItemKind.PickLocation -> {
+                showInformativeDialog = !hasInformativeDialogBeenShown
+                drawMarker(markerType, null, title,false, true)
+            }
             AutocompleteItemModel.ItemKind.CurrentLocation -> {
                 drawMarker(markerType, item.currentLatLng, title, true, false)
                 currentLocationOwner = markerType
@@ -293,7 +301,6 @@ class SearchFragment : Fragment(){
             originLatLng = latLng
         else
             destinationLatLng = latLng
-
         listener?.drawMarker(latLng, title, markerType, animate, bounce)
     }
 
@@ -316,6 +323,17 @@ class SearchFragment : Fragment(){
         destinationAutoCompleteTextView.setText("")
     }
 
+    fun getShowInformativeDialog() = showInformativeDialog
+    fun getHasInformativeDialogBeenShown() = hasInformativeDialogBeenShown
+
+    fun setHasInformativeDialogBeenShown(boolean: Boolean){
+        if(context == null) return
+
+        val preferenceEditor = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
+        preferenceEditor.putBoolean("has_inf_dialog2_been_shown", boolean)
+        preferenceEditor.apply()
+        hasInformativeDialogBeenShown = boolean
+    }
 
     enum class MarkerType {//todo: rename, for something more relevant since this no longer works to differentiate between markers but also inputs
         Origin,

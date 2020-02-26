@@ -40,7 +40,6 @@ class InformativeDialog{
             dialog.window!!.attributes.apply {
                 gravity = Gravity.BOTTOM
                 y = verticalOffset
-                y -= 50
             }
 
             dialogView.findViewById<Button>(R.id.button_ok)?.setOnClickListener {dialog.dismiss() }

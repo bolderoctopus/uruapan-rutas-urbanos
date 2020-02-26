@@ -24,7 +24,7 @@
     android:layout_height="0dp"
     android:layout_weight="1"
     android:gravity="bottom"
-    sothree:umanoPanelHeight="25dp"
+    sothree:umanoPanelHeight="@dimen/collapsed_panel_height"
     sothree:umanoShadowHeight="4dp"
     sothree:umanoFadeColor="@android:color/transparent"
     sothree:umanoInitialState="expanded">
