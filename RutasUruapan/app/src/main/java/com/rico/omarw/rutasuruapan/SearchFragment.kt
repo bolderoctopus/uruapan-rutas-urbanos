@@ -56,7 +56,7 @@ class SearchFragment : Fragment(){
         super.onCreate(savedInstanceState)
         if(context == null) return
         placesClient = Places.createClient(context!!)
-        hasInformativeDialogBeenShown = true//androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getBoolean("has_inf_dialog2_been_shown", false)
+        hasInformativeDialogBeenShown = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getBoolean("has_inf_dialog2_been_shown", false)
         if(!uiScope.isActive)
             uiScope = CoroutineScope(Dispatchers.Main)
     }

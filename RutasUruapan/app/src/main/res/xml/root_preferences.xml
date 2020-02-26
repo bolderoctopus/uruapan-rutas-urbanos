@@ -2,18 +2,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <PreferenceCategory app:title="@string/search">
-        <ListPreference
-            app:key="walk_dist_limit"
-            android:entryValues="@array/results_to_show_values"
-            android:entries="@array/results_to_show_labels"
-            app:defaultValue="600"
-            app:allowDividerAbove="true"
-            app:allowDividerBelow="true"
-            app:title="@string/preference_limit_distance"
-            tools:summary="Buscar rutas 150m al rededor del punto de origen"/>
+    <ListPreference
+        app:key="walk_dist_limit"
+        android:entryValues="@array/results_to_show_values"
+        android:entries="@array/results_to_show_labels"
+        app:defaultValue="600"
+        app:title="@string/preference_limit_distance"
+        tools:summary="Buscar rutas 150m al rededor del punto de origen"/>
 
-    </PreferenceCategory>
+    <Preference
+        app:key="show_dialogs_again"
+        app:title="@string/initial_suggestions"
+        app:summary="@string/initial_suggesetions_summay"
+        />
 
     <PreferenceCategory app:title="Debug" app:isPreferenceVisible="true">
         <SwitchPreferenceCompat

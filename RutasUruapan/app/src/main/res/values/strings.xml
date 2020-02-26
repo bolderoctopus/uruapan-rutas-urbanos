@@ -43,5 +43,8 @@
     <string name="preference_summary_limit_distance">Buscar rutas %1$s alrededor del punto de origen</string>
     <string name="how_to_show_routes_message">Haz click en el nombre de una ruta para mostrar u ocultarla.</string>
     <string name="how_to_move_markers_message">También puedes agregar o quitar un marcador al dejar presionado el dedo sobre el mapa.</string>
+    <string name="others">Otros</string>
+    <string name="initial_suggestions">Sugerencias iniciales</string>
+    <string name="initial_suggesetions_summay">Se volverán a mostrar luego de reiniciar la aplicación</string>
 
 </resources>

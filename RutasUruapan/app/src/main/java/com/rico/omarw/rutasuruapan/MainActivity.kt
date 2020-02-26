@@ -45,13 +45,14 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import java.lang.Runnable
+
 /*
 * put some title or something at the top of results fragment?
 *
 * [x] show tips for using the app: how to show/hide routes
 * [x] show tips for using the app: edit markers
 * [x] add the dummy marker at the center of the visible map
-* [...] add option to display again initial tips
+* [x] add preference to display again initial tips
 * [] add a disclaimer
 * [] add donation button
 * [] test the app offline
@@ -209,7 +210,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val layoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 map.setPadding(0, 0, 0, getSearchFragmentHeight() + slideIndicator.height)
-                if(searchFragment.getHasInformativeDialogBeenShown())
+                if(!searchFragment.getHasInformativeDialogBeenShown())
                     mapHeight = (supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment).view?.height
 
                 slideIndicator.viewTreeObserver.removeOnGlobalLayoutListener(this)
