@@ -332,6 +332,7 @@ class SearchFragment : Fragment(){
         val preferenceEditor = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
         preferenceEditor.putBoolean("has_inf_dialog2_been_shown", boolean)
         preferenceEditor.apply()
+        showInformativeDialog = !boolean
         hasInformativeDialogBeenShown = boolean
     }
 
