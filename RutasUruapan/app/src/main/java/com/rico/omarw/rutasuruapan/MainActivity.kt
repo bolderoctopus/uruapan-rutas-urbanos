@@ -63,7 +63,7 @@ import java.lang.Runnable
 * [] make the whole fragment scrollable, both allRoutesFragment and resultsFragment
 * [] refactor preferences
 * [] publish the beta
-* [] when switching tabs: check if the panel is down in order to pull it upwards
+* [x] when switching tabs: check if the panel is down in order to pull it upwards
 * [] during the first use he use current location is missing
 * - display lap time per route?
 * - group shown routes somewhere up like chips?
@@ -637,7 +637,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    override fun onTabReselected(tab: TabLayout.Tab?) = Unit
+    override fun onTabReselected(tab: TabLayout.Tab?){
+        if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED){
+            slidingLayout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
+        }
+    }
 
     override fun onTabUnselected(tab: TabLayout.Tab?) = Unit
 
@@ -653,6 +657,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 else
                     showFragment(searchFragment, SearchFragment.TAG)
             }
+        }
+        if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED){
+            slidingLayout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
         }
     }
 
