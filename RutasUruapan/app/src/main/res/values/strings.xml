@@ -46,5 +46,10 @@
     <string name="others">Otros</string>
     <string name="initial_suggestions">Sugerencias iniciales</string>
     <string name="initial_suggesetions_summay">Se volverán a mostrar luego de reiniciar la aplicación</string>
+    <string name="disclaimer_title">Renuncia de responsabilidad</string>
+    <string name="disclaimer_message">Los autores de esta aplicación móvil no toman responsabilidad de las decisiones que tomes con la información aquí provista.
+        \n\n
+        La información aquí proporcionada puede estar desactualizada, incompleta o incorrecta y debes utilizarla bajo tu propio riesgo.</string>
+    <string name="understood">Entendido</string>
 
 </resources>

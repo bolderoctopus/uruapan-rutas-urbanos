@@ -30,6 +30,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.Constants.BOUNCE_DURATION
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
@@ -53,7 +54,7 @@ import java.lang.Runnable
 * [x] show tips for using the app: edit markers
 * [x] add the dummy marker at the center of the visible map
 * [x] add preference to display again initial tips
-* [] add a disclaimer
+* [x] add a disclaimer
 * [] add donation button
 * [] test the app offline
 * [] add missing routes 45, 176
@@ -121,6 +122,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         showInformativeDialog = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean("has_inf_dialog1_been_shown", false)
+        var showDisclaimer = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean("has_disclaimer_been_shown", false)
 
         slidingLayout= findViewById(R.id.sliding_layout)
         slideIndicator = findViewById(R.id.imageview_slide_indicator)
@@ -137,6 +139,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         activeFragment = searchFragment
 
         mapFragment.getMapAsync(this)
+        showDisclaimer(showDisclaimer)
+    }
+
+    private fun showDisclaimer(show: Boolean) {
+        if(show) {
+            MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.disclaimer_title)
+                    .setMessage(R.string.disclaimer_message)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.understood) { _, _ ->
+                        PreferenceManager.getDefaultSharedPreferences(this@MainActivity).edit()
+                                .putBoolean("has_disclaimer_been_shown", true)
+                                .apply()
+                    }
+                    .show()
+        }
     }
 
     override fun onDestroy() {
