@@ -15,6 +15,17 @@
         app:title="@string/initial_suggestions"
         app:summary="@string/initial_suggesetions_summay"
         />
+    <Preference
+        app:key="donation"
+        app:title="@string/donation_title"
+        app:summary="@string/donation_summary"
+        app:allowDividerAbove="true"
+        />
+    <Preference
+        app:key="rate"
+        app:title="@string/rate_title"
+        app:summary="@string/rate_summary"
+        />
 
     <PreferenceCategory app:title="Debug" app:isPreferenceVisible="true">
         <SwitchPreferenceCompat

@@ -55,7 +55,7 @@ import java.lang.Runnable
 * [x] add the dummy marker at the center of the visible map
 * [x] add preference to display again initial tips
 * [x] add a disclaimer
-* [] add donation button
+* [x] add donation button
 * [] test the app offline
 * [] add missing routes 45, 176
 * [] suggest to increase distance limit if no routes are found

@@ -13,8 +13,8 @@
     <string name="pick_location_primary">Seleccionar ubicación en el mapa</string>
     <string name="pick_location_secondary">Ajústala arrastrando el marcador</string>
     <string name="current_location_primary">Usar ubicación actual</string>
-    <string name="settings">Configuración</string>
-    <string name="title_activity_settings">Configuración</string>
+    <string name="settings">Opciones</string>
+    <string name="title_activity_settings">Opciones</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
@@ -51,5 +51,11 @@
         \n\n
         La información aquí proporcionada puede estar desactualizada, incompleta o incorrecta y debes utilizarla bajo tu propio riesgo.</string>
     <string name="understood">Entendido</string>
+    <string name="donation_link"><![CDATA[https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DWHU6PXRM8HTG&currency_code=MXN&source=url]]></string>
+    <string name="donation_title">Apoya al desarrollador</string>
+    <string name="donation_summary">Si te gustó esta aplicación puedes realizar una donación con PayPal</string>
+    <string name="rate_title">Califica esta aplicación</string>
+    <string name="rate_summary">Deja tus comentarios en Google Play</string>
+
 
 </resources>
