@@ -41,18 +41,6 @@
         android:textAlignment="viewStart"
         tools:text="Linda Vista, Uruapan, Michoacán"
         />
-
-    <TextView
-        android:visibility="visible"
-        android:id="@+id/textview_google"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:textSize="12sp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Powered by Google"/>
-
 </RelativeLayout>
 
 

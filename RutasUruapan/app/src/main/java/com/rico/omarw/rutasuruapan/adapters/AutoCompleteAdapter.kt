@@ -44,7 +44,6 @@ class AutoCompleteAdapter (context: Context,
     }
     private val characterStyle = StyleSpan(Typeface.BOLD)
     private var resultsList: ArrayList<AutocompleteItemModel> = ArrayList()
-    private var showGoogleAttributionAfter = 0
     var ignoreFiltering = false
 
     init {
@@ -52,7 +51,6 @@ class AutoCompleteAdapter (context: Context,
             addCurrentLocation()
          if(includePickLocation) {
              resultsList.add(AutocompleteItemModel(AutocompleteItemModel.ItemKind.PickLocation, context.getString(R.string.pick_location_primary), context.getString(R.string.pick_location_secondary)))
-             showGoogleAttributionAfter ++
          }
     }
 
@@ -85,7 +83,6 @@ class AutoCompleteAdapter (context: Context,
 
         row.findViewById<TextView>(android.R.id.text1).text = prediction.autocompletePrediction?.getPrimaryText(characterStyle) ?: prediction.primaryText
         row.findViewById<TextView>(android.R.id.text2).text = prediction.autocompletePrediction?.getSecondaryText(characterStyle) ?: prediction.secondaryText
-        row.findViewById<TextView>(R.id.textview_google).visibility = if(position == 0 && count > showGoogleAttributionAfter) View.VISIBLE else View.GONE
 
         return row
     }
@@ -159,7 +156,6 @@ class AutoCompleteAdapter (context: Context,
                 if(!address.isNullOrEmpty()){
                     resultsList.add(0, AutocompleteItemModel(AutocompleteItemModel.ItemKind.CurrentLocation, context.getString(R.string.current_location_primary),
                             SearchFragment.getShortAddress(address[0]), null, LatLng(address[0].latitude, address[0].longitude)))
-                    showGoogleAttributionAfter ++
                     notifyDataSetChanged()
                 }
             }catch (exception: Exception) {

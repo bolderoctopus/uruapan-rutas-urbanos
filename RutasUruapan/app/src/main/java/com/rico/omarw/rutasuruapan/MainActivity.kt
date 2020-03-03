@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
         showInformativeDialog = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean("has_inf_dialog1_been_shown", false)
-        var showDisclaimer = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean("has_disclaimer_been_shown", false)
+        val showDisclaimer = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean("has_disclaimer_been_shown", false)
 
         slidingLayout= findViewById(R.id.sliding_layout)
         slideIndicator = findViewById(R.id.imageview_slide_indicator)
