@@ -17,14 +17,16 @@ import com.google.android.gms.tasks.Tasks
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.RectangularBounds
-import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.R
 import com.rico.omarw.rutasuruapan.SearchFragment
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 class AutoCompleteAdapter (context: Context,
@@ -146,7 +148,7 @@ class AutoCompleteAdapter (context: Context,
         }
 
     }
-//todo: check for permission in order to prevent going to the catch block if permissions is not granted
+
     fun addCurrentLocation(){
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
         coroutineScope.launch {

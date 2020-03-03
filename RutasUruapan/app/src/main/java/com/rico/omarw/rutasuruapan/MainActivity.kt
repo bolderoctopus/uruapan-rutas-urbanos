@@ -470,6 +470,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         when(requestCode){
             LOCATION_PERMISSION_REQUEST ->{
                 if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    searchFragment.restoreCurrentLocation(null)
                     map.isMyLocationEnabled = true
                     setupSettingsButton()
                 }
@@ -666,6 +667,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onTabSelected(tab: TabLayout.Tab?) {
         when(tab?.position){
             1 ->{
+                hideKeyboard(this, window.decorView.windowToken)
                 allRoutesFragment.setHeight(searchFragment.view?.height!!)
                 showFragment(allRoutesFragment, AllRoutesFragment.TAG)
             }

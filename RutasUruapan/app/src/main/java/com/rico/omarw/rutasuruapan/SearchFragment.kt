@@ -276,9 +276,8 @@ class SearchFragment : Fragment(){
         entonces la opcion de "User Current Location" vuelve a estar disponible en el adaptador para ambos textViews
 
      */
-    private fun restoreCurrentLocation(v: MarkerType){
-        if(currentLocationOwner == v) {
-            Log.d(DEBUG_TAG, "restoring current location")
+    fun restoreCurrentLocation(v: MarkerType?){
+        if(v == null || currentLocationOwner == v) {
             autoCompleteAdapter.addCurrentLocation()
             currentLocationOwner = null
         }
