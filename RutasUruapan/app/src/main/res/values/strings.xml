@@ -13,34 +13,17 @@
     <string name="pick_location_primary">Seleccionar ubicación en el mapa</string>
     <string name="pick_location_secondary">Ajústala arrastrando el marcador</string>
     <string name="current_location_primary">Usar ubicación actual</string>
-    <string name="settings">Opciones</string>
-    <string name="title_activity_settings">Opciones</string>
+    <string name="settings">Configuración</string>
+    <string name="title_activity_settings">Configuración</string>
 
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="preference_category_general">General</string>
-    <string name="preference_amount_results_to_show">Cantidad de resultados a mostrar</string>
     <string name="out_of_bounds_error">Selecciona una ubicación más cercana a la ciudad de Uruapan</string>
     <string name="error_icon">Error icon</string>
-    <string name="no_routes_found">No se encontraron rutas, tal vez caminar sea más rápido</string>
     <string name="imageView_walking_person_content_description">Persona caminando</string>
     <string name="back_button_imageView_content_description">Boton atrás</string>
     <string name="filter">Filtrar</string>
     <string name="search">Búsqueda</string>
     <string name="preference_limit_distance">Distancia límite</string>
-    <string name="preference_summary_limit_distance">Buscar rutas %1$s alrededor del punto de origen</string>
+    <string name="preference_summary_limit_distance">Al buscar rutas no mostrar las que estén a más de %1$s de los puntos origen y destino</string>
     <string name="how_to_show_routes_message">Haz click en el nombre de una ruta para mostrar u ocultarla.</string>
     <string name="how_to_move_markers_message">También puedes agregar o quitar un marcador al dejar presionado el dedo sobre el mapa.</string>
     <string name="others">Otros</string>
@@ -56,6 +39,8 @@
     <string name="donation_summary">Si te gustó esta aplicación puedes realizar una donación con PayPal</string>
     <string name="rate_title">Califica esta aplicación</string>
     <string name="rate_summary">Deja tus comentarios en Google Play</string>
+    <string name="no_route_found">No se encontró ninguna ruta cercana</string>
+    <string name="increase_distance_limit">Intenta incrementar la distancia límite en Configuración</string>
 
 
 </resources>

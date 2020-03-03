@@ -26,7 +26,6 @@
             android:id="@+id/autocompletetextview_origin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:completionThreshold="3"
             />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -51,7 +50,6 @@
             android:id="@+id/autocompletetextview_destination"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:completionThreshold="3"
             />
     </com.google.android.material.textfield.TextInputLayout>
 

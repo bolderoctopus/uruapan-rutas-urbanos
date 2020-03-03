@@ -1,19 +1,19 @@
 <resources>
     <!-- Route results to show Preference -->
     <string-array name="results_to_show_labels">
-        <item>300m</item>
-        <item>600m</item>
-        <item>900m</item>
-        <item>1.2km</item>
+        <item>500m</item>
+        <item>1km</item>
         <item>1.5km</item>
+        <item>2km</item>
+        <item>3km</item>
     </string-array>
 
     <string-array name="results_to_show_values">
-        <item>300</item>
-        <item>600</item>
-        <item>900</item>
-        <item>1200</item>
+        <item>500</item>
+        <item>1000</item>
         <item>1500</item>
+        <item>2000</item>
+        <item>3000</item>
     </string-array>
 
 </resources>

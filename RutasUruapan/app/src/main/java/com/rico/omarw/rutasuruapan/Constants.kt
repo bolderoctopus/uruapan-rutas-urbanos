@@ -4,10 +4,10 @@ object Constants {
     /**
      * In meters
      */
-    const val WALK_DIST_LIMIT_DEFFAULT = 600
+    const val WALK_DIST_LIMIT_DEFFAULT = 1000
     const val METER_IN_ANGULAR_LAT_LNG = 0.000009229349583
 
-    const val COMPLETION_THRESHOLD = 4
+    const val COMPLETION_THRESHOLD = 3
     const val CAMERA_PADDING_MARKER = 150
     const val WD_WEIGHT = 100
 

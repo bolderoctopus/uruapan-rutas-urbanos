@@ -6,9 +6,9 @@
         app:key="walk_dist_limit"
         android:entryValues="@array/results_to_show_values"
         android:entries="@array/results_to_show_labels"
-        app:defaultValue="600"
+        app:defaultValue="1000"
         app:title="@string/preference_limit_distance"
-        tools:summary="Buscar rutas 150m al rededor del punto de origen"/>
+        tools:summary="Al buscar rutas no mostrar las que estén a más de 1km de los puntos origen y destino"/>
 
     <Preference
         app:key="show_dialogs_again"
