@@ -201,11 +201,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = RouteListAdapter(results, this)
+        recyclerView.scheduleLayoutAnimation()
     }
 
     private fun showNoResultsMessage(){
         hideProgressBar()
-//        progressBar.visibility = View.GONE
         recyclerView.visibility = View.GONE
         groupWalkMessage.visibility = View.VISIBLE
     }
