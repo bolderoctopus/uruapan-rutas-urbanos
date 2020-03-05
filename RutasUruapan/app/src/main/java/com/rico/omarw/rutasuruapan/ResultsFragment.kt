@@ -17,7 +17,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.appbar.MaterialToolbar
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.METER_IN_ANGULAR_LAT_LNG
-import com.rico.omarw.rutasuruapan.Constants.WALK_DIST_LIMIT_DEFFAULT
+import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
+import com.rico.omarw.rutasuruapan.Constants.WALK_DIST_LIMIT_DEFAULT
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
@@ -239,8 +240,8 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
 
     fun getWalkDistLimit() : Double {
-        val string = PreferenceManager.getDefaultSharedPreferences(context).getString("walk_dist_limit", WALK_DIST_LIMIT_DEFFAULT.toString())
-        return if(string == null) WALK_DIST_LIMIT_DEFFAULT * METER_IN_ANGULAR_LAT_LNG
+        val string = PreferenceManager.getDefaultSharedPreferences(context).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
+        return if(string == null) WALK_DIST_LIMIT_DEFAULT * METER_IN_ANGULAR_LAT_LNG
                 else (string.toDouble()  * METER_IN_ANGULAR_LAT_LNG)
     }
 

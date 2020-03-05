@@ -9,6 +9,7 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -34,7 +35,7 @@ class SettingsActivity : AppCompatActivity() {
     class SettingsFragment : PreferenceFragmentCompat(), Preference.SummaryProvider<ListPreference>, Preference.OnPreferenceClickListener {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
-            findPreference<ListPreference>("walk_dist_limit")?.summaryProvider = this
+            findPreference<ListPreference>(PreferenceKeys.WALK_DIST_LIMIT)?.summaryProvider = this
             findPreference<Preference>("show_dialogs_again")?.onPreferenceClickListener = this
             findPreference<Preference>("donation")?.onPreferenceClickListener = this
             findPreference<Preference>("rate")?.onPreferenceClickListener = this
@@ -42,9 +43,9 @@ class SettingsActivity : AppCompatActivity() {
 
         private fun deleteSomePreferences(c: Context){
             val editor = PreferenceManager.getDefaultSharedPreferences(c).edit()
-            editor.remove("has_inf_dialog1_been_shown")
-            editor.remove("has_inf_dialog2_been_shown")
-            editor.remove("has_disclaimer_been_shown")
+            editor.remove(PreferenceKeys.DIALOG_1_SHOWN)
+            editor.remove(PreferenceKeys.DIALOG_2_SHOWN)
+            editor.remove(PreferenceKeys.DISCLAIMER_SHOWN)
             editor.apply()
         }
 

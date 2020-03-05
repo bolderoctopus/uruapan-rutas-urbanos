@@ -8,9 +8,9 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.rico.omarw.rutasuruapan.R
 
-class CustomImageButton(c: Context, layoutParams: RelativeLayout.LayoutParams): ImageView(c) {
+class CustomImageButton(c: Context, layoutParams: RelativeLayout.LayoutParams): androidx.appcompat.widget.AppCompatImageView(c) {
     companion object {
-        val TAG = "SettingsButton"
+        const val TAG = "SettingsButton"
     }
 
     init {

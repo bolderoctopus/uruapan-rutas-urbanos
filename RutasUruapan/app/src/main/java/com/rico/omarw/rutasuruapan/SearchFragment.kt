@@ -23,7 +23,9 @@ import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.textfield.TextInputLayout
+import com.rico.omarw.rutasuruapan.Constants.COMPLETION_THRESHOLD
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
+import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
 import com.rico.omarw.rutasuruapan.Utils.checkInternetConnection
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
@@ -56,7 +58,7 @@ class SearchFragment : Fragment(){
         super.onCreate(savedInstanceState)
         if(context == null) return
         placesClient = Places.createClient(context!!)
-        hasInformativeDialogBeenShown = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getBoolean("has_inf_dialog2_been_shown", false)
+        hasInformativeDialogBeenShown = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PreferenceKeys.DIALOG_2_SHOWN, false)
         if(!uiScope.isActive)
             uiScope = CoroutineScope(Dispatchers.Main)
     }
@@ -83,9 +85,11 @@ class SearchFragment : Fragment(){
 
         originAutoCompleteTextView.setOnClickListener {originAutoCompleteTextView.showDropDown()}
         originAutoCompleteTextView.setOnItemClickListener(this::onAutoCompleteItemClick)
+        originAutoCompleteTextView.threshold = COMPLETION_THRESHOLD
 
         destinationAutoCompleteTextView.setOnClickListener {destinationAutoCompleteTextView.showDropDown()}
         destinationAutoCompleteTextView.setOnItemClickListener (this::onAutoCompleteItemClick)
+        destinationAutoCompleteTextView.threshold = COMPLETION_THRESHOLD
 
         if(context != null){
             val locationClient = LocationServices.getFusedLocationProviderClient(context!!)
@@ -230,7 +234,7 @@ class SearchFragment : Fragment(){
     }
 
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
-        if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean("resolve_locations_to_addresses", false)
+        if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PreferenceKeys.RESOLVE_LOCATIONS_TO_ADDRESSES, false)
                 || (context != null && !checkInternetConnection(context!!)))
             return
 
@@ -329,7 +333,7 @@ class SearchFragment : Fragment(){
         if(context == null) return
 
         val preferenceEditor = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
-        preferenceEditor.putBoolean("has_inf_dialog2_been_shown", boolean)
+        preferenceEditor.putBoolean(PreferenceKeys.DIALOG_2_SHOWN, boolean)
         preferenceEditor.apply()
         showInformativeDialog = !boolean
         hasInformativeDialogBeenShown = boolean

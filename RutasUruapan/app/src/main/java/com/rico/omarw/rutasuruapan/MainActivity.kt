@@ -35,6 +35,7 @@ import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.Constants.BOUNCE_DURATION
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.INITIAL_ZOOM
+import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
@@ -121,8 +122,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        showInformativeDialog = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean("has_inf_dialog1_been_shown", false)
-        val showDisclaimer = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean("has_disclaimer_been_shown", false)
+        showInformativeDialog = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DIALOG_1_SHOWN, false)
+        val showDisclaimer = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DISCLAIMER_SHOWN, false)
 
         slidingLayout= findViewById(R.id.sliding_layout)
         slideIndicator = findViewById(R.id.imageview_slide_indicator)
@@ -150,7 +151,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     .setCancelable(false)
                     .setPositiveButton(R.string.understood) { _, _ ->
                         PreferenceManager.getDefaultSharedPreferences(this@MainActivity).edit()
-                                .putBoolean("has_disclaimer_been_shown", true)
+                                .putBoolean(PreferenceKeys.DISCLAIMER_SHOWN, true)
                                 .apply()
                     }
                     .show()
@@ -308,7 +309,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun drawSquares(walkingDistance: Double){
-        if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean("draw_squares", Constants.DRAW_SQUARES_DEFAULT)) return
+        if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DRAW_SQUARES, false)) return
 
         clearSquares()
 
@@ -545,7 +546,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     fun informativeDialog1Shown(){
         val preferenceEditor = androidx.preference.PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
-        preferenceEditor.putBoolean("has_inf_dialog1_been_shown", true)
+        preferenceEditor.putBoolean(PreferenceKeys.DIALOG_1_SHOWN, true)
         preferenceEditor.apply()
         showInformativeDialog = false
     }
@@ -706,12 +707,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
      * For debug purpouses
      */
     fun drawMarker(latLng: LatLng, title: String): Marker? {
-        return if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean("draw_startend_points", Constants.DRAW_STARTEND_POINTS)) null
+        return if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DRAW_STARTEND_POINTS, false)) null
         else map.addMarker(MarkerOptions().title(title).position(latLng).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)).draggable(false))
     }
 
     fun drawMarkers(points: List<Point>): List<Marker>? {
-        if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean("draw_route_points", Constants.DRAW_ROUTE_POINTS))
+        if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DRAW_ROUTE_POINTS, false))
             return null
         else {
             val markers = ArrayList<Marker>()
