@@ -1,6 +1,11 @@
 '''
-Autum 2019
-Program for reading CSV files and update a SQLite database with their content using the name of the files.
+Otoño 2019
+
+Pasa coordenadas de csv a la base de datos en SQLite.
+Los archivos csv deben estar en una carpeta llamada rutas.
+El archivo de la base de datos debe estar en la misma carpeta que el script.
+Las rutas deben estar previamente reguistradas en la tabla de Routes y el shortname debe coincidir 
+con el del archivo csv. 
 
 '''
 
