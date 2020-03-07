@@ -33,7 +33,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private lateinit var groupWalkMessage: LinearLayout
     private var listener: OnFragmentInteractionListener? = null
     private var height: Int? = null
-    public var onViewCreated: Runnable? = null
     private lateinit var originLatLng: LatLng
     private lateinit var destinationLatLng: LatLng
     private var drawnRoutes: ArrayList<RouteModel>? = null
@@ -69,9 +68,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
         if ((activity as MainActivity).showInformativeDialog)
             addRecyclerViewLayoutListener()
-
-        onViewCreated?.run()
-        onViewCreated = null
 
         findRoutesAsync(originLatLng, destinationLatLng, getWalkDistLimit())
 

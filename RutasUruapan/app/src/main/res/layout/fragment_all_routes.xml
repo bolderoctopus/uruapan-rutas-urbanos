@@ -14,7 +14,7 @@
         android:verticalScrollbarPosition="right"
         android:scrollbars="vertical"
         android:scrollbarAlwaysDrawVerticalTrack="true"
-        app:layout_behavior=".customWidgets.CustomScrollingViewBehavior"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
         tools:itemCount="6"
         tools:listitem="@layout/route_list_item" />
 

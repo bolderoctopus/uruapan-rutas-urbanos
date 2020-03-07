@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.animation.BounceInterpolator
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.annotation.DrawableRes
@@ -30,6 +31,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.Constants.BOUNCE_DURATION
@@ -43,16 +45,13 @@ import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.rico.omarw.rutasuruapan.models.ZoomLevel
-import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
-import java.lang.Runnable
 
 /*
 * to think:
 * add link to source code?
 *
-* today:
 * [x] refactor preferences
 * [x] test the app offline
 * [] review fonts and or styles
@@ -66,10 +65,9 @@ import java.lang.Runnable
 *       how is it even possible to scroll up if there is not enough rows??
 * [x] back key on allRoutesFragment: clear filter if exists?
 * [] review wht happens when you touch a marker
-* tomorrow:
 * [x] add missing routes 45, 176
 * [] get api keys for release and cancel debug ones
-*
+* [] fix the bottom offset of the dialogs
 * [] publish the beta
 *
 * future updates:
@@ -89,7 +87,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         AllRoutesFragment.InteractionsInterface,
         SearchFragment.OnFragmentInteractionListener,
         ResultsFragment.OnFragmentInteractionListener,
-        SlidingUpPanelLayout.PanelSlideListener, GoogleMap.OnCameraMoveListener,
+        GoogleMap.OnCameraMoveListener,
         TabLayout.OnTabSelectedListener {
 
     private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
@@ -109,7 +107,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var resultsFragment: ResultsFragment? = null
     private lateinit var activeFragment: Fragment
 
-    private lateinit var slidingLayout: SlidingUpPanelLayout
+    private lateinit var sheetBehavior: BottomSheetBehavior<LinearLayout>
+    private lateinit var bottomSheet: LinearLayout
     private lateinit var map: GoogleMap
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var slideIndicator: ImageView
@@ -135,13 +134,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         showInformativeDialog = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DIALOG_1_SHOWN, false)
         val showDisclaimer = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DISCLAIMER_SHOWN, false)
 
-        slidingLayout= findViewById(R.id.sliding_layout)
+        bottomSheet = findViewById(R.id.bottom_sheet)
+        sheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        sheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         slideIndicator = findViewById(R.id.imageview_slide_indicator)
+        (slideIndicator.parent as View).setOnClickListener {
+            when (sheetBehavior.state){
+                BottomSheetBehavior.STATE_EXPANDED -> sheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                BottomSheetBehavior.STATE_COLLAPSED -> sheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            }
+        }
+
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
 
         tablayout.addOnTabSelectedListener(this)
 
-        slidingLayout.addPanelSlideListener(this)
+        sheetBehavior.bottomSheetCallback = sheetBehaviorCallback
 
         searchFragment = SearchFragment.newInstance()
         allRoutesFragment = AllRoutesFragment.newInstance()
@@ -183,13 +191,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             .show(newFragment)
             .commit()
         activeFragment = newFragment
-        // slidingPanel needs to know if it has a scrollable view in order to work the nested scrolling thing
-        // when the view is being created, its scrollView is set as the slidingPanel scrollableView
-        // other wise, causes not initialized view error
-        when(tag){
-            AllRoutesFragment.TAG -> slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
-            ResultsFragment.TAG -> if(resultsFragment != null) slidingLayout.setScrollableView(resultsFragment?.recyclerView)
-        }
     }
 
     private fun setMarkerBounce(marker: Marker) {
@@ -224,7 +225,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
 
         // Moves the Google logo to the top left corner of the screen
-        val googleLogo = slidingLayout.findViewWithTag<View>("GoogleWatermark")
+        val googleLogo = findViewById<View>(R.id.main_content).findViewWithTag<View>("GoogleWatermark")
         val layoutParams = googleLogo.layoutParams as RelativeLayout.LayoutParams
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
@@ -249,7 +250,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     private fun setupSettingsButton(){
-        val locationButton = slidingLayout.findViewWithTag<ImageView>("GoogleMapMyLocationButton")
+        val mainContent = findViewById<View>(R.id.main_content)
+        val locationButton = mainContent.findViewWithTag<ImageView>("GoogleMapMyLocationButton")
         val settingsButtonLayoutParams = RelativeLayout.LayoutParams(resources.getDimensionPixelSize(R.dimen.settings_button_size), resources.getDimensionPixelSize(R.dimen.settings_button_size)).apply {
             marginEnd = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
             if(locationButton.visibility == View.VISIBLE){
@@ -262,7 +264,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
 
-        var settingsButton = slidingLayout.findViewWithTag<CustomImageButton>(CustomImageButton.TAG)
+        var settingsButton = mainContent.findViewWithTag<CustomImageButton>(CustomImageButton.TAG)
         if(settingsButton == null) {
             settingsButton = CustomImageButton(this@MainActivity, settingsButtonLayoutParams).apply {
                 setOnClickListener { showSettings() }}
@@ -386,7 +388,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
                 route.isDrawn = true
             }
-            //todo: there could be a better way to updte the visible directionalArrows at the current zoom lvl
+            //todo: there could be a better way to update the visible directionalArrows at the current zoom lvl
             updateShownDirectionalArrows(0, mapZoomLevel, route, routeVisible = route.isDrawn)
         }
     }
@@ -551,7 +553,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .hide(searchFragment)
                 .commit()
         activeFragment = resultsFragment!!
-        resultsFragment?.onViewCreated = Runnable {slidingLayout.setScrollableView(resultsFragment?.recyclerView)}
     }
 
     fun informativeDialog1Shown(){
@@ -635,18 +636,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .show(searchFragment)
                 .commit()
         activeFragment = searchFragment
-        slidingLayout.setScrollableView(allRoutesFragment.recyclerView)
         resultsFragment = null
     }
 
-    override fun onPanelSlide(panel: View?, slideOffset: Float) {
-        slideIndicator.rotation = 180 * (1-slideOffset)
-    }
-
-    override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
-        if(newState == SlidingUpPanelLayout.PanelState.COLLAPSED){
-            hideKeyboard(this, window.decorView.windowToken)
+    private val sheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+        override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            slideIndicator.rotation = 180 * (1-slideOffset)
         }
+
+        override fun onStateChanged(bottomSheet: View, newState: Int) {
+            if(newState == BottomSheetBehavior.STATE_COLLAPSED){
+                hideKeyboard(bottomSheet.context, window.decorView.windowToken)
+            }
+        }
+
     }
 
     override fun onBackPressed() {
@@ -668,8 +671,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onTabReselected(tab: TabLayout.Tab?){
-        if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED){
-            slidingLayout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
+        if(sheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED){
+            sheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
     }
 
@@ -689,8 +692,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     showFragment(searchFragment, SearchFragment.TAG)
             }
         }
-        if(slidingLayout.panelState == SlidingUpPanelLayout.PanelState.COLLAPSED){
-            slidingLayout.panelState = SlidingUpPanelLayout.PanelState.EXPANDED
+        if(sheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED){
+            sheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
     }
 

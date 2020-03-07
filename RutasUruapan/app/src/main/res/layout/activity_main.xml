@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:orientation="vertical"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
-    android:layout_width="match_parent">
-    <com.google.android.material.tabs.TabLayout
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
+        android:id="@+id/main_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.google.android.material.tabs.TabLayout
         style="@style/Widget.MaterialComponents.TabLayout"
         android:id="@+id/tablayout"
         android:layout_width="match_parent"
@@ -18,35 +24,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </com.google.android.material.tabs.TabLayout>
-<com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:sothree="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/sliding_layout"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1"
-    android:gravity="bottom"
-    sothree:umanoPanelHeight="@dimen/collapsed_panel_height"
-    sothree:umanoShadowHeight="4dp"
-    sothree:umanoFadeColor="@android:color/transparent"
-    sothree:umanoInitialState="expanded">
+        <fragment
+            android:id="@+id/map_fragment"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            tools:context=".MainActivity" />
 
-    <fragment
-        android:id="@+id/map_fragment"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        tools:context=".MainActivity" />
+    </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/sliding_panel_layout"
+        android:background="@color/cardview_light_background"
+        android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        app:behavior_hideable="false"
+        app:behavior_peekHeight="@dimen/slide_indicator_height"
 
+        >
         <RelativeLayout
             android:background="@color/my_divider"
             android:layout_width="match_parent"
-            android:layout_height="25dp">
+            android:layout_height="@dimen/slide_indicator_height">
 
             <ImageView
                 android:id="@+id/imageview_slide_indicator"
@@ -57,15 +60,10 @@
                 android:tint="@color/primaryDark"
                 android:contentDescription="@string/slide_indicator_content_description" />
         </RelativeLayout>
-
         <RelativeLayout
             android:id="@+id/fragment_container"
             android:layout_width="match_parent"
             android:layout_weight="1"
             android:layout_height="0dp"/>
-
-
     </LinearLayout>
-</com.sothree.slidinguppanel.SlidingUpPanelLayout>
-
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
