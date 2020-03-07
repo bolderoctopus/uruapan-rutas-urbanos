@@ -49,27 +49,37 @@ import kotlinx.coroutines.*
 import java.lang.Runnable
 
 /*
-* put some title or something at the top of results fragment?
+* to think:
+* add link to source code?
 *
-* [x] show tips for using the app: how to show/hide routes
-* [x] show tips for using the app: edit markers
-* [x] add the dummy marker at the center of the visible map
-* [x] add preference to display again initial tips
-* [x] add a disclaimer
-* [x] add donation button
-* [] test the app offline
-* [] add missing routes 45, 176
-* [] suggest to increase distance limit if no routes are found
-* [] add some delay while searching and typing
-* [] try to improve the looks of every row (route)
-* [] make the whole fragment scrollable, both allRoutesFragment and resultsFragment
-* [] refactor preferences
+* today:
+* [x] refactor preferences
+* [x] test the app offline
+* [] review fonts and or styles
+* [] make an icon
+* [] ponder whether or not i should add a splash screen
+* [] test on different screen sizes/densities
+* [] new style for dialogs: green background and white text?
+* [] make drawables for  screen sizes/densities
+* [] bug: cant's scroll down back the toolbar if you have few results
+*       idea: if there are few results change the collapsing toolbar flags
+*       how is it even possible to scroll up if there is not enough rows??
+* [x] back key on allRoutesFragment: clear filter if exists?
+* [] review wht happens when you touch a marker
+* tomorrow:
+* [x] add missing routes 45, 176
+* [] get api keys for release and cancel debug ones
+*
 * [] publish the beta
-* [x] when switching tabs: check if the panel is down in order to pull it upwards
-* [] during the first use he use current location is missing
-* - display lap time per route?
-* - group shown routes somewhere up like chips?
-* - compass button overlaps google logo
+*
+* future updates:
+* put some title or something at the top of results fragment?
+* compass button overlaps google logo
+* try to improve the looks of every row (route)
+* display lap time per route?
+* group shown routes somewhere up like chips?
+* add some delay while searching and typing
+* current location option is not available sometimes even though google maps location is
 */
 
 

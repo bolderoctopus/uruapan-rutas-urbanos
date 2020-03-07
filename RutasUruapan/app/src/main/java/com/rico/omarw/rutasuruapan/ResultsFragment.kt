@@ -132,12 +132,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
      * @param walkDistLimit How much the user is willing to walk between the route start/end point and the given origin/destination respectively
      */
     private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){
-        val SQL_TAG = "sql_tag"
         showProgressBar()
         if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener?.drawSquares(walkDistLimit)
         val walkDistToDest = distanceBetweenPoints(originLatLng, destinationLatLng)
-        Log.d(DEBUG_TAG, "walkDistToDest: $walkDistToDest ")
+//        Log.d(DEBUG_TAG, "walkDistToDest: $walkDistToDest ")
 
         uiScope.launch {
             val routesDao = AppDatabase.getInstance(context!!)?.routesDAO()
@@ -146,7 +145,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             val routesNearOrigin = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, originLatLng.latitude, originLatLng.longitude)}
             val routesNearDest = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, destinationLatLng.latitude, destinationLatLng.longitude)}
             awaitAll(routesNearDest, routesNearOrigin)
-            Log.d(SQL_TAG, "time of getRoutesIntercepting both start and end: ${System.currentTimeMillis() - startTime}")
+            Log.d(DEBUG_TAG, "time of getRoutesIntercepting both start and end: ${System.currentTimeMillis() - startTime}")
             commonRoutesIds = routesNearOrigin.await()!!.intersect(routesNearDest.await()!!)
 
             if(commonRoutesIds.isNullOrEmpty()){
@@ -172,16 +171,16 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
                     routeModel.totalDist = routeModel.walkDist!! + routeDist
                     results.add(routeModel)
 
-                    Log.d(DEBUG_TAG,"__________")
-                    Log.d(DEBUG_TAG, "route: ${route.name}, routeId: ${route.routeId}")
-                    Log.d(DEBUG_TAG, "origin: latLng= ${originLatLng.latitude}, ${originLatLng.longitude}")
-                    Log.d(DEBUG_TAG, "destination: latLng= ${destinationLatLng.latitude}, ${destinationLatLng.longitude}")
-                    Log.d(DEBUG_TAG, "startPoint: #${startPoint!!.number} ,latLng= ${startPoint.lat}, ${startPoint.lng}")
-                    Log.d(DEBUG_TAG, "endPoint: #${endPoint!!.number} ,latLng= ${endPoint.lat}, ${endPoint.lng}")
-                    Log.d(DEBUG_TAG , "betterStartPoint: ${betterStartPoint?.number}")
-                    Log.d(DEBUG_TAG , "betterEndPoint: ${betterEndPoint?.number}")
-                    Log.d(DEBUG_TAG, "routeWalkDist: ${routeModel.walkDist}")
-                    Log.d(DEBUG_TAG, "routeTotalDist: ${routeModel.totalDist}")
+//                    Log.d(DEBUG_TAG,"__________")
+//                    Log.d(DEBUG_TAG, "route: ${route.name}, routeId: ${route.routeId}")
+//                    Log.d(DEBUG_TAG, "origin: latLng= ${originLatLng.latitude}, ${originLatLng.longitude}")
+//                    Log.d(DEBUG_TAG, "destination: latLng= ${destinationLatLng.latitude}, ${destinationLatLng.longitude}")
+//                    Log.d(DEBUG_TAG, "startPoint: #${startPoint!!.number} ,latLng= ${startPoint.lat}, ${startPoint.lng}")
+//                    Log.d(DEBUG_TAG, "endPoint: #${endPoint!!.number} ,latLng= ${endPoint.lat}, ${endPoint.lng}")
+//                    Log.d(DEBUG_TAG , "betterStartPoint: ${betterStartPoint?.number}")
+//                    Log.d(DEBUG_TAG , "betterEndPoint: ${betterEndPoint?.number}")
+//                    Log.d(DEBUG_TAG, "routeWalkDist: ${routeModel.walkDist}")
+//                    Log.d(DEBUG_TAG, "routeTotalDist: ${routeModel.totalDist}")
                 }
                 results.sortBy {
                     it.walkDist
