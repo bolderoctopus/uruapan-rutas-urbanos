@@ -19,7 +19,7 @@
         tools:listitem="@layout/route_list_item" />
 
     <com.google.android.material.appbar.AppBarLayout
-        android:background="@color/appbarlayout_bakground"
+        android:background="@color/appbarlayout_background"
         android:layout_width="match_parent"
         app:liftOnScroll="true"
         android:layout_height="@dimen/toolbar_height">
