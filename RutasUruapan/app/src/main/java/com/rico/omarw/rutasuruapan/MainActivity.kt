@@ -247,8 +247,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
         slideIndicator.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
-        onMapLongClick(LatLng(19.433523, -102.074823))
-        onMapLongClick(LatLng(19.431609, -102.025075))
     }
 
     private fun setupSettingsButton(){
