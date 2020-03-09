@@ -114,7 +114,6 @@ class SearchFragment : Fragment(){
     }
 
     override fun onDetach() {
-        Log.d(DEBUG_TAG, "cancelling coroutines")
         uiScope.cancel()
         listener = null
         super.onDetach()

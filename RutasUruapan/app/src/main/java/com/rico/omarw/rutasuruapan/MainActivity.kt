@@ -56,13 +56,10 @@ import kotlinx.coroutines.*
 * [x] test the app offline
 * [] review fonts and or styles
 * [] make an icon
-* [] ponder whether or not i should add a splash screen
 * [] test on different screen sizes/densities
 * [] new style for dialogs: green background and white text?
 * [] make drawables for  screen sizes/densities
-* [] bug: cant's scroll down back the toolbar if you have few results
-*       idea: if there are few results change the collapsing toolbar flags
-*       how is it even possible to scroll up if there is not enough rows??
+* [x] bug: cant's scroll down back the toolbar if you have few results
 * [x] back key on allRoutesFragment: clear filter if exists?
 * [] review wht happens when you touch a marker
 * [x] add missing routes 45, 176
@@ -78,6 +75,7 @@ import kotlinx.coroutines.*
 * group shown routes somewhere up like chips?
 * add some delay while searching and typing
 * current location option is not available sometimes even though google maps location is
+* splash screen
 */
 
 
@@ -247,6 +245,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
         slideIndicator.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+        onMapLongClick(LatLng(19.433523, -102.074823))
+        onMapLongClick(LatLng(19.431609, -102.025075))
     }
 
     private fun setupSettingsButton(){
@@ -553,6 +553,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .hide(searchFragment)
                 .commit()
         activeFragment = resultsFragment!!
+        allRoutesFragment.recyclerView.isNestedScrollingEnabled = false
     }
 
     fun informativeDialog1Shown(){
@@ -637,6 +638,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .commit()
         activeFragment = searchFragment
         resultsFragment = null
+        allRoutesFragment.recyclerView.isNestedScrollingEnabled = true
     }
 
     private val sheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
@@ -683,11 +685,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             1 ->{
                 hideKeyboard(this, window.decorView.windowToken)
                 allRoutesFragment.setHeight(searchFragment.view?.height!!)
+                allRoutesFragment.recyclerView.isNestedScrollingEnabled = true
                 showFragment(allRoutesFragment, AllRoutesFragment.TAG)
             }
             0 -> {
-                if (resultsFragment != null)
+                if (resultsFragment != null) {
                     showFragment(resultsFragment!!, ResultsFragment.TAG)
+                    allRoutesFragment.recyclerView.isNestedScrollingEnabled = false
+                }
                 else
                     showFragment(searchFragment, SearchFragment.TAG)
             }

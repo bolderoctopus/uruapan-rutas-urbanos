@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.appbar.MaterialToolbar
-import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.METER_IN_ANGULAR_LAT_LNG
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
 import com.rico.omarw.rutasuruapan.Constants.WALK_DIST_LIMIT_DEFAULT
@@ -141,11 +139,10 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             val routesNearOrigin = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, originLatLng.latitude, originLatLng.longitude)}
             val routesNearDest = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, destinationLatLng.latitude, destinationLatLng.longitude)}
             awaitAll(routesNearDest, routesNearOrigin)
-            Log.d(DEBUG_TAG, "time of getRoutesIntercepting both start and end: ${System.currentTimeMillis() - startTime}")
             commonRoutesIds = routesNearOrigin.await()!!.intersect(routesNearDest.await()!!)
 
             if(commonRoutesIds.isNullOrEmpty()){
-                 showNoResultsMessage()// todo: suggest to increase WalkDistLimit?
+                 showNoResultsMessage()
             }
             else{
                 val results = arrayListOf<RouteModel>()
