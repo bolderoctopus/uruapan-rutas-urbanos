@@ -99,6 +99,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
                 if((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v!= null && (recyclerView.adapter?.itemCount ?: 0) > 0 ){
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
+                    verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
 
                     InformativeDialog.show(v.context,
                             verticalOffset,

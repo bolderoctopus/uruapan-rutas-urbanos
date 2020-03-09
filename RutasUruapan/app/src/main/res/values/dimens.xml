@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="slide_indicator_height">25dp</dimen>
+    <dimen name="default_fragment_height">330dp</dimen>
+    <dimen name="settings_button_size">41.5dp</dimen>
+    <dimen name="settings_button_marginEnd">8dp</dimen>
+    <dimen name="colorTag_width">7dp</dimen>
+    <dimen name="toolbar_height">55dp</dimen>
+    <dimen name="default_marker_height">42dp</dimen>
+    <dimen name="collapsed_panel_height">25dp</dimen>
 </resources>

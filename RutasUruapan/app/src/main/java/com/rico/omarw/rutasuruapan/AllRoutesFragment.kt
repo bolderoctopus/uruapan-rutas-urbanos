@@ -80,6 +80,8 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
                 if((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v!= null){
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
+                    verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
+
 
                     InformativeDialog.show(v.context,
                             verticalOffset,

@@ -64,7 +64,7 @@ import kotlinx.coroutines.*
 * [] review wht happens when you touch a marker
 * [x] add missing routes 45, 176
 * [] get api keys for release and cancel debug ones
-* [] fix the bottom offset of the dialogs
+* [x] fix the bottom offset of the dialogs
 * [] publish the beta
 *
 * future updates:
@@ -76,6 +76,8 @@ import kotlinx.coroutines.*
 * add some delay while searching and typing
 * current location option is not available sometimes even though google maps location is
 * splash screen
+* scroll issues in results/allRoutes fragments: no seamless scroll;
+*   results: bottomSheet collapses if you continually scroll up past the sheet and back down
 */
 
 
@@ -600,7 +602,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             // use the map initial height as vertical offset from the bottom
             // because the keyboard doesn't hide immediately and there's no easy way to find out the keyboard's height
             var verticalOffset = mapHeight!!/2
-            verticalOffset += resources.getDimension(R.dimen.collapsed_panel_height).toInt()
             verticalOffset += resources.getDimension(R.dimen.default_marker_height).toInt()
 
             InformativeDialog.show(this, verticalOffset, InformativeDialog.Style.Center, R.string.how_to_move_markers_message,
