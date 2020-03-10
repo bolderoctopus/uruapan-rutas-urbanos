@@ -14,6 +14,7 @@ import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
@@ -38,11 +39,12 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
 
     private lateinit var adapter: RouteListFilterableAdapter
     private lateinit var routeModels: List<RouteModel>
-    lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
+    lateinit var recyclerView: RecyclerView
+
     private var interactionsListener: InteractionsInterface? = null
     var onViewCreated: Runnable? = null
-    private var drawnRoutes: ArrayList<RouteModel>? = null
+    private var drawnRoutes: MutableSet<RouteModel>? = null
 
     private var uiScope = CoroutineScope(Dispatchers.Main)
 
@@ -154,13 +156,13 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         super.onDetach()
     }
 
-    override fun drawRoute(route: RouteModel) {//todo: don't they get added twice?
-        if(drawnRoutes == null) drawnRoutes = ArrayList()
+    override fun drawRoute(route: RouteModel) {
+        if(drawnRoutes == null) drawnRoutes = mutableSetOf()
         drawnRoutes!!.add(route)
         interactionsListener?.drawRoute(route)
     }
 
-    private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}// todo: this might be no longer needed since the fragment remains attached the whole time?
+    private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
 
     companion object {
         const val TAG = "AllRoutesFragment"

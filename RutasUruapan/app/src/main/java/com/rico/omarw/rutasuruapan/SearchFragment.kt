@@ -37,22 +37,27 @@ import kotlin.collections.ArrayList
 
 class SearchFragment : Fragment(){
 
-    private var destinationLatLng: LatLng? = null
-    private var originLatLng: LatLng? = null
+    enum class MarkerType {
+        Origin,
+        Destination
+    }
+
     private lateinit var placesClient: PlacesClient
     private lateinit var origin: TextInputLayout
     private lateinit var originAutoCompleteTextView: AutoCompleteTextView
     private lateinit var destination: TextInputLayout
     private lateinit var destinationAutoCompleteTextView: AutoCompleteTextView
-    private var listener: OnFragmentInteractionListener? = null
     private lateinit var autoCompleteAdapter: AutoCompleteAdapter
-
     private lateinit var geocoder: Geocoder
-    private var uiScope = CoroutineScope(Dispatchers.Main)
+
+    private var destinationLatLng: LatLng? = null
+    private var originLatLng: LatLng? = null
+    private var listener: OnFragmentInteractionListener? = null
     private var currentLocationOwner: MarkerType? = null
     private var showInformativeDialog: Boolean = false
     private var hasInformativeDialogBeenShown: Boolean = false
 
+    private var uiScope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -271,7 +276,6 @@ class SearchFragment : Fragment(){
         }
     }
 
-    // If the user had picked 'Show current location' in this textview but then pressed the clear button we'll make the option available to both textviews again.
     /* Si en uno de los textFields se habia seleccionado la opcion "Use Current Location", pero luego
         1. Presiona el boton de limpiar en ese textView
         o
@@ -287,7 +291,7 @@ class SearchFragment : Fragment(){
     }
 
     private fun search(){
-        if(originLatLng == null){// todo: use textinput error instead
+        if(originLatLng == null){
             origin.error = getString(R.string.empty_textview_error)
         }
         else if (destinationLatLng == null) {
@@ -338,17 +342,12 @@ class SearchFragment : Fragment(){
         hasInformativeDialogBeenShown = boolean
     }
 
-    enum class MarkerType {//todo: rename, for something more relevant since this no longer works to differentiate between markers but also inputs
-        Origin,
-        Destination
-    }
-
     interface OnFragmentInteractionListener {
         fun onSearch(origin: LatLng, destination: LatLng)
-//        fun onGetCurLocation(onSuccess: (Location) -> Unit)
         fun drawMarker(position: LatLng?, title: String, markerType: MarkerType, animate: Boolean, bounce: Boolean)
         fun clearMarker(markerType: MarkerType)
     }
+
     companion object {
         const val TAG = "SearchFragment"
         val uruapanBounds = RectangularBounds.newInstance(

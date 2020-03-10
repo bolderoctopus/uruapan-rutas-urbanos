@@ -17,7 +17,7 @@ class CustomImageButton(c: Context, layoutParams: RelativeLayout.LayoutParams): 
         tag = TAG
         isClickable = true
         scaleType = ScaleType.FIT_CENTER
-        contentDescription = c.getString(R.string.settings)
+        contentDescription = c.getString(R.string.title_activity_settings)
         setImageResource(R.drawable.settingsbutton4)
         setLayoutParams(layoutParams)
         setPadding(0,0,0,0)

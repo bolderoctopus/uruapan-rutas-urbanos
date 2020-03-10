@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,14 +28,14 @@ import kotlin.math.sqrt
 
 class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
-    lateinit var recyclerView: RecyclerView
+    private lateinit var recyclerView: RecyclerView
     private lateinit var groupWalkMessage: LinearLayout
-    private var listener: OnFragmentInteractionListener? = null
-    private var height: Int? = null
     private lateinit var originLatLng: LatLng
     private lateinit var destinationLatLng: LatLng
-    private var drawnRoutes: ArrayList<RouteModel>? = null
     private lateinit var progressBar: ProgressBar
+    private var height: Int? = null
+    private var listener: OnFragmentInteractionListener? = null
+    private var drawnRoutes: ArrayList<RouteModel>? = null
 
     private var uiScope = CoroutineScope(Dispatchers.Main)
 
@@ -56,6 +57,8 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         view.findViewById<MaterialToolbar>(R.id.toolbar).apply {
             setNavigationOnClickListener { backButtonPressed() }
         }
+
+        view.findViewById<TextView>(R.id.textview_increase_distance).text = getString(R.string.increase_distance_limit, getString(R.string.title_activity_settings))
 
         progressBar = view.findViewById(R.id.progressBar)
         groupWalkMessage = view.findViewById(R.id.group_walk_message)
@@ -113,7 +116,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         recyclerView.addOnLayoutChangeListener(listener)
     }
 
-    //todo: take in consideration streets
     private fun distanceBetweenPoints(p1: LatLng, p2: LatLng): Double {
         val d1 = (p1.latitude - p2.latitude)
         val d2 = (p1.longitude - p2.longitude)
@@ -130,13 +132,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         showProgressBar()
         if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener?.drawSquares(walkDistLimit)
-        val walkDistToDest = distanceBetweenPoints(originLatLng, destinationLatLng)
-//        Log.d(DEBUG_TAG, "walkDistToDest: $walkDistToDest ")
 
         uiScope.launch {
             val routesDao = AppDatabase.getInstance(context!!)?.routesDAO()
             val commonRoutesIds: Set<Long>?
-            val startTime = System.currentTimeMillis()
+
             val routesNearOrigin = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, originLatLng.latitude, originLatLng.longitude)}
             val routesNearDest = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, destinationLatLng.latitude, destinationLatLng.longitude)}
             awaitAll(routesNearDest, routesNearOrigin)
@@ -165,16 +165,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
                     routeModel.totalDist = routeModel.walkDist!! + routeDist
                     results.add(routeModel)
 
-//                    Log.d(DEBUG_TAG,"__________")
-//                    Log.d(DEBUG_TAG, "route: ${route.name}, routeId: ${route.routeId}")
-//                    Log.d(DEBUG_TAG, "origin: latLng= ${originLatLng.latitude}, ${originLatLng.longitude}")
-//                    Log.d(DEBUG_TAG, "destination: latLng= ${destinationLatLng.latitude}, ${destinationLatLng.longitude}")
-//                    Log.d(DEBUG_TAG, "startPoint: #${startPoint!!.number} ,latLng= ${startPoint.lat}, ${startPoint.lng}")
-//                    Log.d(DEBUG_TAG, "endPoint: #${endPoint!!.number} ,latLng= ${endPoint.lat}, ${endPoint.lng}")
-//                    Log.d(DEBUG_TAG , "betterStartPoint: ${betterStartPoint?.number}")
-//                    Log.d(DEBUG_TAG , "betterEndPoint: ${betterEndPoint?.number}")
-//                    Log.d(DEBUG_TAG, "routeWalkDist: ${routeModel.walkDist}")
-//                    Log.d(DEBUG_TAG, "routeTotalDist: ${routeModel.totalDist}")
                 }
                 results.sortBy {
                     it.walkDist

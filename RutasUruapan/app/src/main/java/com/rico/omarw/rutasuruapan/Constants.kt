@@ -1,11 +1,11 @@
 package com.rico.omarw.rutasuruapan
 
+import com.google.android.gms.maps.model.LatLng
+
 object Constants {
     const val DEBUG_TAG = "debug_tag"
-    /**
-     * In meters
-     */
-    const val WALK_DIST_LIMIT_DEFAULT = 1000
+
+    const val WALK_DIST_LIMIT_DEFAULT = 1000 // in meters
     const val METER_IN_ANGULAR_LAT_LNG = 0.000009229349583
 
     const val COMPLETION_THRESHOLD = 3
@@ -15,6 +15,11 @@ object Constants {
     const val INITIAL_ZOOM = 13f
 
     const val BOUNCE_DURATION = 2500f
+    val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
+    const val VIBRATION_DURATION: Long = 75
+    const val REFRESH_INTERVAL: Int = 300// in milliseconds
+    const val LOCATION_PERMISSION_REQUEST = 32
+    const val LINE_WIDTH = 15f
 
     object PreferenceKeys{
         const val DIALOG_1_SHOWN = "has_inf_dialog1_been_shown"

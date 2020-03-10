@@ -27,7 +27,7 @@
         app:summary="@string/rate_summary"
         />
 
-    <PreferenceCategory app:title="Debug" app:isPreferenceVisible="true">
+    <PreferenceCategory app:title="Debug" app:isPreferenceVisible="false">
         <SwitchPreferenceCompat
             app:key="draw_squares"
             app:summary="Dibujar cuadrados alrededor de origen, destino"

@@ -65,7 +65,7 @@ class AutoCompleteAdapter (context: Context,
             AutocompleteItemModel.ItemKind.PickLocation -> ViewTypes.PickLocation.id
         }
 
-//re: use only one kind of view if things cause problems with some devices (like my huawaei)
+// use only one kind of view if things cause problems with some devices
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val prediction = getItem(position)
         val row: View = super.getView(position, convertView, parent)
@@ -131,7 +131,6 @@ class AutoCompleteAdapter (context: Context,
     private fun getAutocomplete(query: String): MutableList<AutocompletePrediction>?{
         if(ignoreFiltering) return null
 
-//        Log.d(DEBUG_TAG, "Starting autocomplete query for: $query")
         val request = FindAutocompletePredictionsRequest.builder()
                 .setLocationRestriction(bounds)
                 .setCountry("mx")
@@ -142,7 +141,7 @@ class AutoCompleteAdapter (context: Context,
 
         return try {
             Tasks.await(results, 10, TimeUnit.SECONDS)
-            return results.result?.autocompletePredictions//?.forEach { arrayList.add(it) }
+            return results.result?.autocompletePredictions
         }catch(error: Exception){
             null
         }

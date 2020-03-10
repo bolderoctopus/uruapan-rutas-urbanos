@@ -11,8 +11,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 abstract class AppDatabase: RoomDatabase() {
     abstract fun routesDAO(): RouteDAO
 
-
-
     companion object {
         private var INSTANCE: AppDatabase? = null
 

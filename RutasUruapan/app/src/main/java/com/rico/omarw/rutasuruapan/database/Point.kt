@@ -19,10 +19,8 @@ data class Point(var routeId: Long,
                   var distanceToNextPoint: Int){
     constructor():this(0,0.0,0.0,0,0)
 
-    // pointId, routeId, lat, lng, number, distanceToNextPoint
     constructor(pointId: Int, routeId: Int, lat: Double, lng: Double, number: Int, distanceToNextPoint: Int)
             : this(routeId.toLong(), lat, lng, number, distanceToNextPoint){
-//        this.pointId = pointId
     }
 
 

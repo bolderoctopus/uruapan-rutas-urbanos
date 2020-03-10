@@ -10,33 +10,38 @@
     <string name="pick_location_primary">Seleccionar ubicación en el mapa</string>
     <string name="pick_location_secondary">Ajústala arrastrando el marcador</string>
     <string name="current_location_primary">Usar ubicación actual</string>
-    <string name="settings">Configuración</string>
     <string name="title_activity_settings">Configuración</string>
 
     <string name="out_of_bounds_error">Selecciona una ubicación más cercana a la ciudad de Uruapan</string>
-    <string name="error_icon">Error icon</string>
+    <string name="error_icon">Error</string>
     <string name="filter">Filtrar</string>
     <string name="preference_limit_distance">Distancia límite</string>
-    <string name="preference_summary_limit_distance">Al buscar rutas no mostrar las que estén a más de %1$s de los puntos origen y destino</string>
+    <string name="preference_summary_limit_distance">Al buscar rutas no mostrar las que estén a más de %1$s de los marcadores origen y destino</string>
     <string name="how_to_show_routes_message">Haz click en el nombre de una ruta para mostrar u ocultarla.</string>
     <string name="how_to_move_markers_message">También puedes agregar o quitar un marcador al dejar presionado el dedo sobre el mapa.</string>
     <string name="initial_suggestions">Sugerencias iniciales</string>
     <string name="initial_suggesetions_summay">Se volverán a mostrar luego de reiniciar la aplicación</string>
     <string name="disclaimer_title">Renuncia de responsabilidad</string>
-    <string name="disclaimer_message">Los autores de esta aplicación móvil no toman responsabilidad de las decisiones que tomes con la información aquí provista.
+    <string name="disclaimer_message">El autor de esta aplicación móvil no toman responsabilidad de las decisiones (o sus consecuencias) que tomes con la información aquí provista.
         \n\n
         La información aquí proporcionada puede estar desactualizada, incompleta o incorrecta y debes utilizarla bajo tu propio riesgo.</string>
-    <string name="understood">Entendido</string>
+    <string name="accept">Aceptar</string>
     <string name="donation_link"><![CDATA[https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DWHU6PXRM8HTG&currency_code=MXN&source=url]]></string>
     <string name="donation_title">Apoya al desarrollador</string>
     <string name="donation_summary">Si te gustó esta aplicación puedes realizar una donación con PayPal</string>
     <string name="rate_title">Califica esta aplicación</string>
     <string name="rate_summary">Deja tus comentarios en Google Play</string>
     <string name="no_route_found">No se encontró ninguna ruta cercana</string>
-    <string name="increase_distance_limit">Intenta incrementar la distancia límite en Configuración</string>
+    <string name="increase_distance_limit">Intenta incrementar la distancia límite en %1$s</string>
     <string name="tab_title_search">Búsqueda</string>
     <string name="tab_title_allroutes">Todas las Rutas</string>
     <string name="button_search_route">Buscar Ruta</string>
+    <string name="marker_title_origin">Origen</string>
+    <string name="marker_title_destination">Destino</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="permission_location_dialog_title">Acceso a la ubicación GPS</string>
+    <string name="permission_location_dialog_message">Para poder mostrarte dónde te encuentras en el mapa es necesario que otorgues acceso a la ubicación del teléfono.</string>
 
 
 </resources>

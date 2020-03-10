@@ -16,7 +16,6 @@ import android.view.animation.BounceInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
-import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -37,7 +36,12 @@ import com.google.android.material.tabs.TabLayout
 import com.rico.omarw.rutasuruapan.Constants.BOUNCE_DURATION
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.INITIAL_ZOOM
+import com.rico.omarw.rutasuruapan.Constants.LINE_WIDTH
+import com.rico.omarw.rutasuruapan.Constants.LOCATION_PERMISSION_REQUEST
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
+import com.rico.omarw.rutasuruapan.Constants.REFRESH_INTERVAL
+import com.rico.omarw.rutasuruapan.Constants.URUAPAN_LATLNG
+import com.rico.omarw.rutasuruapan.Constants.VIBRATION_DURATION
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
@@ -47,36 +51,6 @@ import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.rico.omarw.rutasuruapan.models.ZoomLevel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
-/*
-* to think:
-* add link to source code?
-*
-* [x] review wht happens when you touch a marker
-* [x] new style for dialogs: green background and white text?
-* [] review fonts and or styles
-* [] review strings
-* [] make an icon
-* [] decide a name
-* [] test on different screen sizes/densities
-* [] make drawables for  screen sizes/densities
-*
-* [] get api keys for release and cancel debug ones
-* [] publish the beta
-*
-* future updates:
-* put some title or something at the top of results fragment?
-* compass button overlaps google logo
-* try to improve the looks of every row (route)
-* display lap time per route?
-* group shown routes somewhere up like chips?
-* add some delay while searching and typing
-* current location option is not available sometimes even though google maps location is
-* splash screen
-* scroll issues in results/allRoutes fragments: no seamless scroll;
-*   results: bottomSheet collapses if you continually scroll up past the sheet and back down
-*/
-
-
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
@@ -86,13 +60,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ResultsFragment.OnFragmentInteractionListener,
         GoogleMap.OnCameraMoveListener,
         TabLayout.OnTabSelectedListener {
-
-    private val URUAPAN_LATLNG = LatLng(19.411843, -102.051518)
-
-    private val VIBRATION_DURATION: Long = 75
-
-    private val LOCATION_PERMISSION_REQUEST = 32
-    private val LINE_WIDTH = 15f
 
     private var originMarker: Marker? = null
     private var destinationMarker: Marker? = null
@@ -110,7 +77,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var locationClient: FusedLocationProviderClient
     private lateinit var slideIndicator: ImageView
     private var refreshStartTime: Long = 0
-    private val REFRESH_INTERVAL: Int = 300// in milliseconds
+
     private lateinit var startMarkerPosition: LatLng
     private var uiScope = CoroutineScope(Dispatchers.Main)
     private val drawnRoutes = ArrayList<RouteModel>()
@@ -164,7 +131,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     .setTitle(R.string.disclaimer_title)
                     .setMessage(R.string.disclaimer_message)
                     .setCancelable(false)
-                    .setPositiveButton(R.string.understood) { _, _ ->
+                    .setPositiveButton(R.string.accept) { _, _ ->
                         PreferenceManager.getDefaultSharedPreferences(this@MainActivity).edit()
                                 .putBoolean(PreferenceKeys.DISCLAIMER_SHOWN, true)
                                 .apply()
@@ -182,7 +149,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return if(searchFragment.view == null || searchFragment.view!!.height == 0) resources.getDimensionPixelSize(R.dimen.default_fragment_height) else searchFragment.view!!.height
     }
 
-    private fun showFragment(newFragment: Fragment, tag: String){
+    private fun showFragment(newFragment: Fragment){
         supportFragmentManager.beginTransaction()
             .hide(activeFragment)
             .show(newFragment)
@@ -208,7 +175,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         })
     }
 
-    @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         map.setOnMapLongClickListener(this)
@@ -275,34 +241,26 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         startActivity(Intent(this, SettingsActivity::class.java))
     }
 
-    private fun getStatusBarHeight(): Int{
-        val rectangle = Rect()
-        val window = window
-        window.decorView.getWindowVisibleDisplayFrame(rectangle)
-        return rectangle.top
-    }
-
     private fun showOutOfBoundsError(){
         OutOfBoundsToast(this).show()
     }
 
-
     override fun onMapLongClick(pos: LatLng){
         vibrate()
-        if(!SearchFragment  .uruapanLatLngBounds.contains(pos)){
+        if(!SearchFragment.uruapanLatLngBounds.contains(pos)){
             showOutOfBoundsError()
             return
         }
         when {
             originMarker == null -> {
-                drawMarker(pos, "Origin", SearchFragment.MarkerType.Origin, animate = false, bounce = false)
+                drawMarker(pos, getString(R.string.marker_title_origin), SearchFragment.MarkerType.Origin, animate = false, bounce = false)
                 searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Origin, pos)
             }
             destinationMarker == null -> {
-                drawMarker(pos, "Destination", SearchFragment.MarkerType.Destination, animate = false, bounce = false)
+                drawMarker(pos, getString(R.string.marker_title_destination), SearchFragment.MarkerType.Destination, animate = false, bounce = false)
                 searchFragment.oneTimeUpdatePosition(SearchFragment.MarkerType.Destination, pos)
             }
-            else -> {// remove both
+            else -> {
                 clearMarker(SearchFragment.MarkerType.Origin)
                 clearMarker(SearchFragment.MarkerType.Destination)
                 searchFragment.clearInputs()
@@ -310,43 +268,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
 
-    }
-
-    private fun latLngToString(pos: LatLng?): String{
-        if(pos == null) return ""
-        return "%.5f,  %.5f".format(pos.latitude, pos.longitude) //.toString() + ", " + pos.longitude.toString()
-    }
-
-    override fun drawSquares(walkingDistance: Double){
-        if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DRAW_SQUARES, false)) return
-
-        clearSquares()
-
-        originSquare = map.addPolygon(PolygonOptions()
-                .addAll(getSquareFrom(walkingDistance, originMarker!!.position))
-                .strokeColor(Color.BLACK)
-                .fillColor(Color.argb(100,100,100,100)))
-        destinationSquare = map.addPolygon(PolygonOptions()
-                .addAll(getSquareFrom(walkingDistance, destinationMarker!!.position))
-                .strokeColor(Color.BLACK)
-                .fillColor(Color.argb(100,100,100,100)))
-
-    }
-
-    private fun clearSquares(){
-        originSquare?.remove()
-        destinationSquare?.remove()
-    }
-
-    private fun getSquareFrom(distance: Double, center: LatLng): List<LatLng>{
-        val points = ArrayList<LatLng>(4)
-
-        points.add(LatLng(center.latitude - distance, center.longitude + distance))
-        points.add(LatLng(center.latitude + distance, center.longitude + distance))
-        points.add(LatLng(center.latitude + distance, center.longitude - distance))
-        points.add(LatLng(center.latitude - distance, center.longitude - distance))
-
-        return points
     }
 
     override fun drawRouteResult(route: RouteModel) {
@@ -420,12 +341,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private fun drawDirectionalMarkers(sourcePoints: List<Point>, color: Int): SparseArray<Iterable<Marker>> {
         val arrowCap = getBitmapDescriptor(R.drawable.ic_arrow, color)
-        val totalRouteDist = sourcePoints.let{
-            var dist = 0
-            it.forEach{p-> dist += p.distanceToNextPoint}
-            dist
-        }
-        //Log.d(DEBUG_TAG, "totalRouteDist: $totalRouteDist")
+
         val zoomLvls: List<ZoomLevel> = ArrayList<ZoomLevel>().apply{
             add(ZoomLevel(12, 3200, 0, ArrayList()))
             add(ZoomLevel(13, 1600, 0, ArrayList()))
@@ -441,7 +357,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             for(z in zoomLvls){
                 z.counter += point.distanceToNextPoint
                 if(z.counter >= z.distanceInterval && (x + 1 < sourcePoints.size)){
-                    //Log.d(DEBUG_TAG, "point added, at: $distCounter")
                     z.markers.add(map.addMarker(MarkerOptions()
                             .icon(arrowCap)
                             .position(point.getLatLng())
@@ -470,9 +385,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private fun askPermission() {
         if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)){
-            Toast.makeText(this, "Location permission is necessary in order to show your location on the map", Toast.LENGTH_SHORT).show()
+            MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.permission_location_dialog_title)
+                    .setMessage(R.string.permission_location_dialog_message)
+                    .setPositiveButton(getString(R.string.ok)){ _, _ ->
+                        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST)
+                    }
+                    .setNegativeButton(getString(R.string.cancel), null)
+                    .setCancelable(true)
+                    .show()
         }
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST)
     }
 
     @SuppressLint("MissingPermission")
@@ -515,9 +437,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    @SuppressLint("NewApi")
     private fun getBitmapDescriptor(@DrawableRes idRes: Int, color: Int): BitmapDescriptor?{
-        val drawable = getDrawable(idRes) ?: return null
+        val drawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getDrawable(idRes) ?: return null
+        } else {
+            resources.getDrawable(idRes)
+        }
         drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
         drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
         val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
@@ -686,15 +611,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 hideKeyboard(this, window.decorView.windowToken)
                 allRoutesFragment.setHeight(searchFragment.view?.height!!)
                 allRoutesFragment.recyclerView.isNestedScrollingEnabled = true
-                showFragment(allRoutesFragment, AllRoutesFragment.TAG)
+                showFragment(allRoutesFragment)
             }
             0 -> {
                 if (resultsFragment != null) {
-                    showFragment(resultsFragment!!, ResultsFragment.TAG)
+                    showFragment(resultsFragment!!)
                     allRoutesFragment.recyclerView.isNestedScrollingEnabled = false
                 }
                 else
-                    showFragment(searchFragment, SearchFragment.TAG)
+                    showFragment(searchFragment)
             }
         }
         if(sheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED){
@@ -740,5 +665,37 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
             markers
         }
+    }
+
+    override fun drawSquares(walkingDistance: Double){
+        if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DRAW_SQUARES, false)) return
+
+        clearSquares()
+
+        originSquare = map.addPolygon(PolygonOptions()
+                .addAll(getSquareFrom(walkingDistance, originMarker!!.position))
+                .strokeColor(Color.BLACK)
+                .fillColor(Color.argb(100,100,100,100)))
+        destinationSquare = map.addPolygon(PolygonOptions()
+                .addAll(getSquareFrom(walkingDistance, destinationMarker!!.position))
+                .strokeColor(Color.BLACK)
+                .fillColor(Color.argb(100,100,100,100)))
+
+    }
+
+    private fun clearSquares(){
+        originSquare?.remove()
+        destinationSquare?.remove()
+    }
+
+    private fun getSquareFrom(distance: Double, center: LatLng): List<LatLng>{
+        val points = ArrayList<LatLng>(4)
+
+        points.add(LatLng(center.latitude - distance, center.longitude + distance))
+        points.add(LatLng(center.latitude + distance, center.longitude + distance))
+        points.add(LatLng(center.latitude + distance, center.longitude - distance))
+        points.add(LatLng(center.latitude - distance, center.longitude - distance))
+
+        return points
     }
 }
