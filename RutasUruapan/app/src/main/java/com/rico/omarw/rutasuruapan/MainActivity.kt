@@ -47,24 +47,20 @@ import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.rico.omarw.rutasuruapan.models.ZoomLevel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
-
 /*
 * to think:
 * add link to source code?
 *
-* [x] refactor preferences
-* [x] test the app offline
+* [x] review wht happens when you touch a marker
+* [x] new style for dialogs: green background and white text?
 * [] review fonts and or styles
+* [] review strings
 * [] make an icon
+* [] decide a name
 * [] test on different screen sizes/densities
-* [] new style for dialogs: green background and white text?
 * [] make drawables for  screen sizes/densities
-* [x] bug: cant's scroll down back the toolbar if you have few results
-* [x] back key on allRoutesFragment: clear filter if exists?
-* [] review wht happens when you touch a marker
-* [x] add missing routes 45, 176
+*
 * [] get api keys for release and cancel debug ones
-* [x] fix the bottom offset of the dialogs
 * [] publish the beta
 *
 * future updates:
@@ -79,6 +75,7 @@ import kotlinx.coroutines.*
 * scroll issues in results/allRoutes fragments: no seamless scroll;
 *   results: bottomSheet collapses if you continually scroll up past the sheet and back down
 */
+
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
@@ -646,8 +643,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
 
         override fun onStateChanged(bottomSheet: View, newState: Int) {
-            if(newState == BottomSheetBehavior.STATE_COLLAPSED){
-                hideKeyboard(bottomSheet.context, window.decorView.windowToken)
+            when(newState){
+                BottomSheetBehavior.STATE_COLLAPSED -> {
+                    hideKeyboard(bottomSheet.context, window.decorView.windowToken)
+                    map.setPadding(0, 0, 0, slideIndicator.height)
+                }
+                BottomSheetBehavior.STATE_EXPANDED -> map.setPadding(0, 0, 0, getSearchFragmentHeight() + slideIndicator.height)
             }
         }
 

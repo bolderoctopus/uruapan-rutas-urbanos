@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.Window
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 
@@ -42,8 +41,8 @@ class InformativeDialog{
                 y = verticalOffset
             }
 
-            dialogView.findViewById<Button>(R.id.button_ok)?.setOnClickListener {dialog.dismiss() }
             dialogView.findViewById<TextView>(R.id.textview_message)?.setText(message)
+            dialogView.setOnClickListener { dialog.dismiss() }
 
             dialog.show()
         }
