@@ -54,8 +54,5 @@ abstract class AppDatabase: RoomDatabase() {
             }
         }
 
-        fun destroyInstace() {
-            INSTANCE = null
-        }
     }
 }

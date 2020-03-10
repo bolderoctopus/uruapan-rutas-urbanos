@@ -17,11 +17,11 @@ data class Point(var routeId: Long,
                   var lng: Double,
                   var number: Int,
                   var distanceToNextPoint: Int){
-    public constructor():this(0,0.0,0.0,0,0)
+    constructor():this(0,0.0,0.0,0,0)
 
     // pointId, routeId, lat, lng, number, distanceToNextPoint
-    public constructor(pointId: Int, routeId: Int, lat: Double, lng: Double, number: Int, distanceToNextPoint: Int)
-            : this(routeId.toLong(), lat, lng, number, distanceToNextPoint.toInt()){
+    constructor(pointId: Int, routeId: Int, lat: Double, lng: Double, number: Int, distanceToNextPoint: Int)
+            : this(routeId.toLong(), lat, lng, number, distanceToNextPoint){
 //        this.pointId = pointId
     }
 

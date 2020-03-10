@@ -26,11 +26,11 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
     }
     private val sortedList = SortedList<RouteModel>(RouteModel::class.java, sortedListCallback)
 
-    public fun getItems() = sortedList
+    fun getItems() = sortedList
 
-    public fun add(list: List<RouteModel>) = sortedList.addAll(list)
+    fun add(list: List<RouteModel>) = sortedList.addAll(list)
 
-    public fun replaceAll(newItems: List<RouteModel>){
+    fun replaceAll(newItems: List<RouteModel>){
         sortedList.beginBatchedUpdates()
         for (x in sortedList.size()-1 downTo 0 step 1){
             val model = sortedList[x]

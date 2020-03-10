@@ -59,7 +59,7 @@ class RouteModel (val routeDb : Route){
         val model = other as RouteModel
 
         if(id != model.id) return false
-        return name.equals(model.name) && color.equals(model.color)
+        return name == model.name && color == model.color
     }
 
     fun getMainSegment(points: List<Point>) = getRouteSegment(startPoint!!.number, endPoint!!.number, points)

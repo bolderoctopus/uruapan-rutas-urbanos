@@ -37,13 +37,13 @@ import kotlin.collections.ArrayList
 
 class SearchFragment : Fragment(){
 
-    var destinationLatLng: LatLng? = null
-    var originLatLng: LatLng? = null
+    private var destinationLatLng: LatLng? = null
+    private var originLatLng: LatLng? = null
     private lateinit var placesClient: PlacesClient
-    lateinit var origin: TextInputLayout
-    lateinit var originAutoCompleteTextView: AutoCompleteTextView
-    lateinit var destination: TextInputLayout
-    lateinit var destinationAutoCompleteTextView: AutoCompleteTextView
+    private lateinit var origin: TextInputLayout
+    private lateinit var originAutoCompleteTextView: AutoCompleteTextView
+    private lateinit var destination: TextInputLayout
+    private lateinit var destinationAutoCompleteTextView: AutoCompleteTextView
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var autoCompleteAdapter: AutoCompleteAdapter
 

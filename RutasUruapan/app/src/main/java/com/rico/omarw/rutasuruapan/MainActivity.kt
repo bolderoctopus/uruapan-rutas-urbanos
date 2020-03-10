@@ -333,7 +333,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     }
 
-    fun clearSquares(){
+    private fun clearSquares(){
         originSquare?.remove()
         destinationSquare?.remove()
     }
@@ -381,7 +381,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 // for debug purposes
                 route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
                 route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
-                route.mainSegmentMarkers = drawMarkers(route.getMainSegmentPoints(points!!))
+                route.mainSegmentMarkers = drawMarkers(route.getMainSegmentPoints(points))
 
                 route.isDrawn = true
             }
@@ -409,7 +409,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     route.directionalMarkers = drawDirectionalMarkers(points!!, color)
                     drawnRoutes.add(route)
                     // for debug
-                    route.mainSegmentMarkers = drawMarkers(points!!)
+                    route.mainSegmentMarkers = drawMarkers(points)
 
                     route.isDrawn = true
             }
@@ -554,7 +554,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     fun informativeDialog1Shown(){
-        val preferenceEditor = androidx.preference.PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
+        val preferenceEditor = PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
         preferenceEditor.putBoolean(PreferenceKeys.DIALOG_1_SHOWN, true)
         preferenceEditor.apply()
         showInformativeDialog = false
@@ -562,7 +562,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private fun getDummyLatLng(): LatLng{
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        val mapCenter = android.graphics.Point(mapFragment.view!!.width/2, mapFragment.view!!.height/2)
+        val mapCenter = Point(mapFragment.view!!.width/2, mapFragment.view!!.height/2)
         return map.projection.fromScreenLocation(mapCenter)
     }
 
@@ -724,21 +724,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     /**
      * For debug purpouses
      */
-    fun drawMarker(latLng: LatLng, title: String): Marker? {
+    private fun drawMarker(latLng: LatLng, title: String): Marker? {
         return if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DRAW_STARTEND_POINTS, false)) null
         else map.addMarker(MarkerOptions().title(title).position(latLng).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)).draggable(false))
     }
 
-    fun drawMarkers(points: List<Point>): List<Marker>? {
-        if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DRAW_ROUTE_POINTS, false))
-            return null
+    private fun drawMarkers(points: List<Point>): List<Marker>? {
+        return if(!PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DRAW_ROUTE_POINTS, false))
+            null
         else {
             val markers = ArrayList<Marker>()
             points.forEach{
                 markers.add(map.addMarker(MarkerOptions().title(it.number.toString()).position(it.getLatLng()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)).draggable(false)))
             }
 
-            return markers
+            markers
         }
     }
 }

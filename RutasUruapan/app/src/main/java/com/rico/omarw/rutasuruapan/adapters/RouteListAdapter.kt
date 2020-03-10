@@ -14,7 +14,7 @@ import com.rico.omarw.rutasuruapan.models.RouteModel
 class RouteListAdapter  (private val items: List<RouteModel>,
                          private val callback: DrawRouteListener?): RecyclerView.Adapter<RouteListAdapter.MyViewHolder>(){
 
-    public fun getItems() = items
+    fun getItems() = items
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val itemLayout = LayoutInflater.from(parent.context).inflate(R.layout.route_list_item, parent, false)

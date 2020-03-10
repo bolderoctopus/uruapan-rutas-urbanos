@@ -232,7 +232,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     }
 
 
-    fun getWalkDistLimit() : Double {
+    private fun getWalkDistLimit() : Double {
         val string = PreferenceManager.getDefaultSharedPreferences(context).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
         return if(string == null) WALK_DIST_LIMIT_DEFAULT * METER_IN_ANGULAR_LAT_LNG
                 else (string.toDouble()  * METER_IN_ANGULAR_LAT_LNG)
@@ -249,7 +249,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         private const val HEIGHT_KEY = "height"
         private const val ORIGIN_LATLNG_KEY = "originlatlng"
         private const val DESTINATION_LATLNG_KEY = "destinationlatlng"
-        val TAG = "ResultsFragment"
+        const val TAG = "ResultsFragment"
         @JvmStatic
         fun newInstance(height: Int, originLatLng: LatLng, destinationLatLng: LatLng) = ResultsFragment().apply {
                 arguments = Bundle().apply{

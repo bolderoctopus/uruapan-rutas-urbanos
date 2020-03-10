@@ -38,10 +38,10 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
 
     private lateinit var adapter: RouteListFilterableAdapter
     private lateinit var routeModels: List<RouteModel>
-    public lateinit var recyclerView: RecyclerView
+    lateinit var recyclerView: RecyclerView
     private lateinit var searchView: SearchView
     private var interactionsListener: InteractionsInterface? = null
-    public var onViewCreated: Runnable? = null
+    var onViewCreated: Runnable? = null
     private var drawnRoutes: ArrayList<RouteModel>? = null
 
     private var uiScope = CoroutineScope(Dispatchers.Main)
@@ -126,7 +126,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         return filteredList
     }
 
-    fun setAdapterRoutes(data: List<RouteModel>){
+    private fun setAdapterRoutes(data: List<RouteModel>){
         routeModels = data
         recyclerView.setHasFixedSize(false)
         recyclerView.layoutManager = LinearLayoutManager(context)
@@ -163,7 +163,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}// todo: this might be no longer needed since the fragment remains attached the whole time?
 
     companion object {
-        val TAG = "AllRoutesFragment"
+        const val TAG = "AllRoutesFragment"
         @JvmStatic
         fun newInstance() =AllRoutesFragment().apply {
                 arguments = Bundle().apply {

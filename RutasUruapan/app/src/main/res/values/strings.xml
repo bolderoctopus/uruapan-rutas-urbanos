@@ -4,12 +4,9 @@
 
     <string name="lat_lng">%1.5f, %2.5f</string>
     <string name="origin">¿Dónde estás?</string>
-    <string name="to">hacia</string>
     <string name="destination">¿Hacia dónde vas?</string>
     <string name="empty_textview_error">Selecciona una ubicación</string>
     <string name="slide_indicator_content_description">Ocultar o mostrar panel</string>
-    <string name="menu_all_routes">Mostrar Todas</string>
-    <string name="menu_search_fragment">Buscar Ruta</string>
     <string name="pick_location_primary">Seleccionar ubicación en el mapa</string>
     <string name="pick_location_secondary">Ajústala arrastrando el marcador</string>
     <string name="current_location_primary">Usar ubicación actual</string>
@@ -18,15 +15,11 @@
 
     <string name="out_of_bounds_error">Selecciona una ubicación más cercana a la ciudad de Uruapan</string>
     <string name="error_icon">Error icon</string>
-    <string name="imageView_walking_person_content_description">Persona caminando</string>
-    <string name="back_button_imageView_content_description">Boton atrás</string>
     <string name="filter">Filtrar</string>
-    <string name="search">Búsqueda</string>
     <string name="preference_limit_distance">Distancia límite</string>
     <string name="preference_summary_limit_distance">Al buscar rutas no mostrar las que estén a más de %1$s de los puntos origen y destino</string>
     <string name="how_to_show_routes_message">Haz click en el nombre de una ruta para mostrar u ocultarla.</string>
     <string name="how_to_move_markers_message">También puedes agregar o quitar un marcador al dejar presionado el dedo sobre el mapa.</string>
-    <string name="others">Otros</string>
     <string name="initial_suggestions">Sugerencias iniciales</string>
     <string name="initial_suggesetions_summay">Se volverán a mostrar luego de reiniciar la aplicación</string>
     <string name="disclaimer_title">Renuncia de responsabilidad</string>
@@ -41,6 +34,9 @@
     <string name="rate_summary">Deja tus comentarios en Google Play</string>
     <string name="no_route_found">No se encontró ninguna ruta cercana</string>
     <string name="increase_distance_limit">Intenta incrementar la distancia límite en Configuración</string>
+    <string name="tab_title_search">Búsqueda</string>
+    <string name="tab_title_allroutes">Todas las Rutas</string>
+    <string name="button_search_route">Buscar Ruta</string>
 
 
 </resources>
