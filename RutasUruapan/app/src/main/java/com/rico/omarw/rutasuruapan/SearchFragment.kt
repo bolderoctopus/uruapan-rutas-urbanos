@@ -198,7 +198,7 @@ class SearchFragment : Fragment(){
         val title: String
 
         if(originAutoCompleteTextView.hasFocus()){
-            title = getString(R.string.origin)
+            title = getString(R.string.marker_title_origin)
             origin.error = null
             markerType = MarkerType.Origin
             if (item.kind != AutocompleteItemModel.ItemKind.PickLocation)
@@ -208,7 +208,7 @@ class SearchFragment : Fragment(){
                 hideKeyboard(context!!, originAutoCompleteTextView.windowToken)
             }
         }else{
-            title = getString(R.string.destination)
+            title = getString(R.string.marker_title_destination)
             destination.error = null
             markerType = MarkerType.Destination
             hideKeyboard(context!!, destinationAutoCompleteTextView.windowToken)
