@@ -43,5 +43,4 @@
     <string name="permission_location_dialog_title">Acceso a la ubicación GPS</string>
     <string name="permission_location_dialog_message">Para poder mostrarte dónde te encuentras en el mapa es necesario que otorgues acceso a la ubicación del teléfono.</string>
 
-
 </resources>

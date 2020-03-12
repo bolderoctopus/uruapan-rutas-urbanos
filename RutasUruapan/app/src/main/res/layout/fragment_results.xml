@@ -27,13 +27,14 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:titleEnabled="false"
             app:layout_scrollFlags="scroll|enterAlways">
             <com.google.android.material.appbar.MaterialToolbar
+                tools:title="19 resultados"
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/toolbar_height"
                 app:layout_constraintTop_toTopOf="parent"
-                android:gravity="bottom"
                 app:navigationIcon="@drawable/ic_arrow_back_black_24dp"/>
             <ProgressBar
                 style="?android:attr/progressBarStyleHorizontal"

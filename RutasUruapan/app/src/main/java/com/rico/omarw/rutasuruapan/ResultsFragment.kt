@@ -33,6 +33,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private lateinit var originLatLng: LatLng
     private lateinit var destinationLatLng: LatLng
     private lateinit var progressBar: ProgressBar
+    private lateinit var materialToolbar: MaterialToolbar
     private var height: Int? = null
     private var listener: OnFragmentInteractionListener? = null
     private var drawnRoutes: ArrayList<RouteModel>? = null
@@ -54,7 +55,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_results, container, false)
 
-        view.findViewById<MaterialToolbar>(R.id.toolbar).apply {
+        materialToolbar = view.findViewById<MaterialToolbar>(R.id.toolbar).apply {
             setNavigationOnClickListener { backButtonPressed() }
         }
 
@@ -186,12 +187,22 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = RouteListAdapter(results, this)
         recyclerView.scheduleLayoutAnimation()
+
+        updateTitle(results.size)
     }
 
     private fun showNoResultsMessage(){
         hideProgressBar()
+        updateTitle(0)
         recyclerView.visibility = View.GONE
         groupWalkMessage.visibility = View.VISIBLE
+    }
+
+    private fun updateTitle(amountOfResults: Int?){
+        if (amountOfResults == null)
+            materialToolbar.title = ""
+        else
+            materialToolbar.title = resources.getQuantityString(R.plurals.title_results, amountOfResults, amountOfResults)
     }
 
     private fun hideProgressBar(){
@@ -215,6 +226,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     fun startUpdate(){
         recyclerView.visibility = View.INVISIBLE
         clearDrawnRoutes()
+        updateTitle(null)
     }
 
     fun endUpdate(origin: LatLng, destination: LatLng){

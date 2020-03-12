@@ -49,7 +49,7 @@
         <SwitchPreferenceCompat
             app:key="resolve_locations_to_addresses"
             app:summary="Busca la dirección correspondiente a un par de coordenadas"
-            app:defaultValue="false"
+            app:defaultValue="true"
             />
 
     </PreferenceCategory>

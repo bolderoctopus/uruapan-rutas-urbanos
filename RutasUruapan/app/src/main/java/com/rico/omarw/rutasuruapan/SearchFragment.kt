@@ -202,7 +202,7 @@ class SearchFragment : Fragment(){
             origin.error = null
             markerType = MarkerType.Origin
             if (item.kind != AutocompleteItemModel.ItemKind.PickLocation)
-                destinationAutoCompleteTextView.requestFocus()//todo: only if the user clicked Use Current location or a Prediction
+                destinationAutoCompleteTextView.requestFocus()
             else {
                 originAutoCompleteTextView.clearFocus()
                 hideKeyboard(context!!, originAutoCompleteTextView.windowToken)
@@ -220,7 +220,6 @@ class SearchFragment : Fragment(){
                         .setSessionToken(AutocompleteSessionToken.newInstance()).build()
                 placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
                     if(it.isSuccessful && it.result != null) drawMarker(markerType, it.result?.place?.latLng, title,true, false)
-                    else Log.d(DEBUG_TAG, "We're having trouble fetching the coordinates from this address, try again later or instead drag the marker")//todo: should I display this to the user?
                 }
             }
             AutocompleteItemModel.ItemKind.PickLocation -> {
@@ -238,7 +237,7 @@ class SearchFragment : Fragment(){
     }
 
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
-        if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PreferenceKeys.RESOLVE_LOCATIONS_TO_ADDRESSES, false)
+        if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PreferenceKeys.RESOLVE_LOCATIONS_TO_ADDRESSES, true)
                 || (context != null && !checkInternetConnection(context!!)))
             return
 
