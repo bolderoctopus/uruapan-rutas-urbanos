@@ -13,4 +13,6 @@
     <color name="settings_toolbar_background">#F3F1F1</color>
     <color name="toast_error_background">#A81919</color>
     <color name="appbarlayout_background">#FFFFFF</color>
+    <color name="origin_marker">#2F96F7</color>
+    <color name="destination_marker">#EF5350</color>
 </resources>
