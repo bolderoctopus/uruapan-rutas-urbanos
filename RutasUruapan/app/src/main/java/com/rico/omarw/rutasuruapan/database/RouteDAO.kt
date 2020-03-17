@@ -89,7 +89,7 @@ interface RouteDAO{
     @Query("UPDATE bestPoints SET rt =  (rd * rd) + (wd * $WD_WEIGHT)")
     suspend fun updateResultsTable()
 
-    @Query("SELECT pointId, routeId, lat, lng, number, distanceToNextPoint  FROM bestPoints ORDER BY rt ASC LIMIT 1")
+    @Query("SELECT pointId, routeId, lat, lng, number, distanceToNextPoint  FROM bestPoints WHERE rt IS NOT NULL AND rd  IS NOT NULL ORDER BY rt ASC LIMIT 1")
     suspend fun getBestPoint(): Point
 
 
