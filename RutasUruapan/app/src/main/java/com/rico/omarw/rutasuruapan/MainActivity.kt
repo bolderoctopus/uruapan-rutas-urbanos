@@ -90,8 +90,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if(!Places.isInitialized())
-            Places.initialize(this, resources.getString(R.string.google_maps_key))
+        if(!Places.isInitialized()){
+            val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
+            Places.initialize(this, metaData.getString("com.google.android.geo.API_KEY")!!)
+        }
+
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 

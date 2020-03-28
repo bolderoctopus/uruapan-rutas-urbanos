@@ -6,15 +6,20 @@ apply plugin: 'kotlin-android-extensions'
 
 apply plugin: 'kotlin-kapt'
 
+def apiKeysFile = rootProject.file("apikeys.properties")
+def apiKeysProperties = new Properties()
+apiKeysProperties.load(new FileInputStream(apiKeysFile))
+
 android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.rico.omarw.rutasuruapan"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 3
-        versionName "1.0.0-beta"
+        versionCode 4
+        versionName "1.0.1-beta"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [mapsAndPlacesAPIKey:apiKeysProperties['mapsAndPlaces']]
     }
     buildTypes {
         release {
