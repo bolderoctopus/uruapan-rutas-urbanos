@@ -39,6 +39,14 @@ class SettingsActivity : AppCompatActivity() {
             findPreference<Preference>("show_dialogs_again")?.onPreferenceClickListener = this
             findPreference<Preference>("donation")?.onPreferenceClickListener = this
             findPreference<Preference>("rate")?.onPreferenceClickListener = this
+            findPreference<Preference>("privacy_policy")?.onPreferenceClickListener = this
+            findPreference<Preference>("source_code")?.onPreferenceClickListener = this
+
+            preferenceScreen.addPreference(Preference(context).apply {
+                isEnabled = false
+                summary = BuildConfig.VERSION_NAME
+                key = "version"
+            })
         }
 
         private fun deleteSomePreferences(c: Context){
@@ -60,6 +68,8 @@ class SettingsActivity : AppCompatActivity() {
                 "show_dialogs_again" -> deleteSomePreferences(preference.context)
                 "donation" -> openLink(getString(R.string.donation_link))
                 "rate" -> openLink("https://play.google.com/store/apps/details?id=${preference.context.packageName}")
+                "privacy_policy" -> openLink("https://github.com/bolderoctopus/uruapan-rutas-urbanos/blob/master/privacy%20policy.md")
+                "source_code" -> openLink("https://github.com/bolderoctopus/uruapan-rutas-urbanos")
                 else -> return false
             }
             return true

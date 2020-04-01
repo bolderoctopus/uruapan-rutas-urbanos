@@ -27,6 +27,19 @@
         app:summary="@string/rate_summary"
         />
 
+    <Preference
+        app:key="privacy_policy"
+        app:title="@string/privacy_policy_title"
+        app:summary="@string/privacy_policy_summary"
+        />
+
+    <Preference
+        app:key="source_code"
+        app:title="@string/source_code_title"
+        app:summary="@string/source_code_summary"
+        />
+
+
     <PreferenceCategory app:title="Debug" app:isPreferenceVisible="false">
         <SwitchPreferenceCompat
             app:key="draw_squares"

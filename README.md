@@ -12,6 +12,9 @@ Al hacer build en Android Studio gradle tomará de allí la API key para la inse
 
 
 ## Change log
+**1.1.0-beta**
+- Links para Política de Privacidad y Código Fuente agregados.
+- Nombre de versión agregado en Configuración.
 
 **1.0.1-beta**
 - Cambio en el almacenamiento del API key.
