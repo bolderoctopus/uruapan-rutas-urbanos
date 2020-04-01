@@ -9,3 +9,12 @@ Crea un archivo llamado *apikeys.properties* en la carpeta *RutasUruapan*.
 Dentro escribe `mapsAndPlaces=KEY` sustituyendo *KEY* por tu API key.
 
 Al hacer build en Android Studio gradle tomará de allí la API key para la insertará en el manifiesto de la aplicación.
+
+
+## Change log
+
+**1.0.1-beta**
+- Cambio en el almacenamiento del API key.
+
+**1.0.0-beta** 
+- Versión inicial.
