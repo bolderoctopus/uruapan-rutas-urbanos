@@ -16,8 +16,8 @@ android {
         applicationId "com.rico.omarw.rutasuruapan"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 5
-        versionName "1.1.0-beta"
+        versionCode 6
+        versionName "1.2.0-beta"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [mapsAndPlacesAPIKey:apiKeysProperties['mapsAndPlaces']]
     }
