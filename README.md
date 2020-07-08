@@ -13,6 +13,9 @@ Al hacer build en Android Studio gradle tomará de allí la API key para la inse
 
 
 ## Change log
+**1.2.0-beta _(Sin publicar)_**
+- TopMargin de GoogleMapsCompass modificado.
+
 **1.1.0-beta**
 - Links para Política de Privacidad y Código Fuente agregados.
 - Nombre de versión agregado en Configuración.
