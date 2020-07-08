@@ -178,6 +178,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         })
     }
 
+    @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         map.setOnMapLongClickListener(this)
@@ -192,12 +193,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         // Moves the Google logo to the top left corner of the screen
         val googleLogo = findViewById<View>(R.id.main_content).findViewWithTag<View>("GoogleWatermark")
-        val layoutParams = googleLogo.layoutParams as RelativeLayout.LayoutParams
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_START, RelativeLayout.TRUE)
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
-        googleLogo.layoutParams = layoutParams
+        val logoLP = googleLogo.layoutParams as RelativeLayout.LayoutParams
+        logoLP.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0)
+        logoLP.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
+        logoLP.addRule(RelativeLayout.ALIGN_PARENT_START, RelativeLayout.TRUE)
+        logoLP.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+        googleLogo.layoutParams = logoLP
 
         setupSettingsButton()
 
@@ -208,6 +209,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 map.setPadding(0, 0, 0, getSearchFragmentHeight() + slideIndicator.height)
                 if(!searchFragment.getHasInformativeDialogBeenShown())
                     mapHeight = (supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment).view?.height
+
+                // Move the GoogleMapCompass below the logo
+                val compass = findViewById<View>(R.id.main_content).findViewWithTag<View>("GoogleMapCompass")
+                val compassLP = compass.layoutParams as RelativeLayout.LayoutParams
+                compassLP.topMargin += googleLogo.height
+                compass.layoutParams = compassLP
 
                 slideIndicator.viewTreeObserver.removeOnGlobalLayoutListener(this)
             }
