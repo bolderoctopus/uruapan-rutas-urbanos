@@ -11,13 +11,13 @@ def apiKeysProperties = new Properties()
 apiKeysProperties.load(new FileInputStream(apiKeysFile))
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         applicationId "com.rico.omarw.rutasuruapan"
         minSdkVersion 19
-        targetSdkVersion 28
-        versionCode 6
-        versionName "1.2.0-beta"
+        targetSdkVersion 29
+        versionCode 7
+        versionName "1.2.1-beta"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [mapsAndPlacesAPIKey:apiKeysProperties['mapsAndPlaces']]
     }
