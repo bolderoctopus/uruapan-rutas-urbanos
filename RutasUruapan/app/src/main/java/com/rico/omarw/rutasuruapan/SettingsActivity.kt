@@ -44,7 +44,7 @@ class SettingsActivity : AppCompatActivity() {
 
             preferenceScreen.addPreference(Preference(context).apply {
                 isEnabled = false
-                summary = BuildConfig.VERSION_NAME
+//                summary = BuildConfig.VERSION_NAME//todo: this
                 key = "version"
             })
         }

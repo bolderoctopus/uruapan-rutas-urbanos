@@ -84,7 +84,7 @@ class SearchFragment : Fragment(){
             try {
                 if (hasFocus) originAutoCompleteTextView.showDropDown()
             }catch (error: Exception){
-                Log.e(DEBUG_TAG, error.message)
+                Log.e(DEBUG_TAG, error.message!!)
             }
         }
 
@@ -241,7 +241,7 @@ class SearchFragment : Fragment(){
                 || (context != null && !checkInternetConnection(context!!)))
             return
 
-        if(!::geocoder.isInitialized) geocoder = Geocoder(context, Locale.getDefault())
+        if(!::geocoder.isInitialized) geocoder = Geocoder(context!!, Locale.getDefault())
 
         uiScope.launch {
             try {

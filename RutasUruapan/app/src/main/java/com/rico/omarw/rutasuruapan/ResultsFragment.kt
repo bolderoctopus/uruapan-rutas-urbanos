@@ -44,8 +44,8 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         super.onCreate(savedInstanceState)
         arguments?.let {
             height = it.getInt(HEIGHT_KEY)
-            originLatLng = it.getParcelable(ORIGIN_LATLNG_KEY)
-            destinationLatLng = it.getParcelable(DESTINATION_LATLNG_KEY)
+            originLatLng = it.getParcelable(ORIGIN_LATLNG_KEY)!!
+            destinationLatLng = it.getParcelable(DESTINATION_LATLNG_KEY)!!//todo: fix this
         }
 
         if(!uiScope.isActive)

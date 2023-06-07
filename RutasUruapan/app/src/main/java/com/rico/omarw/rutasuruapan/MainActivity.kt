@@ -47,9 +47,9 @@ import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
+import com.rico.omarw.rutasuruapan.databinding.ActivityMainBinding
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.rico.omarw.rutasuruapan.models.ZoomLevel
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
@@ -60,6 +60,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ResultsFragment.OnFragmentInteractionListener,
         GoogleMap.OnCameraMoveListener,
         TabLayout.OnTabSelectedListener {
+
+    private lateinit var binding: ActivityMainBinding
 
     private var originMarker: Marker? = null
     private var destinationMarker: Marker? = null
@@ -88,7 +90,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if(!Places.isInitialized()){
             val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
@@ -114,7 +117,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
 
-        tablayout.addOnTabSelectedListener(this)
+        binding.tablayout.addOnTabSelectedListener(this)
 
         sheetBehavior.bottomSheetCallback = sheetBehaviorCallback
 
