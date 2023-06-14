@@ -370,13 +370,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             for(z in zoomLvls){
                 z.counter += point.distanceToNextPoint
                 if(z.counter >= z.distanceInterval && (x + 1 < sourcePoints.size)){
-                    z.markers.add(map.addMarker(MarkerOptions()
-                            .icon(arrowCap)
-                            .position(point.getLatLng())
-                            .rotation(point.bearingTo(sourcePoints[x+1].lat, sourcePoints[x+1].lng ))
-                            .draggable(false)
-                            .flat(true)
-                            .visible(false)))
+                    map.addMarker(MarkerOptions()
+                        .icon(arrowCap)
+                        .position(point.getLatLng())
+                        .rotation(point.bearingTo(sourcePoints[x+1].lat, sourcePoints[x+1].lng ))
+                        .draggable(false)
+                        .flat(true)
+                        .visible(false))?.let { z.markers.add(it) }
                     val d = z.counter - z.distanceInterval
                     zoomLvls.forEach { if(it.zoomLevel >= z.zoomLevel) it.counter = d }
                     break
@@ -423,7 +423,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    override fun onMarkerDragStart(m: Marker?) {
+    override fun onMarkerDragStart(m: Marker) {
         if(m == null) return
         vibrate()
         startMarkerPosition = m.position
@@ -431,7 +431,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         resultsFragment?.startUpdate()
     }
 
-    override fun onMarkerDragEnd(m: Marker?) {
+    override fun onMarkerDragEnd(m: Marker) {
         if(m == null) return
         if(!SearchFragment.uruapanLatLngBounds.contains(m.position)){
             showOutOfBoundsError()
@@ -442,7 +442,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             resultsFragment?.endUpdate(originMarker!!.position, destinationMarker!!.position)
     }
 
-    override fun onMarkerDrag(m: Marker?) {
+    override fun onMarkerDrag(m: Marker) {
         // Only update display the corresponding location on the textField every REFRESH_INTERVAL in order to prevent greater lag while dragging the marker
         if(System.currentTimeMillis() - refreshStartTime > REFRESH_INTERVAL){
             searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position)
@@ -673,7 +673,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         else {
             val markers = ArrayList<Marker>()
             points.forEach{
-                markers.add(map.addMarker(MarkerOptions().title(it.number.toString()).position(it.getLatLng()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)).draggable(false)))
+                map.addMarker(MarkerOptions().title(it.number.toString()).position(it.getLatLng()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)).draggable(false))
+                    ?.let { it1 -> markers.add(it1) }
             }
 
             markers

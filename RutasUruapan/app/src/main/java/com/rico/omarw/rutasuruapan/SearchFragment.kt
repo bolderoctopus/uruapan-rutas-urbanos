@@ -62,8 +62,8 @@ class SearchFragment : Fragment(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if(context == null) return
-        placesClient = Places.createClient(context!!)
-        hasInformativeDialogBeenShown = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PreferenceKeys.DIALOG_2_SHOWN, false)
+        placesClient = Places.createClient(requireContext())
+        hasInformativeDialogBeenShown = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PreferenceKeys.DIALOG_2_SHOWN, false)
         if(!uiScope.isActive)
             uiScope = CoroutineScope(Dispatchers.Main)
     }
@@ -97,8 +97,8 @@ class SearchFragment : Fragment(){
         destinationAutoCompleteTextView.threshold = COMPLETION_THRESHOLD
 
         if(context != null){
-            val locationClient = LocationServices.getFusedLocationProviderClient(context!!)
-            autoCompleteAdapter = AutoCompleteAdapter(context!!, uiScope, locationClient, placesClient, uruapanBounds, includeCurrentLocation = true, includePickLocation = true)
+            val locationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+            autoCompleteAdapter = AutoCompleteAdapter(requireContext(), uiScope, locationClient, placesClient, uruapanBounds, includeCurrentLocation = true, includePickLocation = true)
             destinationAutoCompleteTextView.setAdapter(autoCompleteAdapter)
             originAutoCompleteTextView.setAdapter(autoCompleteAdapter)
         }
@@ -205,13 +205,13 @@ class SearchFragment : Fragment(){
                 destinationAutoCompleteTextView.requestFocus()
             else {
                 originAutoCompleteTextView.clearFocus()
-                hideKeyboard(context!!, originAutoCompleteTextView.windowToken)
+                hideKeyboard(requireContext(), originAutoCompleteTextView.windowToken)
             }
         }else{
             title = getString(R.string.marker_title_destination)
             destination.error = null
             markerType = MarkerType.Destination
-            hideKeyboard(context!!, destinationAutoCompleteTextView.windowToken)
+            hideKeyboard(requireContext(), destinationAutoCompleteTextView.windowToken)
         }
 
         when(item.kind){
@@ -238,10 +238,10 @@ class SearchFragment : Fragment(){
 
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
         if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PreferenceKeys.RESOLVE_LOCATIONS_TO_ADDRESSES, true)
-                || (context != null && !checkInternetConnection(context!!)))
+                || (context != null && !checkInternetConnection(requireContext())))
             return
 
-        if(!::geocoder.isInitialized) geocoder = Geocoder(context!!, Locale.getDefault())
+        if(!::geocoder.isInitialized) geocoder = Geocoder(requireContext(), Locale.getDefault())
 
         uiScope.launch {
             try {
@@ -334,7 +334,7 @@ class SearchFragment : Fragment(){
     fun setHasInformativeDialogBeenShown(boolean: Boolean){
         if(context == null) return
 
-        val preferenceEditor = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
+        val preferenceEditor = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
         preferenceEditor.putBoolean(PreferenceKeys.DIALOG_2_SHOWN, boolean)
         preferenceEditor.apply()
         showInformativeDialog = !boolean
