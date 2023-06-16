@@ -44,7 +44,7 @@ import com.rico.omarw.rutasuruapan.Constants.URUAPAN_LATLNG
 import com.rico.omarw.rutasuruapan.Constants.VIBRATION_DURATION
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
-import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
+import com.rico.omarw.rutasuruapan.customWidgets.showOutOfBoundsSnack
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.databinding.ActivityMainBinding
@@ -254,14 +254,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         startActivity(Intent(this, SettingsActivity::class.java))
     }
 
-    private fun showOutOfBoundsError(){
-        OutOfBoundsToast(this).show()
-    }
-
     override fun onMapLongClick(pos: LatLng){
         vibrate()
         if(!SearchFragment.uruapanLatLngBounds.contains(pos)){
-            showOutOfBoundsError()
+            showOutOfBoundsSnack(binding.coordinatorLayout)
             return
         }
         when {
@@ -434,7 +430,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onMarkerDragEnd(m: Marker) {
         if(m == null) return
         if(!SearchFragment.uruapanLatLngBounds.contains(m.position)){
-            showOutOfBoundsError()
+            showOutOfBoundsSnack(binding.coordinatorLayout)
             m.position = startMarkerPosition
         }
         searchFragment.endUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
