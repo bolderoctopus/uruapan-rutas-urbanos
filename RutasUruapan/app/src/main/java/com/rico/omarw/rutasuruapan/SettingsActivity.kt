@@ -42,7 +42,7 @@ class SettingsActivity : AppCompatActivity() {
             findPreference<Preference>("privacy_policy")?.onPreferenceClickListener = this
             findPreference<Preference>("source_code")?.onPreferenceClickListener = this
 
-            preferenceScreen.addPreference(Preference(context).apply {
+            preferenceScreen.addPreference(Preference(requireContext()).apply {
                 isEnabled = false
                 summary = BuildConfig.VERSION_NAME
                 key = "version"
@@ -63,8 +63,8 @@ class SettingsActivity : AppCompatActivity() {
             })
         }
 
-        override fun onPreferenceClick(preference: Preference?): Boolean {
-            when (preference?.key) {
+        override fun onPreferenceClick(preference: Preference): Boolean {
+            when (preference.key) {
                 "show_dialogs_again" -> deleteSomePreferences(preference.context)
                 "donation" -> openLink(getString(R.string.donation_link))
                 "rate" -> openLink("https://play.google.com/store/apps/details?id=${preference.context.packageName}")
@@ -75,7 +75,7 @@ class SettingsActivity : AppCompatActivity() {
             return true
         }
 
-        override fun provideSummary(preference: ListPreference?): CharSequence {
+        override fun provideSummary(preference: ListPreference): CharSequence {
             return if(preference != null)
                 getString(R.string.preference_summary_limit_distance, preference.entry)
             else ""

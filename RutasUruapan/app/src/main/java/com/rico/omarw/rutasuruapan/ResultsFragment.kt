@@ -2,6 +2,8 @@ package com.rico.omarw.rutasuruapan
 
 import android.content.Context
 import android.content.DialogInterface
+import android.os.Build
+import android.os.Build.VERSION
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.LayoutInflater
@@ -44,12 +46,22 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         super.onCreate(savedInstanceState)
         arguments?.let {
             height = it.getInt(HEIGHT_KEY)
-            originLatLng = it.getParcelable(ORIGIN_LATLNG_KEY)
-            destinationLatLng = it.getParcelable(DESTINATION_LATLNG_KEY)
+            originLatLng = getLanLngParcelable(it, ORIGIN_LATLNG_KEY)
+            destinationLatLng = getLanLngParcelable(it, DESTINATION_LATLNG_KEY)
         }
 
         if(!uiScope.isActive)
             uiScope = CoroutineScope(Dispatchers.Main)
+    }
+
+    private fun getLanLngParcelable(bundle: Bundle, key: String): LatLng {
+        val latlng = if(VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            bundle.getParcelable(key, LatLng::class.java)
+        } else {
+            bundle.getParcelable(key)
+        }
+
+        return latlng ?: throw IllegalArgumentException("Arguments can't be null")
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -65,8 +77,9 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         groupWalkMessage = view.findViewById(R.id.group_walk_message)
         recyclerView = view.findViewById(R.id.recyclerView_results)
 
-        if(height != null)
-            view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height!!)
+        height?.let {
+            view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, it)
+        }
 
         if ((activity as MainActivity).showInformativeDialog)
             addRecyclerViewLayoutListener()
@@ -135,7 +148,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         listener?.drawSquares(walkDistLimit)
 
         uiScope.launch {
-            val routesDao = AppDatabase.getInstance(context!!)?.routesDAO()
+            val routesDao = AppDatabase.getInstance(requireContext())?.routesDAO()
             val commonRoutesIds: Set<Long>?
 
             val routesNearOrigin = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, originLatLng.latitude, originLatLng.longitude)}
@@ -219,7 +232,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     override fun drawRouteResult(route: RouteModel) {
         if(drawnRoutes == null) drawnRoutes = ArrayList()
-        drawnRoutes!!.add(route)
+        drawnRoutes?.add(route)
         listener?.drawRouteResult(route)
     }
 

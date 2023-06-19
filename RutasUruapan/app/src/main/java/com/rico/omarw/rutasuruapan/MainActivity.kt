@@ -44,12 +44,12 @@ import com.rico.omarw.rutasuruapan.Constants.URUAPAN_LATLNG
 import com.rico.omarw.rutasuruapan.Constants.VIBRATION_DURATION
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
-import com.rico.omarw.rutasuruapan.customWidgets.OutOfBoundsToast
+import com.rico.omarw.rutasuruapan.customWidgets.showOutOfBoundsSnack
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
+import com.rico.omarw.rutasuruapan.databinding.ActivityMainBinding
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.rico.omarw.rutasuruapan.models.ZoomLevel
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
@@ -60,6 +60,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ResultsFragment.OnFragmentInteractionListener,
         GoogleMap.OnCameraMoveListener,
         TabLayout.OnTabSelectedListener {
+
+    private lateinit var binding: ActivityMainBinding
 
     private var originMarker: Marker? = null
     private var destinationMarker: Marker? = null
@@ -88,7 +90,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if(!Places.isInitialized()){
             val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
@@ -114,7 +117,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
 
-        tablayout.addOnTabSelectedListener(this)
+        binding.tablayout.addOnTabSelectedListener(this)
 
         sheetBehavior.bottomSheetCallback = sheetBehaviorCallback
 
@@ -251,14 +254,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         startActivity(Intent(this, SettingsActivity::class.java))
     }
 
-    private fun showOutOfBoundsError(){
-        OutOfBoundsToast(this).show()
-    }
-
     override fun onMapLongClick(pos: LatLng){
         vibrate()
         if(!SearchFragment.uruapanLatLngBounds.contains(pos)){
-            showOutOfBoundsError()
+            showOutOfBoundsSnack(binding.coordinatorLayout)
             return
         }
         when {
@@ -367,13 +366,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             for(z in zoomLvls){
                 z.counter += point.distanceToNextPoint
                 if(z.counter >= z.distanceInterval && (x + 1 < sourcePoints.size)){
-                    z.markers.add(map.addMarker(MarkerOptions()
-                            .icon(arrowCap)
-                            .position(point.getLatLng())
-                            .rotation(point.bearingTo(sourcePoints[x+1].lat, sourcePoints[x+1].lng ))
-                            .draggable(false)
-                            .flat(true)
-                            .visible(false)))
+                    map.addMarker(MarkerOptions()
+                        .icon(arrowCap)
+                        .position(point.getLatLng())
+                        .rotation(point.bearingTo(sourcePoints[x+1].lat, sourcePoints[x+1].lng ))
+                        .draggable(false)
+                        .flat(true)
+                        .visible(false))?.let { z.markers.add(it) }
                     val d = z.counter - z.distanceInterval
                     zoomLvls.forEach { if(it.zoomLevel >= z.zoomLevel) it.counter = d }
                     break
@@ -420,7 +419,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    override fun onMarkerDragStart(m: Marker?) {
+    override fun onMarkerDragStart(m: Marker) {
         if(m == null) return
         vibrate()
         startMarkerPosition = m.position
@@ -428,10 +427,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         resultsFragment?.startUpdate()
     }
 
-    override fun onMarkerDragEnd(m: Marker?) {
+    override fun onMarkerDragEnd(m: Marker) {
         if(m == null) return
         if(!SearchFragment.uruapanLatLngBounds.contains(m.position)){
-            showOutOfBoundsError()
+            showOutOfBoundsSnack(binding.coordinatorLayout)
             m.position = startMarkerPosition
         }
         searchFragment.endUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
@@ -439,7 +438,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             resultsFragment?.endUpdate(originMarker!!.position, destinationMarker!!.position)
     }
 
-    override fun onMarkerDrag(m: Marker?) {
+    override fun onMarkerDrag(m: Marker) {
         // Only update display the corresponding location on the textField every REFRESH_INTERVAL in order to prevent greater lag while dragging the marker
         if(System.currentTimeMillis() - refreshStartTime > REFRESH_INTERVAL){
             searchFragment.updatePosition(m?.tag as SearchFragment.MarkerType, m.position)
@@ -670,7 +669,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         else {
             val markers = ArrayList<Marker>()
             points.forEach{
-                markers.add(map.addMarker(MarkerOptions().title(it.number.toString()).position(it.getLatLng()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)).draggable(false)))
+                map.addMarker(MarkerOptions().title(it.number.toString()).position(it.getLatLng()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)).draggable(false))
+                    ?.let { it1 -> markers.add(it1) }
             }
 
             markers
