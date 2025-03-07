@@ -34,14 +34,7 @@ captures/
 
 # IntelliJ
 *.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
-.idea/caches
-.idea/shelf/
+.idea/
 
 # Keystore files
 # Uncomment the following line if you do not want to check your keystore files in.
@@ -65,9 +58,6 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
 
-RutasUruapan/.idea/caches/build_file_checksums.ser
-RutasUruapan/.idea/codeStyles/
-RutasUruapan/.idea/shelf/
-RutasUruapan/.idea/assetWizardSettings.xml
+RutasUruapan/.idea/
 *.aab
 RutasUruapan/apikeys.properties
