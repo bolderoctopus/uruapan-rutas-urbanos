@@ -191,7 +191,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         if (locationPermissionEnabled()){
             map.isMyLocationEnabled = true
         }else {
-            askPermission()
+            showPermissionRationale()
         }
 
         // Moves the Google logo to the top left corner of the screen
@@ -392,18 +392,24 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun askPermission() {
+    private fun showPermissionRationale() {
         if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)){
             MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.permission_location_dialog_title)
                     .setMessage(R.string.permission_location_dialog_message)
                     .setPositiveButton(getString(R.string.ok)){ _, _ ->
-                        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST)
+                        requestLocationPermission()
                     }
                     .setNegativeButton(getString(R.string.cancel), null)
                     .setCancelable(true)
                     .show()
+        } else {
+            requestLocationPermission()
         }
+    }
+
+    private fun requestLocationPermission() {
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST)
     }
 
     @SuppressLint("MissingPermission")
