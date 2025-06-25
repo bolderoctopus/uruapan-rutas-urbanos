@@ -13,7 +13,11 @@ Al hacer build en Android Studio gradle tomará de allí la API key para la inse
 
 
 ## Change log
-**1.2.0-beta _(Sin publicar)_**
+**1.5.0**
+- Se actualiza el targetSDK a 34.
+- Se resuelve issue con el diálogo de permiso de ubicación.
+
+**1.2.0-beta**
 - TopMargin de GoogleMapsCompass modificado.
 
 **1.1.0-beta**
