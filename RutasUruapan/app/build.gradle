@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.com.android.application)
     alias(libs.plugins.org.jetbrains.kotlin.android)
-    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
 }
 
 def apiKeysFile = rootProject.file("apikeys.properties")
@@ -16,8 +16,8 @@ android {
         applicationId "com.rico.omarw.rutasuruapan"
         minSdk 21
         targetSdk 34
-        versionCode 10
-        versionName "1.5.0"
+        versionCode 11
+        versionName "1.5.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [mapsAndPlacesAPIKey:apiKeysProperties['mapsAndPlaces']]
     }
@@ -30,6 +30,10 @@ android {
     buildFeatures {
         viewBinding true
         buildConfig true
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 }
 
@@ -49,6 +53,6 @@ dependencies {
     implementation libs.androidx.room.ktx
 
 
-    kapt libs.androidx.room.compiler
+    ksp libs.androidx.room.compiler
 
 }
