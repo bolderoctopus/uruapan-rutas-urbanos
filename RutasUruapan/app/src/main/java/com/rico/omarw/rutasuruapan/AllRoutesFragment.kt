@@ -19,6 +19,8 @@ import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
+import java.util.Locale
+import java.util.Locale.getDefault
 
 
 class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener{
@@ -98,11 +100,13 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     }
 
     private suspend fun getRoutes(): List<RouteModel> {
-        val routesList =  AppDatabase.getInstance(context!!)?.routesDAO()?.getRoutes()
+        return context?.let {
+            val routesList = AppDatabase.getInstance(it)?.routesDAO()?.getRoutes()
 
-        return arrayListOf<RouteModel>().apply {
-            routesList?.forEach{add(RouteModel(it))}
-        }
+            arrayListOf<RouteModel>().apply {
+                routesList?.forEach { r -> add(RouteModel(r)) }
+            }
+        } ?: emptyList()
     }
 
     private fun removeSearchViewBackground(){
@@ -117,10 +121,10 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     }
 
     fun filter(models: List<RouteModel>, query: String): List<RouteModel>{
-        val lowerCaseQuery = query.toLowerCase()
+        val lowerCaseQuery = query.lowercase(getDefault())
         val filteredList = ArrayList<RouteModel>()
         for(model in models){
-            val name = model.name.toLowerCase()
+            val name = model.name.lowercase(getDefault())
             if(name.contains(lowerCaseQuery) || model.routeDb.shortName.contains(lowerCaseQuery))
                 filteredList.add(model)
         }
@@ -158,7 +162,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
 
     override fun drawRoute(route: RouteModel) {
         if(drawnRoutes == null) drawnRoutes = mutableSetOf()
-        drawnRoutes!!.add(route)
+        drawnRoutes?.add(route)
         interactionsListener?.drawRoute(route)
     }
 
