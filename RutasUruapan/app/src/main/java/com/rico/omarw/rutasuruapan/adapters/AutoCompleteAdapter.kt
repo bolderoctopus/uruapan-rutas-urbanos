@@ -4,14 +4,18 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Typeface
+import android.location.Address
 import android.location.Geocoder
+import android.os.Build
 import android.text.style.StyleSpan
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.Granularity
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Tasks
 import com.google.android.libraries.places.api.model.AutocompletePrediction
@@ -19,14 +23,12 @@ import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
-import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.R
 import com.rico.omarw.rutasuruapan.SearchFragment
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 class AutoCompleteAdapter(
@@ -41,8 +43,7 @@ class AutoCompleteAdapter(
     context,
     R.layout.current_location_list_item,
     android.R.id.text1
-),
-    Filterable {
+), Filterable {
 
     enum class ViewTypes(val id: Int) {
         CurrentLocation(0),
@@ -50,6 +51,7 @@ class AutoCompleteAdapter(
         PickLocation(2)
     }
 
+    private val geocoder = Geocoder(context)
     private val characterStyle = StyleSpan(Typeface.BOLD)
     private var resultsList: ArrayList<AutocompleteItemModel> = ArrayList()
     var ignoreFiltering = false
@@ -151,7 +153,7 @@ class AutoCompleteAdapter(
 
         val request = FindAutocompletePredictionsRequest.builder()
             .setLocationRestriction(bounds)
-            .setCountry("mx")
+            .setCountries("mx")
             .setSessionToken(AutocompleteSessionToken.newInstance())
             .setQuery(query)
             .build()
@@ -166,40 +168,49 @@ class AutoCompleteAdapter(
 
     }
 
+    //todo: test in different android versions
+    private val geocoderListener = @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    object : Geocoder.GeocodeListener {
+        override fun onGeocode(addresses: List<Address>) {
+            addAutocompleteItem(addresses)
+        }
+    }
+
     fun addCurrentLocation() {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED
         )
-            coroutineScope.launch {
-                try {
-                    val location =
-                        withContext(Dispatchers.IO) { Tasks.await(locationClient.lastLocation) }
-                    //todo: deprecated method
-                    val address = withContext(Dispatchers.IO) {
-                        Geocoder(context).getFromLocation(
-                            location.latitude,
-                            location.longitude,
-                            1
-                        )
-                    }
-                    if (!address.isNullOrEmpty()) {
-                        resultsList.add(
-                            0, AutocompleteItemModel(
-                                AutocompleteItemModel.ItemKind.CurrentLocation,
-                                context.getString(R.string.current_location_primary),
-                                SearchFragment.getShortAddress(address[0]),
-                                null,
-                                LatLng(address[0].latitude, address[0].longitude)
-                            )
-                        )
-                        notifyDataSetChanged()
-                    }
-                } catch (exception: Exception) {
-                    Log.e(DEBUG_TAG, "Unable to find current location.", exception)
+            return
+
+        locationClient.getCurrentLocation(
+            CurrentLocationRequest.Builder()
+                .setGranularity(Granularity.GRANULARITY_FINE)
+                .build(), null
+        ).addOnSuccessListener { location ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                geocoder.getFromLocation(location.latitude, location.longitude, 1, geocoderListener)
+            else
+                coroutineScope.launch(Dispatchers.IO) {
+                    addAutocompleteItem(geocoder.getFromLocation(location.latitude, location.longitude, 1))
                 }
-            }
+        }
+
+    }
+
+    private fun addAutocompleteItem(addresses: List<Address>?) {
+        if (addresses.isNullOrEmpty()) return
+        val address = addresses.first()
+
+        resultsList.add(
+            0, AutocompleteItemModel(
+                AutocompleteItemModel.ItemKind.CurrentLocation,
+                context.getString(R.string.current_location_primary),
+                SearchFragment.getShortAddress(address),
+                null,
+                LatLng(address.latitude, address.longitude)
+            )
+        )
+        notifyDataSetChanged()
     }
 
     fun removeCurrentLocation() {
