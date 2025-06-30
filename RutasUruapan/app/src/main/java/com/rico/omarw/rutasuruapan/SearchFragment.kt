@@ -41,7 +41,7 @@ class SearchFragment : Fragment(){
         Origin,
         Destination
     }
-
+    //todo: move to viewmodel or controller
     private lateinit var placesClient: PlacesClient
     private lateinit var origin: TextInputLayout
     private lateinit var originAutoCompleteTextView: AutoCompleteTextView
@@ -84,7 +84,7 @@ class SearchFragment : Fragment(){
             try {
                 if (hasFocus) originAutoCompleteTextView.showDropDown()
             }catch (error: Exception){
-                Log.e(DEBUG_TAG, error.message!!)
+                Log.e(DEBUG_TAG, error.message!!)//todo: remove !!
             }
         }
 
@@ -235,7 +235,7 @@ class SearchFragment : Fragment(){
             }
         }
     }
-
+    //todo:remove deprecated method
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
         if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PreferenceKeys.RESOLVE_LOCATIONS_TO_ADDRESSES, true)
                 || (context != null && !checkInternetConnection(requireContext())))
@@ -297,7 +297,7 @@ class SearchFragment : Fragment(){
             destination.error = getString(R.string.empty_textview_error)
         }
         else {
-            listener?.onSearch(originLatLng!!, destinationLatLng!!)
+            listener?.onSearch(originLatLng!!, destinationLatLng!!)//todo: remove force unwraps
         }
     }
 
@@ -371,7 +371,7 @@ class SearchFragment : Fragment(){
             // use featureName if it's not the street number
             return if(address.featureName != address.subThoroughfare)
                 address.featureName
-            // use coords if street + subLocality are null or street + postalCode are null
+            // use cords if street + subLocality are null or street + postalCode are null
             else if(address.thoroughfare == null || (address.subLocality == null || address.postalCode == null ))
                 decimalFormat.format(address.latitude) + ", " + decimalFormat.format(address.longitude)
             // use street + subLocality if it's not "Colonia"

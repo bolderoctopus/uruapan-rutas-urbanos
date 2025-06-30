@@ -23,7 +23,7 @@ object Utils{
         return spannableString
     }
 
-
+    //todo: update deprecated method
     fun checkInternetConnection(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = cm.activeNetworkInfo

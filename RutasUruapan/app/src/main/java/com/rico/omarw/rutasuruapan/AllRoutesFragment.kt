@@ -110,7 +110,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     }
 
     private fun removeSearchViewBackground(){
-        try{
+        try{//todo: deprecated method
             val searchPlateId: Int = searchView.context.resources.getIdentifier("android:id/search_plate", null, null)
             val searchPlate = searchView.findViewById<View>(searchPlateId)
             searchPlate.setBackgroundColor(Color.TRANSPARENT)
@@ -149,7 +149,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         if (context is RouteListFilterableAdapter.DrawRouteListener) {
             interactionsListener = context as InteractionsInterface
         } else {
-            throw RuntimeException(context.toString() + " must implement RouteListFilterableAdapter.DrawRouteListener")
+            throw RuntimeException(context.toString() + " must implement RouteListFilterableAdapter.DrawRouteListener")//todo: ide warning
         }
     }
 

@@ -26,7 +26,7 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar?.elevation = 10f
 
     }
-
+    //todo: update deprecated method
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
@@ -62,7 +62,7 @@ class SettingsActivity : AppCompatActivity() {
                 data = Uri.parse(link)
             })
         }
-
+        //todo: extract strings
         override fun onPreferenceClick(preference: Preference): Boolean {
             when (preference.key) {
                 "show_dialogs_again" -> deleteSomePreferences(preference.context)
@@ -74,7 +74,7 @@ class SettingsActivity : AppCompatActivity() {
             }
             return true
         }
-
+        //todo: review this
         override fun provideSummary(preference: ListPreference): CharSequence {
             return if(preference != null)
                 getString(R.string.preference_summary_limit_distance, preference.entry)

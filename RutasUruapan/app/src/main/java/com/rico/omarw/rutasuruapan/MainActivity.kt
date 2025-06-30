@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         if(!Places.isInitialized()){
             val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
-            Places.initialize(this, metaData.getString("com.google.android.geo.API_KEY")!!)
+            Places.initialize(this, metaData.getString("com.google.android.geo.API_KEY")!!)//todo: force unwrap
         }
 
 
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onDestroy()
     }
 
-    private fun getSearchFragmentHeight(): Int{
+    private fun getSearchFragmentHeight(): Int{//todo: force unwraps
         return if(searchFragment.view == null || searchFragment.view!!.height == 0) resources.getDimensionPixelSize(R.dimen.default_fragment_height) else searchFragment.view!!.height
     }
 
@@ -291,13 +291,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     color(color)
                     width(LINE_WIDTH)
                     zIndex(0.5f)
-                    endCap(CustomCap(getBitmapDescriptor(R.drawable.ic_route_endpoint, color)!!))
+                    endCap(CustomCap(getBitmapDescriptor(R.drawable.ic_route_endpoint, color)!!))//todo: force unwraps
                     startCap(CustomCap(getBitmapDescriptor(R.drawable.ic_route_startpoint, color)!!))
                     addAll(route.getMainSegment(points!!))
                 }
                 val secondarySegmentPolOpt = PolylineOptions().apply {
                     color(color)
-                    width(LINE_WIDTH/3)
+                    width(LINE_WIDTH/3)//todo: remove magic constant
                     jointType(JointType.ROUND)
                     pattern(RouteModel.dashedPatter)
                     addAll(route.getSecondarySegment(points!!))
@@ -412,7 +412,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST)
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission")//todo: review this IDE warning
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when(requestCode){
             LOCATION_PERMISSION_REQUEST ->{
@@ -426,7 +426,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onMarkerDragStart(m: Marker) {
-        if(m == null) return
+        if(m == null) return//todo: review this IDE warning
         vibrate()
         startMarkerPosition = m.position
         searchFragment.startUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
@@ -441,7 +441,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
         searchFragment.endUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
         if(originMarker != null && destinationMarker != null)
-            resultsFragment?.endUpdate(originMarker!!.position, destinationMarker!!.position)
+            resultsFragment?.endUpdate(originMarker!!.position, destinationMarker!!.position)//todo: force unwrap
     }
 
     override fun onMarkerDrag(m: Marker) {
@@ -489,7 +489,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .add(R.id.fragment_container, resultsFragment!!, ResultsFragment.TAG)
                 .hide(searchFragment)
                 .commit()
-        activeFragment = resultsFragment!!
+        activeFragment = resultsFragment!!//todo: force unwrap
         allRoutesFragment.recyclerView.isNestedScrollingEnabled = false
     }
 
@@ -502,7 +502,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private fun getDummyLatLng(): LatLng{
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        val mapCenter = Point(mapFragment.view!!.width/2, mapFragment.view!!.height/2)
+        val mapCenter = Point(mapFragment.view!!.width/2, mapFragment.view!!.height/2)//todo: force unwrap
         return map.projection.fromScreenLocation(mapCenter)
     }
 
@@ -529,14 +529,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             destinationMarker?.remove()
             destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).draggable(true))
             destinationMarker?.tag = markerType
-            if(bounce) setMarkerBounce(destinationMarker!!)
+            if(bounce) setMarkerBounce(destinationMarker!!)//todo: force unwrap
         }
 
 
         if((searchFragment.getShowInformativeDialog() && mapHeight != null)){
             // use the map initial height as vertical offset from the bottom
             // because the keyboard doesn't hide immediately and there's no easy way to find out the keyboard's height
-            var verticalOffset = mapHeight!!/2
+            var verticalOffset = mapHeight!!/2//todo: force unwrap
             verticalOffset += resources.getDimension(R.dimen.default_marker_height).toInt()
 
             InformativeDialog.show(this, verticalOffset, InformativeDialog.Style.Center, R.string.how_to_move_markers_message,
@@ -624,7 +624,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         when(tab?.position){
             1 ->{
                 hideKeyboard(this, window.decorView.windowToken)
-                allRoutesFragment.setHeight(searchFragment.view?.height!!)
+                allRoutesFragment.setHeight(searchFragment.view?.height!!)//todo: force unwrap
                 allRoutesFragment.recyclerView.isNestedScrollingEnabled = true
                 showFragment(allRoutesFragment)
             }
@@ -649,7 +649,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         if(currentZoomLvl < newZoomLvl){
             //routeVisible markers between current and new
             for(x in (currentZoomLvl+1)..newZoomLvl){
-                if(route.directionalMarkers!![x] != null) route.directionalMarkers!![x].forEach { it.isVisible = routeVisible }
+                if(route.directionalMarkers!![x] != null) route.directionalMarkers!![x].forEach { it.isVisible = routeVisible }//todo: force unwrap
             }
         }
         else{
@@ -703,7 +703,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         originSquare?.remove()
         destinationSquare?.remove()
     }
-
+//todo: extract to helper class
     private fun getSquareFrom(distance: Double, center: LatLng): List<LatLng>{
         val points = ArrayList<LatLng>(4)
 

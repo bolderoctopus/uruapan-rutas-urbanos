@@ -150,9 +150,10 @@ class AutoCompleteAdapter (context: Context,
 
     fun addCurrentLocation(){
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-        coroutineScope.launch {
+        coroutineScope.launch {//todo: review ide warning
             try {
                 val location = withContext(Dispatchers.IO) { Tasks.await(locationClient.lastLocation) }
+                //todo: deprecated method
                 val address = withContext(Dispatchers.IO) { Geocoder(context).getFromLocation(location.latitude, location.longitude, 1) }
                 if(!address.isNullOrEmpty()){
                     resultsList.add(0, AutocompleteItemModel(AutocompleteItemModel.ItemKind.CurrentLocation, context.getString(R.string.current_location_primary),

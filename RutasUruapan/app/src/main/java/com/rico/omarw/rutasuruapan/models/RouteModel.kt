@@ -45,7 +45,7 @@ class RouteModel (val routeDb : Route){
         mainSegmentMarkers?.forEach { it.remove() }
 
         if(directionalMarkers != null) {
-            for (x in 0 until directionalMarkers!!.size()){
+            for (x in 0 until directionalMarkers!!.size()){//todo: force unwrap
                 directionalMarkers!!.valueAt(x).forEach { it.remove() }
             }
         }
@@ -62,7 +62,7 @@ class RouteModel (val routeDb : Route){
         return name == model.name && color == model.color
     }
 
-    fun getMainSegment(points: List<Point>) = getRouteSegment(startPoint!!.number, endPoint!!.number, points)
+    fun getMainSegment(points: List<Point>) = getRouteSegment(startPoint!!.number, endPoint!!.number, points)//todo: force unwrap
     fun getSecondarySegment(points: List<Point>) = getRouteSegment(endPoint!!.number, startPoint!!.number, points)
 
 
@@ -82,7 +82,7 @@ class RouteModel (val routeDb : Route){
         return segment
     }
 
-    fun getMainSegmentPoints(points: List<Point>) = getRouteSegmentPoints(startPoint!!.number, endPoint!!.number, points)
+    fun getMainSegmentPoints(points: List<Point>) = getRouteSegmentPoints(startPoint!!.number, endPoint!!.number, points)//todo: force unwrap
     private fun getRouteSegmentPoints(start: Int, end: Int, points: List<Point>): List<Point>{
         return if(start > end){
             val part1 = points.filter {it.number >= start}.sortedBy {it.number}

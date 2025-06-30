@@ -34,7 +34,7 @@ class InformativeDialog{
             dialog.window?.decorView?.background = ColorDrawable(Color.TRANSPARENT)
             dialog.window?.decorView?.setPadding(0,0,0,0)
 
-            dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)//todo: force unwrap
             dialog.window!!.requestFeature(Window.FEATURE_NO_TITLE)
             dialog.window!!.attributes.apply {
                 gravity = Gravity.BOTTOM

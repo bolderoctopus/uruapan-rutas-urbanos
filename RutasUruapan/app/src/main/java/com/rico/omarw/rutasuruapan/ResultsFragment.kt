@@ -142,7 +142,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
      * @param destinationLatLng End point
      * @param walkDistLimit How much the user is willing to walk between the route start/end point and the given origin/destination respectively
      */
-    private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){
+    private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){//todo: move to a separate class
         showProgressBar()
         if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener?.drawSquares(walkDistLimit)
@@ -247,7 +247,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     }
 
 
-    private fun getWalkDistLimit() : Double {
+    private fun getWalkDistLimit() : Double {//todo: update deprecated method
         val string = PreferenceManager.getDefaultSharedPreferences(context).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
         return if(string == null) WALK_DIST_LIMIT_DEFAULT * METER_IN_ANGULAR_LAT_LNG
                 else (string.toDouble()  * METER_IN_ANGULAR_LAT_LNG)
