@@ -26,6 +26,13 @@ object Constants {
         const val DIALOG_2_SHOWN = "has_inf_dialog2_been_shown"
         const val DISCLAIMER_SHOWN = "has_disclaimer_been_shown"
 
+        const val SHOW_DIALOGS = "show_dialogs_again"
+        const val DONATION = "donation"
+        const val RATE = "rate"
+        const val PRIVACY_POLICY = "privacy_policy"
+        const val SOURCE_CODE = "source_code"
+        const val VERSION = "version"
+
         //Debug preferences
         const val DRAW_SQUARES = "draw_squares"
         const val DRAW_STARTEND_POINTS = "draw_startend_points"
