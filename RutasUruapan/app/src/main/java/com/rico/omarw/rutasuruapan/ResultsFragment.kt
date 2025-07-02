@@ -5,7 +5,6 @@ import android.content.DialogInterface
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +27,7 @@ import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
 import kotlin.math.sqrt
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 
 class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
@@ -249,7 +249,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
 
     private fun getWalkDistLimit() : Double {
-        val string = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext()).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
+        val string = PreferenceManager.getDefaultSharedPreferences(requireContext()).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
         return if(string == null) WALK_DIST_LIMIT_DEFAULT * METER_IN_ANGULAR_LAT_LNG
                 else (string.toDouble()  * METER_IN_ANGULAR_LAT_LNG)
     }

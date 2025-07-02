@@ -4,7 +4,6 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -34,6 +33,7 @@ import kotlinx.coroutines.*
 import java.text.DecimalFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import androidx.preference.PreferenceManager
 
 class SearchFragment : Fragment(){
 
@@ -84,7 +84,7 @@ class SearchFragment : Fragment(){
             try {
                 if (hasFocus) originAutoCompleteTextView.showDropDown()
             }catch (error: Exception){
-                Log.e(DEBUG_TAG, error.message!!)//todo: remove !!
+                Log.e(DEBUG_TAG, error.message ?: "")
             }
         }
 
@@ -114,7 +114,7 @@ class SearchFragment : Fragment(){
         if (context is OnFragmentInteractionListener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
+            throw RuntimeException("$context must implement OnFragmentInteractionListener")
         }
     }
 
@@ -235,9 +235,9 @@ class SearchFragment : Fragment(){
             }
         }
     }
-    //todo:remove deprecated method
+
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng){
-        if(!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(PreferenceKeys.RESOLVE_LOCATIONS_TO_ADDRESSES, true)
+        if(!PreferenceManager.getDefaultSharedPreferences(requireContext()).getBoolean(PreferenceKeys.RESOLVE_LOCATIONS_TO_ADDRESSES, true)
                 || (context != null && !checkInternetConnection(requireContext())))
             return
 
@@ -290,14 +290,17 @@ class SearchFragment : Fragment(){
     }
 
     private fun search(){
-        if(originLatLng == null){
+        val currentOrigin = originLatLng
+        val currentDestination = destinationLatLng
+
+        if(currentOrigin == null){
             origin.error = getString(R.string.empty_textview_error)
         }
-        else if (destinationLatLng == null) {
+        else if (currentDestination == null) {
             destination.error = getString(R.string.empty_textview_error)
         }
         else {
-            listener?.onSearch(originLatLng!!, destinationLatLng!!)//todo: remove force unwraps
+            listener?.onSearch(currentOrigin, currentDestination)
         }
     }
 
