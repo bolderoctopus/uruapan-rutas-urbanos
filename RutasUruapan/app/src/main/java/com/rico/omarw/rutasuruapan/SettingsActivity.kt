@@ -26,9 +26,9 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
         supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.settings, SettingsFragment())
-                .commit()
+            .beginTransaction()
+            .replace(R.id.settings, SettingsFragment())
+            .commit()
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -36,7 +36,8 @@ class SettingsActivity : AppCompatActivity() {
 
     }
 
-    class SettingsFragment : PreferenceFragmentCompat(), Preference.SummaryProvider<ListPreference>, Preference.OnPreferenceClickListener {
+    class SettingsFragment : PreferenceFragmentCompat(), Preference.SummaryProvider<ListPreference>,
+        Preference.OnPreferenceClickListener {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
             findPreference<ListPreference>(WALK_DIST_LIMIT)?.summaryProvider = this
@@ -53,7 +54,7 @@ class SettingsActivity : AppCompatActivity() {
             })
         }
 
-        private fun deleteSomePreferences(c: Context){
+        private fun deleteSomePreferences(c: Context) {
             PreferenceManager.getDefaultSharedPreferences(c).edit {
                 remove(PreferenceKeys.DIALOG_1_SHOWN)
                 remove(PreferenceKeys.DIALOG_2_SHOWN)
@@ -61,7 +62,7 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        private fun openLink(link: String){
+        private fun openLink(link: String) {
             startActivity(Intent(Intent.ACTION_VIEW).apply {
                 data = link.toUri()
             })

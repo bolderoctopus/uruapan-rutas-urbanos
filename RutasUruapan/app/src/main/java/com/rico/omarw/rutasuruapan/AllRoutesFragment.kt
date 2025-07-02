@@ -23,19 +23,21 @@ import java.util.Locale
 import java.util.Locale.getDefault
 
 
-class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener{
-    private val comparator = Comparator<RouteModel>{ routeModel1: RouteModel, routeModel2: RouteModel ->
-        (routeModel1.color + routeModel1.name).compareTo((routeModel2.color + routeModel2.name))
-    }
-    private val queryTextListener = object : SearchView.OnQueryTextListener{
+class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener {
+    private val comparator =
+        Comparator<RouteModel> { routeModel1: RouteModel, routeModel2: RouteModel ->
+            (routeModel1.color + routeModel1.name).compareTo((routeModel2.color + routeModel2.name))
+        }
+    private val queryTextListener = object : SearchView.OnQueryTextListener {
         override fun onQueryTextChange(query: String?): Boolean {
-            if(query != null) {
+            if (query != null) {
                 val filteredList = filter(routeModels, query)
                 adapter.replaceAll(filteredList)
                 recyclerView.scrollToPosition(0)
             }
             return true
         }
+
         override fun onQueryTextSubmit(p0: String?) = false
     }
 
@@ -57,7 +59,11 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         uiScope = CoroutineScope(Dispatchers.Main)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val view = inflater.inflate(R.layout.fragment_all_routes, container, false)
 
         recyclerView = view.findViewById(R.id.recyclerView_all_routes)
@@ -72,26 +78,37 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         onViewCreated = null
 
         uiScope.launch {
-            val routes = withContext(Dispatchers.IO) {getRoutes()}
+            val routes = withContext(Dispatchers.IO) { getRoutes() }
             setAdapterRoutes(routes)
         }
         return view
     }
 
-    private fun addRecyclerViewLayoutListener(){
+    private fun addRecyclerViewLayoutListener() {
         val listener = object : View.OnLayoutChangeListener {
-            override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
-                if((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v!= null){
+            override fun onLayoutChange(
+                v: View?,
+                left: Int,
+                top: Int,
+                right: Int,
+                bottom: Int,
+                oldLeft: Int,
+                oldTop: Int,
+                oldRight: Int,
+                oldBottom: Int
+            ) {
+                if ((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v != null) {
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
                     verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
 
 
-                    InformativeDialog.show(v.context,
-                            verticalOffset,
-                            InformativeDialog.Style.Left,
-                            R.string.how_to_show_routes_message,
-                            DialogInterface.OnDismissListener {(activity as MainActivity).informativeDialog1Shown()})
+                    InformativeDialog.show(
+                        v.context,
+                        verticalOffset,
+                        InformativeDialog.Style.Left,
+                        R.string.how_to_show_routes_message,
+                        DialogInterface.OnDismissListener { (activity as MainActivity).informativeDialog1Shown() })
                     recyclerView.removeOnLayoutChangeListener(this)
                 }
             }
@@ -109,30 +126,31 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         } ?: emptyList()
     }
 
-    private fun removeSearchViewBackground(){
-        try{//todo: deprecated method
-            val searchPlateId: Int = searchView.context.resources.getIdentifier("android:id/search_plate", null, null)
+    private fun removeSearchViewBackground() {
+        try {
+            val searchPlateId: Int =
+                searchView.context.resources.getIdentifier("android:id/search_plate", null, null)
             val searchPlate = searchView.findViewById<View>(searchPlateId)
             searchPlate.setBackgroundColor(Color.TRANSPARENT)
 
-        }catch (exception: Exception){
+        } catch (exception: Exception) {
             Log.e(TAG, "Error on removeSearchViewBackground", exception)
         }
     }
 
-    fun filter(models: List<RouteModel>, query: String): List<RouteModel>{
+    fun filter(models: List<RouteModel>, query: String): List<RouteModel> {
         val lowerCaseQuery = query.lowercase(getDefault())
         val filteredList = ArrayList<RouteModel>()
-        for(model in models){
+        for (model in models) {
             val name = model.name.lowercase(getDefault())
-            if(name.contains(lowerCaseQuery) || model.routeDb.shortName.contains(lowerCaseQuery))
+            if (name.contains(lowerCaseQuery) || model.routeDb.shortName.contains(lowerCaseQuery))
                 filteredList.add(model)
         }
 
         return filteredList
     }
 
-    private fun setAdapterRoutes(data: List<RouteModel>){
+    private fun setAdapterRoutes(data: List<RouteModel>) {
         routeModels = data
         recyclerView.setHasFixedSize(false)
         recyclerView.layoutManager = LinearLayoutManager(context)
@@ -141,7 +159,8 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     }
 
     fun setHeight(height: Int) {
-        view?.layoutParams = RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height)
+        view?.layoutParams =
+            RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height)
     }
 
     override fun onAttach(context: Context) {
@@ -149,7 +168,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         if (context is RouteListFilterableAdapter.DrawRouteListener) {
             interactionsListener = context as InteractionsInterface
         } else {
-            throw RuntimeException(context.toString() + " must implement RouteListFilterableAdapter.DrawRouteListener")//todo: ide warning
+            throw RuntimeException("$context must implement RouteListFilterableAdapter.DrawRouteListener")
         }
     }
 
@@ -161,19 +180,20 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     }
 
     override fun drawRoute(route: RouteModel) {
-        if(drawnRoutes == null) drawnRoutes = mutableSetOf()
+        if (drawnRoutes == null) drawnRoutes = mutableSetOf()
         drawnRoutes?.add(route)
         interactionsListener?.drawRoute(route)
     }
 
-    private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
+    private fun clearDrawnRoutes() = drawnRoutes?.forEach { it.remove() }
 
     companion object {
         const val TAG = "AllRoutesFragment"
+
         @JvmStatic
-        fun newInstance() =AllRoutesFragment().apply {
-                arguments = Bundle().apply {
-                }
+        fun newInstance() = AllRoutesFragment().apply {
+            arguments = Bundle().apply {
+            }
         }
     }
 
