@@ -27,6 +27,7 @@ import com.rico.omarw.rutasuruapan.database.Route
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
 import kotlin.math.sqrt
+import androidx.core.view.isVisible
 
 class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
@@ -219,7 +220,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     }
 
     private fun hideProgressBar(){
-        if(progressBar.visibility == View.VISIBLE)
+        if(progressBar.isVisible)
             progressBar.animate().scaleY(0f).withEndAction { progressBar.visibility = View.GONE }.start()
     }
 
@@ -247,8 +248,8 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     }
 
 
-    private fun getWalkDistLimit() : Double {//todo: update deprecated method
-        val string = PreferenceManager.getDefaultSharedPreferences(context).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
+    private fun getWalkDistLimit() : Double {
+        val string = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext()).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
         return if(string == null) WALK_DIST_LIMIT_DEFAULT * METER_IN_ANGULAR_LAT_LNG
                 else (string.toDouble()  * METER_IN_ANGULAR_LAT_LNG)
     }
