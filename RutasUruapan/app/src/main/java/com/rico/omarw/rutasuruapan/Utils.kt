@@ -9,6 +9,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.StyleSpan
 import android.view.inputmethod.InputMethodManager
+import com.google.android.gms.maps.model.LatLng
 
 
 object Utils {
@@ -45,4 +46,15 @@ object Utils {
             else -> false
         }
     }
+}
+
+fun getSquareFrom(distance: Double, center: LatLng): List<LatLng>{
+    val points = ArrayList<LatLng>(4)
+
+    points.add(LatLng(center.latitude - distance, center.longitude + distance))
+    points.add(LatLng(center.latitude + distance, center.longitude + distance))
+    points.add(LatLng(center.latitude + distance, center.longitude - distance))
+    points.add(LatLng(center.latitude - distance, center.longitude - distance))
+
+    return points
 }

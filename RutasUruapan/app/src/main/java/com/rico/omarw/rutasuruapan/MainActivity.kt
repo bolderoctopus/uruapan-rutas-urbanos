@@ -2,13 +2,22 @@ package com.rico.omarw.rutasuruapan
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.*
+import android.graphics.Bitmap
 import android.graphics.Bitmap.createBitmap
-import android.os.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.SparseArray
 import android.view.View
 import android.view.ViewTreeObserver
@@ -18,8 +27,12 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.core.graphics.toColorInt
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -28,11 +41,22 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CustomCap
+import com.google.android.gms.maps.model.JointType
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polygon
+import com.google.android.gms.maps.model.PolygonOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
+import com.rico.omarw.rutasuruapan.Constants.ALL_ROUTES_FRAGMENT_INDEX
 import com.rico.omarw.rutasuruapan.Constants.BOUNCE_DURATION
 import com.rico.omarw.rutasuruapan.Constants.CAMERA_PADDING_MARKER
 import com.rico.omarw.rutasuruapan.Constants.INITIAL_ZOOM
@@ -40,6 +64,7 @@ import com.rico.omarw.rutasuruapan.Constants.LINE_WIDTH
 import com.rico.omarw.rutasuruapan.Constants.LOCATION_PERMISSION_REQUEST
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
 import com.rico.omarw.rutasuruapan.Constants.REFRESH_INTERVAL
+import com.rico.omarw.rutasuruapan.Constants.SEARCH_FRAGMENT_INDEX
 import com.rico.omarw.rutasuruapan.Constants.URUAPAN_LATLNG
 import com.rico.omarw.rutasuruapan.Constants.VIBRATION_DURATION
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
@@ -50,7 +75,31 @@ import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.databinding.ActivityMainBinding
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.rico.omarw.rutasuruapan.models.ZoomLevel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.Array
+import kotlin.Boolean
+import kotlin.Double
+import kotlin.Float
+import kotlin.Int
+import kotlin.IntArray
+import kotlin.Long
+import kotlin.String
+import kotlin.Unit
+import kotlin.apply
+import kotlin.arrayOf
+import kotlin.collections.ArrayList
+import kotlin.collections.Iterable
+import kotlin.collections.List
+import kotlin.collections.forEach
+import kotlin.collections.indices
+import kotlin.collections.isNotEmpty
+import kotlin.let
+import kotlin.requireNotNull
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
@@ -71,7 +120,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var searchFragment: SearchFragment
     private lateinit var allRoutesFragment: AllRoutesFragment
     private var resultsFragment: ResultsFragment? = null
-    private lateinit var activeFragment: Fragment
+    private var activeFragment: Fragment? = null
 
     private lateinit var sheetBehavior: BottomSheetBehavior<LinearLayout>
     private lateinit var bottomSheet: LinearLayout
@@ -95,7 +144,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         if(!Places.isInitialized()){
             val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
-            Places.initialize(this, metaData.getString("com.google.android.geo.API_KEY")!!)//todo: force unwrap
+            Places.initialize(this, requireNotNull(metaData.getString("com.google.android.geo.API_KEY")))
         }
 
 
@@ -138,9 +187,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     .setMessage(R.string.disclaimer_message)
                     .setCancelable(false)
                     .setPositiveButton(R.string.accept) { _, _ ->
-                        PreferenceManager.getDefaultSharedPreferences(this@MainActivity).edit()
-                                .putBoolean(PreferenceKeys.DISCLAIMER_SHOWN, true)
-                                .apply()
+                        PreferenceManager.getDefaultSharedPreferences(this@MainActivity).edit {
+                            putBoolean(PreferenceKeys.DISCLAIMER_SHOWN, true)
+                        }
                     }
                     .show()
         }
@@ -151,15 +200,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onDestroy()
     }
 
-    private fun getSearchFragmentHeight(): Int{//todo: force unwraps
-        return if(searchFragment.view == null || searchFragment.view!!.height == 0) resources.getDimensionPixelSize(R.dimen.default_fragment_height) else searchFragment.view!!.height
+    private fun getSearchFragmentHeight(): Int{
+        val fragmentHeight = searchFragment.view?.height
+
+        return if(fragmentHeight == null || fragmentHeight == 0) {
+            resources.getDimensionPixelSize(R.dimen.default_fragment_height)
+        } else {
+            fragmentHeight
+        }
     }
 
-    private fun showFragment(newFragment: Fragment){
-        supportFragmentManager.beginTransaction()
-            .hide(activeFragment)
-            .show(newFragment)
-            .commit()
+    private fun showFragment(newFragment: Fragment) {
+        supportFragmentManager.beginTransaction().apply {
+            activeFragment?.let { hide(it) }
+            show(newFragment)
+            commit()
+        }
+
         activeFragment = newFragment
     }
 
@@ -230,7 +287,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val locationButton = mainContent.findViewWithTag<ImageView>("GoogleMapMyLocationButton")
         val settingsButtonLayoutParams = RelativeLayout.LayoutParams(resources.getDimensionPixelSize(R.dimen.settings_button_size), resources.getDimensionPixelSize(R.dimen.settings_button_size)).apply {
             marginEnd = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
-            if(locationButton.visibility == View.VISIBLE){
+            if(locationButton.isVisible){
                 addRule(RelativeLayout.ALIGN_TOP, locationButton.id)
                 addRule(RelativeLayout.START_OF, locationButton.id)
             }else{
@@ -285,32 +342,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 route.setVisibility(route.isDrawn.not())
 
             }else{
-                val color = Color.parseColor(route.color)
-                val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)}
+                val color = route.color.toColorInt()
+                val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)} ?: return@launch
                 val mainSegmentPolOpt = PolylineOptions().apply{
                     color(color)
                     width(LINE_WIDTH)
                     zIndex(0.5f)
-                    endCap(CustomCap(getBitmapDescriptor(R.drawable.ic_route_endpoint, color)!!))//todo: force unwraps
-                    startCap(CustomCap(getBitmapDescriptor(R.drawable.ic_route_startpoint, color)!!))
-                    addAll(route.getMainSegment(points!!))
+
+                    getBitmapDescriptor(R.drawable.ic_route_endpoint, color)
+                        ?.let { endCap(CustomCap(it)) }
+                    getBitmapDescriptor(R.drawable.ic_route_startpoint, color)
+                        ?.let { startCap(CustomCap(it)) }
+
+                    addAll(route.getMainSegment(points))
                 }
                 val secondarySegmentPolOpt = PolylineOptions().apply {
                     color(color)
-                    width(LINE_WIDTH/3)//todo: remove magic constant
+                    width(LINE_WIDTH/3)
                     jointType(JointType.ROUND)
                     pattern(RouteModel.dashedPatter)
-                    addAll(route.getSecondarySegment(points!!))
+                    addAll(route.getSecondarySegment(points))
                 }
 
                 route.mainSegment = map.addPolyline(mainSegmentPolOpt)
                 route.secondarySegment = map.addPolyline(secondarySegmentPolOpt)
-                route.directionalMarkers = drawDirectionalMarkers(route.getMainSegmentPoints(points!!), color)
+                route.directionalMarkers = drawDirectionalMarkers(route.getMainSegmentPoints(points), color)
                 drawnRoutes.add(route)
 
                 // for debug purposes
-                route.startMarker = drawMarker(route.startPoint!!.getLatLng(), "startPoint")
-                route.endMarker = drawMarker(route.endPoint!!.getLatLng(), "endPoint")
+                route.startMarker = route.startPoint?.let{ drawMarker(it.getLatLng(), "startPoint") }
+                route.endMarker = route.endPoint?.let { drawMarker(it.getLatLng(), "endPoint") }
                 route.mainSegmentMarkers = drawMarkers(route.getMainSegmentPoints(points))
 
                 route.isDrawn = true
@@ -326,17 +387,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 route.setVisibility(route.isDrawn.not())
 
             }else{
-                    val color = Color.parseColor(route.color)
-                    val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)}
+                    val color = route.color.toColorInt()
+                    val points = withContext(Dispatchers.IO) {AppDatabase.getInstance(this@MainActivity)?.routesDAO()?.getPointsFrom( route.id)} ?: return@launch
                     val polylineOptions = PolylineOptions()
                     polylineOptions
                             .color(color)
                             .width(LINE_WIDTH)
                             .jointType(JointType.ROUND)
-                    points?.forEach { polylineOptions.add(it.getLatLng()) }
+                    points.forEach { polylineOptions.add(it.getLatLng()) }
                     route.polyline = map.addPolyline(polylineOptions)
 
-                    route.directionalMarkers = drawDirectionalMarkers(points!!, color)
+                    route.directionalMarkers = drawDirectionalMarkers(points, color)
                     drawnRoutes.add(route)
                     // for debug
                     route.mainSegmentMarkers = drawMarkers(points)
@@ -412,8 +473,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST)
     }
 
-    @SuppressLint("MissingPermission")//todo: review this IDE warning
+    @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when(requestCode){
             LOCATION_PERMISSION_REQUEST ->{
                 if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
@@ -426,7 +488,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onMarkerDragStart(m: Marker) {
-        if(m == null) return//todo: review this IDE warning
         vibrate()
         startMarkerPosition = m.position
         searchFragment.startUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
@@ -434,14 +495,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onMarkerDragEnd(m: Marker) {
-        if(m == null) return
         if(!SearchFragment.uruapanLatLngBounds.contains(m.position)){
             showOutOfBoundsSnack(binding.coordinatorLayout)
             m.position = startMarkerPosition
         }
         searchFragment.endUpdatePosition(m.tag as SearchFragment.MarkerType, m.position)
-        if(originMarker != null && destinationMarker != null)
-            resultsFragment?.endUpdate(originMarker!!.position, destinationMarker!!.position)//todo: force unwrap
+
+        val currentOriginMarker = originMarker
+        val currentDestinationMarker = destinationMarker
+        if(currentOriginMarker != null && currentDestinationMarker != null)
+            resultsFragment?.endUpdate(currentOriginMarker.position, currentDestinationMarker.position)
     }
 
     override fun onMarkerDrag(m: Marker) {
@@ -453,12 +516,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     private fun getBitmapDescriptor(@DrawableRes idRes: Int, color: Int): BitmapDescriptor?{
-        val drawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getDrawable(idRes) ?: return null
-        } else {
-            resources.getDrawable(idRes)
-        }
-        drawable.setColorFilter(color, PorterDuff.Mode.MULTIPLY)
+        val drawable = AppCompatResources.getDrawable(this, idRes) ?: return null
+        drawable.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.MULTIPLY)
         drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
         val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -468,7 +527,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     private fun vibrate(){
-        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        val vibrator: Vibrator = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> (getSystemService(VIBRATOR_MANAGER_SERVICE) as? VibratorManager)
+                ?.defaultVibrator
+            else -> getSystemService(VIBRATOR_SERVICE) as? Vibrator
+        } ?: return
+
         if(!vibrator.hasVibrator()) return
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -483,32 +547,36 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onSearch(origin: LatLng, destination: LatLng){
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(getLatLngBoundsFrom(destination, origin), CAMERA_PADDING_MARKER))
-        resultsFragment = ResultsFragment.newInstance(getSearchFragmentHeight(), origin, destination)
+        val fragment = ResultsFragment.newInstance(getSearchFragmentHeight(), origin, destination)
+        resultsFragment = fragment
 
         supportFragmentManager.beginTransaction()
-                .add(R.id.fragment_container, resultsFragment!!, ResultsFragment.TAG)
+                .add(R.id.fragment_container, fragment, ResultsFragment.TAG)
                 .hide(searchFragment)
                 .commit()
-        activeFragment = resultsFragment!!//todo: force unwrap
+        activeFragment = fragment
         allRoutesFragment.recyclerView.isNestedScrollingEnabled = false
     }
 
     fun informativeDialog1Shown(){
-        val preferenceEditor = PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
-        preferenceEditor.putBoolean(PreferenceKeys.DIALOG_1_SHOWN, true)
-        preferenceEditor.apply()
+        PreferenceManager.getDefaultSharedPreferences(applicationContext).edit {
+            putBoolean(PreferenceKeys.DIALOG_1_SHOWN, true)
+        }
         showInformativeDialog = false
     }
 
-    private fun getDummyLatLng(): LatLng{
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        val mapCenter = Point(mapFragment.view!!.width/2, mapFragment.view!!.height/2)//todo: force unwrap
-        return map.projection.fromScreenLocation(mapCenter)
+    private fun getMapsCenter(): LatLng? {
+        val mapFragment =
+            supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
+        return mapFragment.view?.let {
+            val mapCenter =  android.graphics.Point(it.width / 2, it.height / 2)
+            return map.projection.fromScreenLocation(mapCenter)
+        }
     }
 
 
     override fun drawMarker(position: LatLng?, title: String, markerType: SearchFragment.MarkerType, animate: Boolean, bounce: Boolean) {
-        var pos = position ?: getDummyLatLng()
+        var pos = position ?: getMapsCenter() ?: return
         var shouldAnimate = animate
 
         if(!SearchFragment.uruapanLatLngBounds.contains(pos)){
@@ -523,20 +591,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             originMarker?.remove()
             originMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).draggable(true))
             originMarker?.tag = markerType
-            if(bounce) setMarkerBounce(originMarker!!)
+            originMarker?.let { if (bounce) setMarkerBounce(it) }
         }
         else if(markerType == SearchFragment.MarkerType.Destination) {
             destinationMarker?.remove()
             destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).draggable(true))
             destinationMarker?.tag = markerType
-            if(bounce) setMarkerBounce(destinationMarker!!)//todo: force unwrap
+            destinationMarker?.let { if (bounce) setMarkerBounce(it) }
         }
 
 
-        if((searchFragment.getShowInformativeDialog() && mapHeight != null)){
+        val currentMapHeight = mapHeight
+        if((searchFragment.getShowInformativeDialog() && currentMapHeight != null)){
             // use the map initial height as vertical offset from the bottom
             // because the keyboard doesn't hide immediately and there's no easy way to find out the keyboard's height
-            var verticalOffset = mapHeight!!/2//todo: force unwrap
+            var verticalOffset = currentMapHeight/2
             verticalOffset += resources.getDimension(R.dimen.default_marker_height).toInt()
 
             InformativeDialog.show(this, verticalOffset, InformativeDialog.Style.Center, R.string.how_to_move_markers_message,
@@ -560,18 +629,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    override fun onBackFromResults(removedRoutes: List<RouteModel>?){
-        if(removedRoutes != null){
-            for(removedRoute in removedRoutes)
+    override fun onBackFromResults(removedRoutes: List<RouteModel>?) {
+        if (removedRoutes != null) {
+            for (removedRoute in removedRoutes)
                 drawnRoutes.remove(removedRoute)
         }
 
-
         clearSquares()
-        supportFragmentManager.beginTransaction()
-                .remove(resultsFragment!!)
-                .show(searchFragment)
-                .commit()
+        supportFragmentManager.beginTransaction().apply {
+            resultsFragment?.let { remove(it) }
+            show(searchFragment)
+            commit()
+        }
+
         activeFragment = searchFragment
         resultsFragment = null
         allRoutesFragment.recyclerView.isNestedScrollingEnabled = true
@@ -595,10 +665,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onBackPressed() {
-        if(resultsFragment?.isVisible == true)
-            resultsFragment!!.backButtonPressed()
-        else
-            super.onBackPressed()
+        resultsFragment?.let {
+            if(it.isVisible) it.backButtonPressed()
+            else super.onBackPressed()
+        }
     }
 
     override fun onCameraMove() {
@@ -622,15 +692,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onTabSelected(tab: TabLayout.Tab?) {
         when(tab?.position){
-            1 ->{
+            ALL_ROUTES_FRAGMENT_INDEX ->{
                 hideKeyboard(this, window.decorView.windowToken)
-                allRoutesFragment.setHeight(searchFragment.view?.height!!)//todo: force unwrap
+                searchFragment.view?.height?.let { allRoutesFragment.setHeight(it) }
                 allRoutesFragment.recyclerView.isNestedScrollingEnabled = true
                 showFragment(allRoutesFragment)
             }
-            0 -> {
+            SEARCH_FRAGMENT_INDEX -> {
                 if (resultsFragment != null) {
-                    showFragment(resultsFragment!!)
+                    resultsFragment?.let { showFragment(it) }
                     allRoutesFragment.recyclerView.isNestedScrollingEnabled = false
                 }
                 else
@@ -644,18 +714,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     //currentZoomLvl hasta que nivel de zoom estan visibles los marcadores
     private fun updateShownDirectionalArrows(currentZoomLvl: Int, newZoomLvl: Int, route: RouteModel, routeVisible: Boolean = true){
-        if(route.directionalMarkers == null) return
+        val directionalMarkers = route.directionalMarkers ?: return
 
         if(currentZoomLvl < newZoomLvl){
             //routeVisible markers between current and new
             for(x in (currentZoomLvl+1)..newZoomLvl){
-                if(route.directionalMarkers!![x] != null) route.directionalMarkers!![x].forEach { it.isVisible = routeVisible }//todo: force unwrap
+                if(directionalMarkers[x] != null) directionalMarkers[x].forEach { it.isVisible = routeVisible }
             }
         }
         else{
             //hide markers between new and current
             for(x in (newZoomLvl+1)..currentZoomLvl){
-                if(route.directionalMarkers!![x] != null) route.directionalMarkers!![x].forEach { it.isVisible = false }
+                if(directionalMarkers[x] != null) directionalMarkers[x].forEach { it.isVisible = false }
             }
         }
     }
@@ -688,12 +758,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         clearSquares()
 
+        val originPos = originMarker?.position ?: return
+        val destinationPos = destinationMarker?.position ?: return
+
         originSquare = map.addPolygon(PolygonOptions()
-                .addAll(getSquareFrom(walkingDistance, originMarker!!.position))
+                .addAll(getSquareFrom(walkingDistance, originPos))
                 .strokeColor(Color.BLACK)
                 .fillColor(Color.argb(100,100,100,100)))
         destinationSquare = map.addPolygon(PolygonOptions()
-                .addAll(getSquareFrom(walkingDistance, destinationMarker!!.position))
+                .addAll(getSquareFrom(walkingDistance, destinationPos))
                 .strokeColor(Color.BLACK)
                 .fillColor(Color.argb(100,100,100,100)))
 
@@ -702,16 +775,5 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private fun clearSquares(){
         originSquare?.remove()
         destinationSquare?.remove()
-    }
-//todo: extract to helper class
-    private fun getSquareFrom(distance: Double, center: LatLng): List<LatLng>{
-        val points = ArrayList<LatLng>(4)
-
-        points.add(LatLng(center.latitude - distance, center.longitude + distance))
-        points.add(LatLng(center.latitude + distance, center.longitude + distance))
-        points.add(LatLng(center.latitude + distance, center.longitude - distance))
-        points.add(LatLng(center.latitude - distance, center.longitude - distance))
-
-        return points
     }
 }

@@ -3,6 +3,8 @@ package com.rico.omarw.rutasuruapan
 import com.google.android.gms.maps.model.LatLng
 
 object Constants {
+    const val SEARCH_FRAGMENT_INDEX = 0
+    const val ALL_ROUTES_FRAGMENT_INDEX = 1
     const val DEBUG_TAG = "debug_tag"
 
     const val WALK_DIST_LIMIT_DEFAULT = 1000 // in meters
