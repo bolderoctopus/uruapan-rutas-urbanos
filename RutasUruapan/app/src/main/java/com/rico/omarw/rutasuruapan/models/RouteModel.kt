@@ -114,7 +114,7 @@ class RouteModel(val routeDb: Route) {
     }
 
     companion object {
-        val dashedPatter: List<PatternItem> = ArrayList<PatternItem>().apply {
+        val dashedPattern: List<PatternItem> = ArrayList<PatternItem>().apply {
             add(Gap(40f))
             add(Dash(20f))
         }

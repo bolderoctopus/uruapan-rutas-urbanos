@@ -360,7 +360,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     color(color)
                     width(LINE_WIDTH/3)
                     jointType(JointType.ROUND)
-                    pattern(RouteModel.dashedPatter)
+                    pattern(RouteModel.dashedPattern)
                     addAll(route.getSecondarySegment(points))
                 }
 
