@@ -47,7 +47,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     lateinit var recyclerView: RecyclerView
 
     private var interactionsListener: InteractionsInterface? = null
-    var onViewCreated: Runnable? = null
     private var drawnRoutes: MutableSet<RouteModel>? = null
 
     private var uiScope = CoroutineScope(Dispatchers.Main)
@@ -74,8 +73,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         if ((activity as MainActivity).showInformativeDialog)
             addRecyclerViewLayoutListener()
 
-        onViewCreated?.run()
-        onViewCreated = null
 
         uiScope.launch {
             val routes = withContext(Dispatchers.IO) { getRoutes() }
