@@ -25,6 +25,7 @@ import android.view.animation.BounceInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
@@ -75,32 +76,15 @@ import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.databinding.ActivityMainBinding
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import com.rico.omarw.rutasuruapan.models.ZoomLevel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.Array
-import kotlin.Boolean
-import kotlin.Double
-import kotlin.Float
-import kotlin.Int
-import kotlin.IntArray
-import kotlin.Long
-import kotlin.String
-import kotlin.Unit
-import kotlin.apply
-import kotlin.arrayOf
-import kotlin.collections.ArrayList
-import kotlin.collections.Iterable
-import kotlin.collections.List
-import kotlin.collections.forEach
-import kotlin.collections.indices
-import kotlin.collections.isNotEmpty
-import kotlin.let
-import kotlin.requireNotNull
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnMapLongClickListener,
@@ -136,6 +120,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var mapHeight: Int? = null
     var showInformativeDialog: Boolean = true
 
+    private val routeViewModel: RouteViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

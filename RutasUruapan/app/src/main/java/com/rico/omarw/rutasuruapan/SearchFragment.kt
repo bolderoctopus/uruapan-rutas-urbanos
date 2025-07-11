@@ -12,6 +12,8 @@ import android.widget.AdapterView
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -34,8 +36,13 @@ import java.text.DecimalFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import androidx.preference.PreferenceManager
+import dagger.hilt.android.AndroidEntryPoint
+import kotlin.getValue
 
+@AndroidEntryPoint
 class SearchFragment : Fragment(){
+
+    private val routeViewModel: RouteViewModel by activityViewModels()
 
     enum class MarkerType {
         Origin,

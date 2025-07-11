@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
@@ -27,6 +26,7 @@ import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
 import kotlin.math.sqrt
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 
 class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{

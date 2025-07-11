@@ -12,18 +12,20 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
-import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.models.RouteModel
-import kotlinx.coroutines.*
-import java.util.Locale
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.util.Locale.getDefault
 
-
+@AndroidEntryPoint
 class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener {
+    private val routeViewModel: RouteViewModel by activityViewModels()
+
     private val comparator =
         Comparator<RouteModel> { routeModel1: RouteModel, routeModel2: RouteModel ->
             (routeModel1.color + routeModel1.name).compareTo((routeModel2.color + routeModel2.name))
@@ -49,13 +51,10 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     private var interactionsListener: InteractionsInterface? = null
     private var drawnRoutes: MutableSet<RouteModel>? = null
 
-    private var uiScope = CoroutineScope(Dispatchers.Main)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
         }
-        uiScope = CoroutineScope(Dispatchers.Main)
     }
 
     override fun onCreateView(
@@ -70,12 +69,12 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         searchView.setOnQueryTextListener(queryTextListener)
         removeSearchViewBackground()
 
-        if ((activity as MainActivity).showInformativeDialog)
+        if ((activity as MainActivity).showInformativeDialog)//todo: decouple from MainActivity
             addRecyclerViewLayoutListener()
 
 
-        uiScope.launch {
-            val routes = withContext(Dispatchers.IO) { getRoutes() }
+        lifecycleScope.launch {
+            val routes = routeViewModel.getRoutes()
             setAdapterRoutes(routes)
         }
         return view
@@ -111,16 +110,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
             }
         }
         recyclerView.addOnLayoutChangeListener(listener)
-    }
-
-    private suspend fun getRoutes(): List<RouteModel> {
-        return context?.let {
-            val routesList = AppDatabase.getInstance(it)?.routesDAO()?.getRoutes()
-
-            arrayListOf<RouteModel>().apply {
-                routesList?.forEach { r -> add(RouteModel(r)) }
-            }
-        } ?: emptyList()
     }
 
     private fun removeSearchViewBackground() {
@@ -171,7 +160,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
 
     override fun onDetach() {
         clearDrawnRoutes()
-        uiScope.cancel()
         interactionsListener = null
         super.onDetach()
     }
