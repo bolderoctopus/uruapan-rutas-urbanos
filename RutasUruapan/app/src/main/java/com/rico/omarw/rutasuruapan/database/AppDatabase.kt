@@ -27,7 +27,7 @@ abstract class AppDatabase: RoomDatabase() {
             return INSTANCE
         }
 
-        private val MIGRATION_1_2 = object: Migration(1,2){
+        val MIGRATION_1_2 = object: Migration(1,2){
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE TABLE bestPoints( " +
                         "pointId INTEGER PRIMARY KEY NOT NULL, routeId INTEGER NOT NULL, lat REAL NOT NULL, lng REAL NOT NULL, number INTEGER NOT NULL, distanceToNextPoint INTEGER NOT NULL, " +
@@ -35,7 +35,7 @@ abstract class AppDatabase: RoomDatabase() {
             }
         }
 
-        private val MIGRATION_2_3 = object: Migration(2,3){
+        val MIGRATION_2_3 = object: Migration(2,3){
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE TABLE \"new_Routes\" ( `routeId` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `color` TEXT NOT NULL, `shortName` TEXT NOT NULL )")
                 database.execSQL("INSERT INTO new_Routes (routeId, name, color, shortName)  SELECT routeId, name, color, shortName FROM Routes")
@@ -44,7 +44,7 @@ abstract class AppDatabase: RoomDatabase() {
             }
         }
 
-        private val MIGRATION_3_4 = object: Migration(3, 4){
+        val MIGRATION_3_4 = object: Migration(3, 4){
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE INDEX `index_Points_latRouteId` on `Points` (lat, routeId)")
                 database.execSQL("create index `index_Points_routeIdLat` on `Points` (routeId, lat)")
