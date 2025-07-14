@@ -24,7 +24,7 @@ object Constants {
     const val LINE_WIDTH = 15f
 
     object PreferenceKeys{
-        const val DIALOG_1_SHOWN = "has_inf_dialog1_been_shown"
+        const val HOW_TO_SHOW_ROUTE_DIALOG_SHOWN = "has_inf_dialog1_been_shown"
         const val DIALOG_2_SHOWN = "has_inf_dialog2_been_shown"
         const val DISCLAIMER_SHOWN = "has_disclaimer_been_shown"
 

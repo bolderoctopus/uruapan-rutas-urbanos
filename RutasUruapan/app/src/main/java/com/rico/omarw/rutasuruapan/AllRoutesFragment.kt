@@ -1,7 +1,5 @@
 package com.rico.omarw.rutasuruapan
 
-import android.content.Context
-import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -49,6 +47,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     private lateinit var recyclerView: RecyclerView
 
     private lateinit var interactionsListener: InteractionsInterface
+    private var shouldDisplayHowToShowRouteDialog = true
 
     //todo: pasar esto al viewmodel?? se recupera bien luego de una recreacion de la actividad? fragmento?
     private var drawnRoutes: MutableSet<RouteModel> = mutableSetOf()
@@ -75,8 +74,11 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         searchView.setOnQueryTextListener(queryTextListener)
         removeSearchViewBackground()
 
-        if ((activity as MainActivity).showInformativeDialog)//todo: decouple from MainActivity
-            addRecyclerViewLayoutListener()
+        shouldDisplayHowToShowRouteDialog =//todo: review initialization, if it showsFirst in Results fragments you see it again here
+            InformativeDialogs.shouldDisplayHowToShowRouteDialog(layoutInflater.context)
+
+        if (shouldDisplayHowToShowRouteDialog)
+            displayDialogWhenRecyclerShown()
 
 
         lifecycleScope.launch {
@@ -86,7 +88,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         return view
     }
 
-    private fun addRecyclerViewLayoutListener() {//rename
+    private fun displayDialogWhenRecyclerShown() {
         val listener = object : View.OnLayoutChangeListener {
             override fun onLayoutChange(
                 v: View?,
@@ -99,18 +101,15 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
                 oldRight: Int,
                 oldBottom: Int
             ) {
-                if ((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v != null) {
+                if (shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v != null) {
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
                     verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
 
-
-                    InformativeDialog.show(
-                        v.context,
-                        verticalOffset,
-                        InformativeDialog.Style.Left,
-                        R.string.how_to_show_routes_message,
-                        DialogInterface.OnDismissListener { (activity as MainActivity).informativeDialog1Shown() })//rename to dismissed
+                    InformativeDialogs.displayHowToShowRouteDialog(v.context, verticalOffset) {
+                        InformativeDialogs.howToShowRouteDialogDisplayed(v.context)
+                        shouldDisplayHowToShowRouteDialog = false
+                    }
                     recyclerView.removeOnLayoutChangeListener(this)
                 }
             }

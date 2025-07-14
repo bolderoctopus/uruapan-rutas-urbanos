@@ -1,7 +1,6 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.Bundle
@@ -38,10 +37,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private lateinit var progressBar: ProgressBar
     private lateinit var materialToolbar: MaterialToolbar
     private var height: Int? = null
-    private var listener: OnFragmentInteractionListener? = null
+    private var listener: OnFragmentInteractionListener? = null//todo refactor
     private var drawnRoutes: ArrayList<RouteModel>? = null
+    private var shouldDisplayHowToShowRouteDialog = true
 
-    private var uiScope = CoroutineScope(Dispatchers.Main)
+    private var uiScope = CoroutineScope(Dispatchers.Main)//todo: refactor for lifecycle scope
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,8 +82,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, it)
         }
 
-        if ((activity as MainActivity).showInformativeDialog)
-            addRecyclerViewLayoutListener()
+        shouldDisplayHowToShowRouteDialog =
+            InformativeDialogs.shouldDisplayHowToShowRouteDialog(layoutInflater.context)
+
+        if (shouldDisplayHowToShowRouteDialog)
+            displayDialogWhenRecyclerShown()
 
         findRoutesAsync(originLatLng, destinationLatLng, getWalkDistLimit())
 
@@ -111,19 +114,18 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         super.onDetach()
     }
 
-    private fun addRecyclerViewLayoutListener(){
+    private fun displayDialogWhenRecyclerShown(){
         val listener = object : View.OnLayoutChangeListener {
             override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
-                if((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v!= null && (recyclerView.adapter?.itemCount ?: 0) > 0 ){
+                if(shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v!= null && (recyclerView.adapter?.itemCount ?: 0) > 0 ){
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
                     verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
 
-                    InformativeDialog.show(v.context,
-                            verticalOffset,
-                            InformativeDialog.Style.Left,
-                            R.string.how_to_show_routes_message,
-                            DialogInterface.OnDismissListener { (activity as MainActivity).informativeDialog1Shown() })
+                    InformativeDialogs.displayHowToShowRouteDialog(v.context, verticalOffset) {
+                        InformativeDialogs.howToShowRouteDialogDisplayed(v.context)
+                        shouldDisplayHowToShowRouteDialog = false
+                    }
                     recyclerView.removeOnLayoutChangeListener(this)
                 }
             }

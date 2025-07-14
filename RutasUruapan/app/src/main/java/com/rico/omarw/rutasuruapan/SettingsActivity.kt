@@ -2,7 +2,6 @@ package com.rico.omarw.rutasuruapan
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.ListPreference
@@ -56,7 +55,7 @@ class SettingsActivity : AppCompatActivity() {
 
         private fun deleteSomePreferences(c: Context) {
             PreferenceManager.getDefaultSharedPreferences(c).edit {
-                remove(PreferenceKeys.DIALOG_1_SHOWN)
+                remove(PreferenceKeys.HOW_TO_SHOW_ROUTE_DIALOG_SHOWN)
                 remove(PreferenceKeys.DIALOG_2_SHOWN)
                 remove(PreferenceKeys.DISCLAIMER_SHOWN)
             }

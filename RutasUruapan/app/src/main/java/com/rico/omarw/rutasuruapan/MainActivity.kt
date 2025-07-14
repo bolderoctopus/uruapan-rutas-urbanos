@@ -118,7 +118,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private val drawnRoutes = ArrayList<RouteModel>()
     private var mapZoomLevel: Int = INITIAL_ZOOM.toInt()
     private var mapHeight: Int? = null
-    var showInformativeDialog: Boolean = true
 
     private val routeViewModel: RouteViewModel by viewModels()
 
@@ -135,7 +134,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        showInformativeDialog = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DIALOG_1_SHOWN, false)
         val showDisclaimer = !PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.DISCLAIMER_SHOWN, false)
 
         bottomSheet = findViewById(R.id.bottom_sheet)
@@ -543,13 +541,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         allRoutesFragment.enableNestedScrolling(false)
     }
 
-    fun informativeDialog1Shown(){
-        PreferenceManager.getDefaultSharedPreferences(applicationContext).edit {
-            putBoolean(PreferenceKeys.DIALOG_1_SHOWN, true)
-        }
-        showInformativeDialog = false
-    }
-
     private fun getMapsCenter(): LatLng? {
         val mapFragment =
             supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
@@ -593,7 +584,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             var verticalOffset = currentMapHeight/2
             verticalOffset += resources.getDimension(R.dimen.default_marker_height).toInt()
 
-            InformativeDialog.show(this, verticalOffset, InformativeDialog.Style.Center, R.string.how_to_move_markers_message,
+            InformativeDialogs.show(this, verticalOffset, InformativeDialogs.Style.Center, R.string.how_to_move_markers_message,
                 DialogInterface.OnDismissListener {
                     searchFragment.setHasInformativeDialogBeenShown(true)
                 }

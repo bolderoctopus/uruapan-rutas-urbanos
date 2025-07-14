@@ -1,6 +1,7 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.DialogInterface.OnDismissListener
 import android.graphics.Color
 import android.view.Gravity
@@ -8,21 +9,46 @@ import android.view.LayoutInflater
 import android.view.Window
 import android.view.WindowManager
 import android.widget.TextView
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.edit
 import androidx.core.graphics.drawable.toDrawable
+import androidx.preference.PreferenceManager
+import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
 
-class InformativeDialog {
+class InformativeDialogs {
     enum class Style {
         Left,
         Center
     }
 
     companion object {
+
+        fun shouldDisplayHowToShowRouteDialog(context: Context): Boolean {
+            return !PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(PreferenceKeys.HOW_TO_SHOW_ROUTE_DIALOG_SHOWN, false)
+        }
+
+        fun howToShowRouteDialogDisplayed(context: Context) {
+            PreferenceManager.getDefaultSharedPreferences(context).edit {
+                putBoolean(PreferenceKeys.HOW_TO_SHOW_ROUTE_DIALOG_SHOWN, true)
+            }
+        }
+
+        fun displayHowToShowRouteDialog(
+            context: Context, verticalOffset: Int, onDismissListener: OnDismissListener?
+        ) {
+            show(context, verticalOffset, Style.Left,
+                R.string.how_to_show_routes_message, onDismissListener
+            )
+        }
+
+
         fun show(
             context: Context,
             verticalOffset: Int,
             style: Style,
-            message: Int,
+            @StringRes message: Int,
             onDismissListener: OnDismissListener?
         ) {
             val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_help, null)
