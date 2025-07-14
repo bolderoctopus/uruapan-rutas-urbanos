@@ -156,7 +156,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         sheetBehavior.bottomSheetCallback = sheetBehaviorCallback
 
         searchFragment = SearchFragment.newInstance()
-        allRoutesFragment = AllRoutesFragment.newInstance()
+        allRoutesFragment = AllRoutesFragment.newInstance(this)
         supportFragmentManager.beginTransaction().add(R.id.fragment_container, searchFragment, SearchFragment.TAG).commit()
         supportFragmentManager.beginTransaction().add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG).hide(allRoutesFragment).commit()
         activeFragment = searchFragment
@@ -540,7 +540,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .hide(searchFragment)
                 .commit()
         activeFragment = fragment
-        allRoutesFragment.recyclerView.isNestedScrollingEnabled = false
+        allRoutesFragment.enableNestedScrolling(false)
     }
 
     fun informativeDialog1Shown(){
@@ -629,7 +629,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         activeFragment = searchFragment
         resultsFragment = null
-        allRoutesFragment.recyclerView.isNestedScrollingEnabled = true
+        allRoutesFragment.enableNestedScrolling(true)
     }
 
     private val sheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
@@ -680,13 +680,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             ALL_ROUTES_FRAGMENT_INDEX ->{
                 hideKeyboard(this, window.decorView.windowToken)
                 searchFragment.view?.height?.let { allRoutesFragment.setHeight(it) }
-                allRoutesFragment.recyclerView.isNestedScrollingEnabled = true
+                allRoutesFragment.enableNestedScrolling(true)
                 showFragment(allRoutesFragment)
             }
             SEARCH_FRAGMENT_INDEX -> {
                 if (resultsFragment != null) {
                     resultsFragment?.let { showFragment(it) }
-                    allRoutesFragment.recyclerView.isNestedScrollingEnabled = false
+                    allRoutesFragment.enableNestedScrolling(false)
                 }
                 else
                     showFragment(searchFragment)

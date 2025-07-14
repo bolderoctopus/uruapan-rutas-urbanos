@@ -46,10 +46,16 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     private lateinit var adapter: RouteListFilterableAdapter
     private lateinit var routeModels: List<RouteModel>
     private lateinit var searchView: SearchView
-    lateinit var recyclerView: RecyclerView
+    private lateinit var recyclerView: RecyclerView
 
-    private var interactionsListener: InteractionsInterface? = null
-    private var drawnRoutes: MutableSet<RouteModel>? = null
+    private lateinit var interactionsListener: InteractionsInterface
+
+    //todo: pasar esto al viewmodel?? se recupera bien luego de una recreacion de la actividad? fragmento?
+    private var drawnRoutes: MutableSet<RouteModel> = mutableSetOf()
+
+    fun enableNestedScrolling(enable: Boolean) {//todo: is his really necessary?
+        recyclerView.isNestedScrollingEnabled = enable
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,7 +86,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         return view
     }
 
-    private fun addRecyclerViewLayoutListener() {
+    private fun addRecyclerViewLayoutListener() {//rename
         val listener = object : View.OnLayoutChangeListener {
             override fun onLayoutChange(
                 v: View?,
@@ -104,7 +110,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
                         verticalOffset,
                         InformativeDialog.Style.Left,
                         R.string.how_to_show_routes_message,
-                        DialogInterface.OnDismissListener { (activity as MainActivity).informativeDialog1Shown() })
+                        DialogInterface.OnDismissListener { (activity as MainActivity).informativeDialog1Shown() })//rename to dismissed
                     recyclerView.removeOnLayoutChangeListener(this)
                 }
             }
@@ -124,7 +130,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         }
     }
 
-    fun filter(models: List<RouteModel>, query: String): List<RouteModel> {
+    private fun filter(models: List<RouteModel>, query: String): List<RouteModel> {
         val lowerCaseQuery = query.lowercase(getDefault())
         val filteredList = ArrayList<RouteModel>()
         for (model in models) {
@@ -149,34 +155,24 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
             RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height)
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is RouteListFilterableAdapter.DrawRouteListener) {
-            interactionsListener = context as InteractionsInterface
-        } else {
-            throw RuntimeException("$context must implement RouteListFilterableAdapter.DrawRouteListener")
-        }
-    }
-
     override fun onDetach() {
         clearDrawnRoutes()
-        interactionsListener = null
         super.onDetach()
     }
 
     override fun drawRoute(route: RouteModel) {
-        if (drawnRoutes == null) drawnRoutes = mutableSetOf()
-        drawnRoutes?.add(route)
-        interactionsListener?.drawRoute(route)
+        drawnRoutes.add(route)
+        interactionsListener.drawRoute(route)
     }
 
-    private fun clearDrawnRoutes() = drawnRoutes?.forEach { it.remove() }
+    private fun clearDrawnRoutes() = drawnRoutes.forEach { it.remove() }
 
     companion object {
         const val TAG = "AllRoutesFragment"
 
         @JvmStatic
-        fun newInstance() = AllRoutesFragment().apply {
+        fun newInstance(interactionListener: InteractionsInterface) = AllRoutesFragment().apply {
+            interactionsListener = interactionListener
             arguments = Bundle().apply {
             }
         }
