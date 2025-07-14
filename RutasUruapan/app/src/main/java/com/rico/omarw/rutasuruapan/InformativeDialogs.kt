@@ -1,7 +1,6 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
-import android.content.DialogInterface
 import android.content.DialogInterface.OnDismissListener
 import android.graphics.Color
 import android.view.Gravity

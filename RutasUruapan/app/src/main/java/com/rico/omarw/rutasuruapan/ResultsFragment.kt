@@ -26,6 +26,7 @@ import kotlinx.coroutines.*
 import kotlin.math.sqrt
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 
 class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
@@ -37,11 +38,9 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private lateinit var progressBar: ProgressBar
     private lateinit var materialToolbar: MaterialToolbar
     private var height: Int? = null
-    private var listener: OnFragmentInteractionListener? = null//todo refactor
+    private lateinit var listener: OnFragmentInteractionListener
     private var drawnRoutes: ArrayList<RouteModel>? = null
     private var shouldDisplayHowToShowRouteDialog = true
-
-    private var uiScope = CoroutineScope(Dispatchers.Main)//todo: refactor for lifecycle scope
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,8 +50,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             destinationLatLng = getLanLngParcelable(it, DESTINATION_LATLNG_KEY)
         }
 
-        if(!uiScope.isActive)
-            uiScope = CoroutineScope(Dispatchers.Main)
     }
 
     private fun getLanLngParcelable(bundle: Bundle, key: String): LatLng {
@@ -95,22 +92,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     fun backButtonPressed(){
         clearDrawnRoutes()
-        listener?.onBackFromResults(drawnRoutes)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException("$context must implement OnFragmentInteractionListener")
-        }
+        listener.onBackFromResults(drawnRoutes)
     }
 
     override fun onDetach() {
         clearDrawnRoutes()
-        uiScope.cancel()
-        listener = null
         super.onDetach()
     }
 
@@ -148,9 +134,9 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){//todo: move to a separate class
         showProgressBar()
         if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
-        listener?.drawSquares(walkDistLimit)
+        listener.drawSquares(walkDistLimit)
 
-        uiScope.launch {
+        lifecycleScope.launch {
             val routesDao = AppDatabase.getInstance(requireContext())?.routesDAO()
             val commonRoutesIds: Set<Long>?
 
@@ -236,7 +222,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     override fun drawRouteResult(route: RouteModel) {
         if(drawnRoutes == null) drawnRoutes = ArrayList()
         drawnRoutes?.add(route)
-        listener?.drawRouteResult(route)
+        listener.drawRouteResult(route)
     }
 
     fun startUpdate(){
@@ -269,7 +255,8 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         private const val DESTINATION_LATLNG_KEY = "destinationlatlng"
         const val TAG = "ResultsFragment"
         @JvmStatic
-        fun newInstance(height: Int, originLatLng: LatLng, destinationLatLng: LatLng) = ResultsFragment().apply {
+        fun newInstance(height: Int, originLatLng: LatLng, destinationLatLng: LatLng, listener: OnFragmentInteractionListener) = ResultsFragment().apply {
+                this.listener = listener
                 arguments = Bundle().apply{
                     putInt(HEIGHT_KEY, height)
                     putParcelable(ORIGIN_LATLNG_KEY, originLatLng)

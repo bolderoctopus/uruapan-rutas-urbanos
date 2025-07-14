@@ -530,7 +530,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onSearch(origin: LatLng, destination: LatLng){
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(getLatLngBoundsFrom(destination, origin), CAMERA_PADDING_MARKER))
-        val fragment = ResultsFragment.newInstance(getSearchFragmentHeight(), origin, destination)
+        val fragment = ResultsFragment.newInstance(getSearchFragmentHeight(), origin, destination, this)
         resultsFragment = fragment
 
         supportFragmentManager.beginTransaction()
