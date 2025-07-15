@@ -25,7 +25,7 @@ object Constants {
 
     object PreferenceKeys{
         const val HOW_TO_SHOW_ROUTE_DIALOG_SHOWN = "has_inf_dialog1_been_shown"
-        const val DIALOG_2_SHOWN = "has_inf_dialog2_been_shown"
+        const val REMOVE_MARKER_DIALOG_SHOWN = "has_inf_dialog2_been_shown"
         const val DISCLAIMER_SHOWN = "has_disclaimer_been_shown"
 
         const val SHOW_DIALOGS = "show_dialogs_again"

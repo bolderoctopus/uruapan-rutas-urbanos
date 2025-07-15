@@ -56,7 +56,7 @@ class SettingsActivity : AppCompatActivity() {
         private fun deleteSomePreferences(c: Context) {
             PreferenceManager.getDefaultSharedPreferences(c).edit {
                 remove(PreferenceKeys.HOW_TO_SHOW_ROUTE_DIALOG_SHOWN)
-                remove(PreferenceKeys.DIALOG_2_SHOWN)
+                remove(PreferenceKeys.REMOVE_MARKER_DIALOG_SHOWN)
                 remove(PreferenceKeys.DISCLAIMER_SHOWN)
             }
         }

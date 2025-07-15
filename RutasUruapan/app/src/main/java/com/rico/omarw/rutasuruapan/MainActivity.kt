@@ -2,7 +2,6 @@ package com.rico.omarw.rutasuruapan
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -117,6 +116,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private var uiScope = CoroutineScope(Dispatchers.Main)
     private val drawnRoutes = ArrayList<RouteModel>()
     private var mapZoomLevel: Int = INITIAL_ZOOM.toInt()
+
+    /**
+     * Height of the map fragment in pixels. It's used to display an SearchFragment Remove marker dialog
+     * on top of a marker that has just been added. It's necessary to store it when the keyboard is hidden,
+     * because when the dialog tries to show the dialog the keyboard is visible interfering with the map height
+     * to calculate the offset.
+     */
     private var mapHeight: Int? = null
 
     private val routeViewModel: RouteViewModel by viewModels()
@@ -153,7 +159,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         sheetBehavior.bottomSheetCallback = sheetBehaviorCallback
 
-        searchFragment = SearchFragment.newInstance()
+        searchFragment = SearchFragment.newInstance(this)
         allRoutesFragment = AllRoutesFragment.newInstance(this)
         supportFragmentManager.beginTransaction().add(R.id.fragment_container, searchFragment, SearchFragment.TAG).commit()
         supportFragmentManager.beginTransaction().add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG).hide(allRoutesFragment).commit()
@@ -250,8 +256,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         val layoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 map.setPadding(0, 0, 0, getSearchFragmentHeight() + slideIndicator.height)
-                if(!searchFragment.getHasInformativeDialogBeenShown())
-                    mapHeight = (supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment).view?.height
+                mapHeight = (supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment).view?.height
 
                 // Move the GoogleMapCompass below the logo
                 val compass = findViewById<View>(R.id.main_content).findViewWithTag<View>("GoogleMapCompass")
@@ -541,6 +546,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         allRoutesFragment.enableNestedScrolling(false)
     }
 
+    override fun getMapVerticalOffset(): Int {
+        return mapHeight?.let {
+            var verticalOffset = it/2
+            verticalOffset += resources.getDimension(R.dimen.default_marker_height).toInt()
+            verticalOffset
+        } ?: 0
+    }
+
     private fun getMapsCenter(): LatLng? {
         val mapFragment =
             supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
@@ -574,21 +587,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             destinationMarker = map.addMarker(MarkerOptions().title(title).position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).draggable(true))
             destinationMarker?.tag = markerType
             destinationMarker?.let { if (bounce) setMarkerBounce(it) }
-        }
-
-
-        val currentMapHeight = mapHeight
-        if((searchFragment.getShowInformativeDialog() && currentMapHeight != null)){
-            // use the map initial height as vertical offset from the bottom
-            // because the keyboard doesn't hide immediately and there's no easy way to find out the keyboard's height
-            var verticalOffset = currentMapHeight/2
-            verticalOffset += resources.getDimension(R.dimen.default_marker_height).toInt()
-
-            InformativeDialogs.show(this, verticalOffset, InformativeDialogs.Style.Center, R.string.how_to_move_markers_message,
-                DialogInterface.OnDismissListener {
-                    searchFragment.setHasInformativeDialogBeenShown(true)
-                }
-            )
         }
     }
 

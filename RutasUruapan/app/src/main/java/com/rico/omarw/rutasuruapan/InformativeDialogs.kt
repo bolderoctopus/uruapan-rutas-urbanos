@@ -1,6 +1,7 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.DialogInterface.OnDismissListener
 import android.graphics.Color
 import android.view.Gravity
@@ -37,8 +38,31 @@ class InformativeDialogs {
         fun displayHowToShowRouteDialog(
             context: Context, verticalOffset: Int, onDismissListener: OnDismissListener?
         ) {
-            show(context, verticalOffset, Style.Left,
+            show(
+                context, verticalOffset, Style.Left,
                 R.string.how_to_show_routes_message, onDismissListener
+            )
+        }
+
+        fun shouldDisplayRemoveMarkerDialog(context: Context): Boolean {
+            return !PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(PreferenceKeys.REMOVE_MARKER_DIALOG_SHOWN, false)
+        }
+
+        fun removeMarkerDialogDisplayed(context: Context) {
+            PreferenceManager.getDefaultSharedPreferences(context).edit {
+                putBoolean(PreferenceKeys.REMOVE_MARKER_DIALOG_SHOWN, true)
+            }
+        }
+
+        fun displayHowToRemoveMarkersDialog(
+            context: Context,
+            verticalOffset: Int,
+            listener: OnDismissListener
+        ) {
+            show(
+                context, verticalOffset, Style.Center, R.string.how_to_move_markers_message,
+                listener
             )
         }
 
