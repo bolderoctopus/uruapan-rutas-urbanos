@@ -18,7 +18,6 @@ import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.Locale.getDefault
 
 @AndroidEntryPoint
 class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener {
@@ -30,19 +29,14 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         }
     private val queryTextListener = object : SearchView.OnQueryTextListener {
         override fun onQueryTextChange(query: String?): Boolean {
-            if (query != null) {
-                val filteredList = filter(routeModels, query)
-                adapter.replaceAll(filteredList)
-                recyclerView.scrollToPosition(0)
-            }
+            query?.let { routeViewModel.filterRoutes(it) }
             return true
         }
 
         override fun onQueryTextSubmit(p0: String?) = false
     }
 
-    private lateinit var adapter: RouteListFilterableAdapter
-    private lateinit var routeModels: List<RouteModel>
+    private val adapter: RouteListFilterableAdapter = RouteListFilterableAdapter(this, comparator)
     private lateinit var searchView: SearchView
     private lateinit var recyclerView: RecyclerView
 
@@ -54,12 +48,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
 
     fun enableNestedScrolling(enable: Boolean) {//todo: is his really necessary?
         recyclerView.isNestedScrollingEnabled = enable
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-        }
     }
 
     override fun onCreateView(
@@ -74,7 +62,12 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         searchView.setOnQueryTextListener(queryTextListener)
         removeSearchViewBackground()
 
-        shouldDisplayHowToShowRouteDialog =//todo: review initialization, if it showsFirst in Results fragments you see it again here
+        recyclerView.setHasFixedSize(false)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = adapter
+
+//todo: review initialization, if it showsFirst in Results fragments you see it again here
+        shouldDisplayHowToShowRouteDialog =
             InformativeDialogs.shouldDisplayHowToShowRouteDialog(layoutInflater.context)
 
         if (shouldDisplayHowToShowRouteDialog)
@@ -82,8 +75,13 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
 
 
         lifecycleScope.launch {
-            val routes = routeViewModel.getRoutes()
-            setAdapterRoutes(routes)
+            routeViewModel.filterableRoutes.collect {
+                if (adapter.itemCount == 0) adapter.add(it)
+                else {
+                    adapter.replaceAll(it)
+                    recyclerView.scrollToPosition(0)
+                }
+            }
         }
         return view
     }
@@ -129,26 +127,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         }
     }
 
-    private fun filter(models: List<RouteModel>, query: String): List<RouteModel> {
-        val lowerCaseQuery = query.lowercase(getDefault())
-        val filteredList = ArrayList<RouteModel>()
-        for (model in models) {
-            val name = model.name.lowercase(getDefault())
-            if (name.contains(lowerCaseQuery) || model.routeDb.shortName.contains(lowerCaseQuery))
-                filteredList.add(model)
-        }
-
-        return filteredList
-    }
-
-    private fun setAdapterRoutes(data: List<RouteModel>) {
-        routeModels = data
-        recyclerView.setHasFixedSize(false)
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        adapter = RouteListFilterableAdapter(this, comparator).apply { add(routeModels) }
-        recyclerView.adapter = adapter
-    }
-
     fun setHeight(height: Int) {
         view?.layoutParams =
             RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height)
@@ -160,6 +138,8 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     }
 
     override fun drawRoute(route: RouteModel) {
+        //todo: cuando vuelves a clickear una ruta no se remueve de esta lista, deberia?
+        // algo mencionaban acerca de mantener una referencia a ellas para no volver a dibujar, no?
         drawnRoutes.add(route)
         interactionsListener.drawRoute(route)
     }
