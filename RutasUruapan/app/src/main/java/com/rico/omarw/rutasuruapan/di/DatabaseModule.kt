@@ -23,7 +23,7 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(context.applicationContext,  AppDatabase::class.java, "routes_database")
             .createFromAsset("databases/pre_packaged_routes.db")
-            .fallbackToDestructiveMigration()//todo: fix this warning
+            .fallbackToDestructiveMigration(true)
             .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
     }
