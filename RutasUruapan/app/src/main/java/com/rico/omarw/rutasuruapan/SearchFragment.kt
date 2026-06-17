@@ -28,13 +28,14 @@ import com.rico.omarw.rutasuruapan.Utils.checkInternetConnection
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
-import kotlinx.coroutines.*
-import java.text.DecimalFormat
-import java.util.*
 import kotlin.collections.ArrayList
 import androidx.preference.PreferenceManager
 import com.rico.omarw.rutasuruapan.databinding.FragmentSearchBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 import kotlin.getValue
 
 @AndroidEntryPoint
@@ -320,13 +321,13 @@ class SearchFragment : Fragment() {
                 if (!addresses.isNullOrEmpty())
                     when (markerType) {
                         MarkerType.Origin -> binding.originAutocompleteTextview.setText(
-                            getShortAddress(
+                            AddressUtils.getShortAddress(
                                 addresses[0]
                             )
                         )
 
                         MarkerType.Destination -> binding.destinationAutocompleteTextview.setText(
-                            getShortAddress(addresses[0])
+                            AddressUtils.getShortAddress(addresses[0])
                         )
                     }
             } catch (exception: java.lang.Exception) {
@@ -464,23 +465,6 @@ class SearchFragment : Fragment() {
         val PlaceFields = ArrayList<Place.Field>().apply {
             add(Place.Field.ADDRESS)
             add(Place.Field.LAT_LNG)
-        }
-
-        private val decimalFormat = DecimalFormat("#.#####")
-
-        fun getShortAddress(address: Address): String {
-            // use featureName if it's not the street number
-            return if (address.featureName != address.subThoroughfare)
-                address.featureName
-            // use cords if street + subLocality are null or street + postalCode are null
-            else if (address.thoroughfare == null || (address.subLocality == null || address.postalCode == null))
-                decimalFormat.format(address.latitude) + ", " + decimalFormat.format(address.longitude)
-            // use street + subLocality if it's not "Colonia"
-            else if (address.subLocality != "Colonia")
-                address.thoroughfare + ", " + address.subLocality
-            // use street + postalCode
-            else
-                address.thoroughfare + ", " + address.postalCode
         }
     }
 }

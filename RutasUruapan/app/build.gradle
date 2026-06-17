@@ -62,4 +62,11 @@ dependencies {
     ksp libs.androidx.room.compiler
     ksp libs.hilt.android.compiler
 
+    testImplementation libs.junit
+    testImplementation libs.mockk
+    testImplementation libs.robolectric
+    testImplementation libs.turbine
+    testImplementation libs.androidx.test.core
+    testImplementation libs.kotlinx.coroutines.test
+
 }

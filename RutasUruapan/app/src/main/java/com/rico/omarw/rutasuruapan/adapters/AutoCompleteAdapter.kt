@@ -23,8 +23,8 @@ import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.rico.omarw.rutasuruapan.AddressUtils
 import com.rico.omarw.rutasuruapan.R
-import com.rico.omarw.rutasuruapan.SearchFragment
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -205,7 +205,7 @@ class AutoCompleteAdapter(
             0, AutocompleteItemModel(
                 AutocompleteItemModel.ItemKind.CurrentLocation,
                 context.getString(R.string.current_location_primary),
-                SearchFragment.getShortAddress(address),
+                AddressUtils.getShortAddress(address),
                 null,
                 LatLng(address.latitude, address.longitude)
             )
