@@ -114,7 +114,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private lateinit var startMarkerPosition: LatLng
     private var uiScope = CoroutineScope(Dispatchers.Main)
-    private val drawnRoutes = ArrayList<RouteModel>()
     private var mapZoomLevel: Int = INITIAL_ZOOM.toInt()
 
     /**
@@ -355,7 +354,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 route.mainSegment = map.addPolyline(mainSegmentPolOpt)
                 route.secondarySegment = map.addPolyline(secondarySegmentPolOpt)
                 route.directionalMarkers = drawDirectionalMarkers(route.getMainSegmentPoints(points), color)
-                drawnRoutes.add(route)
+                routeViewModel.addDrawnRoute(route)
 
                 // for debug purposes
                 route.startMarker = route.startPoint?.let{ drawMarker(it.getLatLng(), "startPoint") }
@@ -386,7 +385,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     route.polyline = map.addPolyline(polylineOptions)
 
                     route.directionalMarkers = drawDirectionalMarkers(points, color)
-                    drawnRoutes.add(route)
+                    routeViewModel.addDrawnRoute(route)
                     // for debug
                     route.mainSegmentMarkers = drawMarkers(points)
 
@@ -543,7 +542,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .hide(searchFragment)
                 .commit()
         activeFragment = fragment
-        allRoutesFragment.enableNestedScrolling(false)
     }
 
     override fun getMapVerticalOffset(): Int {
@@ -604,11 +602,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onBackFromResults(removedRoutes: List<RouteModel>?) {
-        if (removedRoutes != null) {
-            for (removedRoute in removedRoutes)
-                drawnRoutes.remove(removedRoute)
-        }
-
         clearSquares()
         supportFragmentManager.beginTransaction().apply {
             resultsFragment?.let { remove(it) }
@@ -618,7 +611,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         activeFragment = searchFragment
         resultsFragment = null
-        allRoutesFragment.enableNestedScrolling(true)
     }
 
     private val sheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
@@ -647,7 +639,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onCameraMove() {
         if (mapZoomLevel != map.cameraPosition.zoom.toInt()) {
-            for (route in drawnRoutes){
+            for (route in routeViewModel.drawnRoutes.value){
                 if(route.isDrawn)
                     updateShownDirectionalArrows(mapZoomLevel, map.cameraPosition.zoom.toInt(), route)
             }
@@ -669,13 +661,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             ALL_ROUTES_FRAGMENT_INDEX ->{
                 hideKeyboard(this, window.decorView.windowToken)
                 searchFragment.view?.height?.let { allRoutesFragment.setHeight(it) }
-                allRoutesFragment.enableNestedScrolling(true)
                 showFragment(allRoutesFragment)
             }
             SEARCH_FRAGMENT_INDEX -> {
                 if (resultsFragment != null) {
                     resultsFragment?.let { showFragment(it) }
-                    allRoutesFragment.enableNestedScrolling(false)
                 }
                 else
                     showFragment(searchFragment)

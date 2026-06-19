@@ -43,13 +43,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     private lateinit var interactionsListener: InteractionsInterface
     private var shouldDisplayHowToShowRouteDialog = true
 
-    //todo: pasar esto al viewmodel?? se recupera bien luego de una recreacion de la actividad? fragmento?
-    private var drawnRoutes: MutableSet<RouteModel> = mutableSetOf()
-
-    fun enableNestedScrolling(enable: Boolean) {//todo: is his really necessary?
-        recyclerView.isNestedScrollingEnabled = enable
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -66,7 +59,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = adapter
 
-//todo: review initialization, if it showsFirst in Results fragments you see it again here
         shouldDisplayHowToShowRouteDialog =
             InformativeDialogs.shouldDisplayHowToShowRouteDialog(layoutInflater.context)
 
@@ -99,7 +91,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
                 oldRight: Int,
                 oldBottom: Int
             ) {
-                if (shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v != null) {
+                if (shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v != null && InformativeDialogs.shouldDisplayHowToShowRouteDialog(v.context)) {
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
                     verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
@@ -138,13 +130,11 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     }
 
     override fun drawRoute(route: RouteModel) {
-        //todo: cuando vuelves a clickear una ruta no se remueve de esta lista, deberia?
-        // algo mencionaban acerca de mantener una referencia a ellas para no volver a dibujar, no?
-        drawnRoutes.add(route)
+        routeViewModel.addDrawnRoute(route)
         interactionsListener.drawRoute(route)
     }
 
-    private fun clearDrawnRoutes() = drawnRoutes.forEach { it.remove() }
+    private fun clearDrawnRoutes() = routeViewModel.clearDrawnRoutes()
 
     companion object {
         const val TAG = "AllRoutesFragment"

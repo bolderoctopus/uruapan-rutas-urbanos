@@ -26,11 +26,13 @@ import kotlinx.coroutines.*
 import kotlin.math.sqrt
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 
 class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
+    private val routeViewModel: RouteViewModel by activityViewModels()
     private lateinit var recyclerView: RecyclerView
     private lateinit var groupWalkMessage: LinearLayout
     private lateinit var originLatLng: LatLng
@@ -39,7 +41,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private lateinit var materialToolbar: MaterialToolbar
     private var height: Int? = null
     private lateinit var listener: OnFragmentInteractionListener
-    private var drawnRoutes: ArrayList<RouteModel>? = null
     private var shouldDisplayHowToShowRouteDialog = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,7 +93,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     fun backButtonPressed(){
         clearDrawnRoutes()
-        listener.onBackFromResults(drawnRoutes)
+        listener.onBackFromResults(null)
     }
 
     override fun onDetach() {
@@ -103,7 +104,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private fun displayDialogWhenRecyclerShown(){
         val listener = object : View.OnLayoutChangeListener {
             override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
-                if(shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v!= null && (recyclerView.adapter?.itemCount ?: 0) > 0 ){
+                if(shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v!= null && (recyclerView.adapter?.itemCount ?: 0) > 0 && InformativeDialogs.shouldDisplayHowToShowRouteDialog(v.context)){
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
                     verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
@@ -178,7 +179,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         }
     }
 
-    private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
+    private fun clearDrawnRoutes() = routeViewModel.clearDrawnRoutes()
 
     private fun displayRoutes(results: ArrayList<RouteModel>){
         groupWalkMessage.visibility = View.GONE
@@ -220,8 +221,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     }
 
     override fun drawRouteResult(route: RouteModel) {
-        if(drawnRoutes == null) drawnRoutes = ArrayList()
-        drawnRoutes?.add(route)
+        routeViewModel.addDrawnRoute(route)
         listener.drawRouteResult(route)
     }
 

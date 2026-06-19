@@ -22,6 +22,9 @@ class RouteViewModel @Inject constructor(
     private val _filterableRoutes: MutableStateFlow<List<RouteModel>> = MutableStateFlow(routes)
     val filterableRoutes: StateFlow<List<RouteModel>> = _filterableRoutes
 
+    private val _drawnRoutes: MutableStateFlow<Set<RouteModel>> = MutableStateFlow(emptySet())
+    val drawnRoutes: StateFlow<Set<RouteModel>> = _drawnRoutes
+
     init {
         viewModelScope.launch {
             fetchRoutes()
@@ -45,6 +48,19 @@ class RouteViewModel @Inject constructor(
             }
 
         }
+    }
+
+    fun addDrawnRoute(route: RouteModel) {
+        _drawnRoutes.value = _drawnRoutes.value + route
+    }
+
+    fun removeDrawnRoute(route: RouteModel) {
+        _drawnRoutes.value = _drawnRoutes.value - route
+    }
+
+    fun clearDrawnRoutes() {
+        _drawnRoutes.value.forEach { it.remove() }
+        _drawnRoutes.value = emptySet()
     }
 
 
