@@ -32,6 +32,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
+import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
@@ -130,6 +131,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
 
         if(!Places.isInitialized()){
             val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData

@@ -23,7 +23,8 @@
         android:background="@color/appbarlayout_background"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:liftOnScroll="true">
+        app:liftOnScroll="true"
+        android:fitsSystemWindows="true">
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -18,12 +18,16 @@ import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.VERSION
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.WALK_DIST_LIMIT
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.core.view.WindowCompat
 
 class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
+
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
+
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.settings, SettingsFragment())
