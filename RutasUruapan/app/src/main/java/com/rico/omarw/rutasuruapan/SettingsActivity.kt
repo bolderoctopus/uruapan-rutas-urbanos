@@ -3,6 +3,7 @@ package com.rico.omarw.rutasuruapan
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -18,21 +19,32 @@ import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.VERSION
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.WALK_DIST_LIMIT
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 
 class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
 
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        val settingsContainer = findViewById<android.view.View>(R.id.settings)
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.settings_activity_root)) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            toolbar.updatePadding(top = systemBars.top)
+            settingsContainer.updatePadding(bottom = systemBars.bottom)
+            insets
+        }
 
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.settings, SettingsFragment())
             .commit()
-        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.elevation = 10f

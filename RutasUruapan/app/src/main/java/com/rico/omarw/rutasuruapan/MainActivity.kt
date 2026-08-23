@@ -24,6 +24,7 @@ import android.view.animation.BounceInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
@@ -32,8 +33,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -128,11 +132,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private val routeViewModel: RouteViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.tablayout.updatePadding(top = systemBars.top)
+            binding.bottomSheet.updatePadding(bottom = systemBars.bottom)
+            insets
+        }
 
         if(!Places.isInitialized()){
             val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
