@@ -58,13 +58,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:tint="@color/primaryDark"
-                android:contentDescription="@string/slide_indicator_content_description" />
+                android:contentDescription="@string/slide_indicator_content_description"
+                app:tint="@color/primaryDark" />
         </RelativeLayout>
         <RelativeLayout
             android:id="@+id/fragment_container"
             android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="0dp"/>
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
