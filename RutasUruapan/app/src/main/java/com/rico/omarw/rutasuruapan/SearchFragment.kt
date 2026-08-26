@@ -272,7 +272,7 @@ class SearchFragment : Fragment() {
                 placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
                     if (it.isSuccessful && it.result != null) drawMarker(
                         markerType,
-                        it.result?.place?.latLng,
+                        it.result?.place?.location,
                         title,
                         true,
                         false
@@ -463,8 +463,8 @@ class SearchFragment : Fragment() {
         }
 
         val PlaceFields = ArrayList<Place.Field>().apply {
-            add(Place.Field.ADDRESS)
-            add(Place.Field.LAT_LNG)
+            add(Place.Field.FORMATTED_ADDRESS)
+            add(Place.Field.LOCATION)
         }
     }
 }

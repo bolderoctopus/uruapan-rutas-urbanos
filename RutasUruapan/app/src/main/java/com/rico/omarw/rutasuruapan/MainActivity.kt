@@ -147,7 +147,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         if(!Places.isInitialized()){
             val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
-            Places.initialize(this, requireNotNull(metaData.getString("com.google.android.geo.API_KEY")))
+            Places.initializeWithNewPlacesApiEnabled(this, requireNotNull(metaData.getString("com.google.android.geo.API_KEY")))
         }
 
 
@@ -170,7 +170,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         binding.tablayout.addOnTabSelectedListener(this)
 
-        sheetBehavior.bottomSheetCallback = sheetBehaviorCallback
+        sheetBehavior.addBottomSheetCallback(sheetBehaviorCallback)
 
         searchFragment = SearchFragment.newInstance(this)
         allRoutesFragment = AllRoutesFragment.newInstance(this)
