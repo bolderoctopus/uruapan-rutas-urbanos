@@ -43,6 +43,15 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private lateinit var listener: OnFragmentInteractionListener
     private var shouldDisplayHowToShowRouteDialog = true
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnFragmentInteractionListener) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement OnFragmentInteractionListener")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -137,7 +146,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener.drawSquares(walkDistLimit)
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val routesDao = AppDatabase.getInstance(requireContext())?.routesDAO()
             val commonRoutesIds: Set<Long>?
 
@@ -255,8 +264,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         private const val DESTINATION_LATLNG_KEY = "destinationlatlng"
         const val TAG = "ResultsFragment"
         @JvmStatic
-        fun newInstance(height: Int, originLatLng: LatLng, destinationLatLng: LatLng, listener: OnFragmentInteractionListener) = ResultsFragment().apply {
-                this.listener = listener
+        fun newInstance(height: Int, originLatLng: LatLng, destinationLatLng: LatLng) = ResultsFragment().apply {
                 arguments = Bundle().apply{
                     putInt(HEIGHT_KEY, height)
                     putParcelable(ORIGIN_LATLNG_KEY, originLatLng)

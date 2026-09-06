@@ -1,5 +1,6 @@
 package com.rico.omarw.rutasuruapan
 
+import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
@@ -62,6 +63,15 @@ class SearchFragment : Fragment() {
     private lateinit var listener: OnFragmentInteractionListener
     private var currentLocationOwner: MarkerType? = null
     private var shouldDisplayRemoveMarkerDialog: Boolean = true
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnFragmentInteractionListener) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement OnFragmentInteractionListener")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -458,8 +468,7 @@ class SearchFragment : Fragment() {
         )
 
         @JvmStatic
-        fun newInstance(listener: OnFragmentInteractionListener) = SearchFragment().apply {
-            this.listener = listener
+        fun newInstance() = SearchFragment().apply {
         }
 
         val PlaceFields = ArrayList<Place.Field>().apply {

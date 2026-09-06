@@ -44,7 +44,7 @@ class RouteViewModel @Inject constructor(
         viewModelScope.launch {
             _filterableRoutes.value = routes.filter {
                 val name = it.name.lowercase(getDefault())
-                name.contains(query) or it.routeDb.shortName.contains(query)
+                name.contains(query) || it.routeDb.shortName.contains(query)
             }
 
         }

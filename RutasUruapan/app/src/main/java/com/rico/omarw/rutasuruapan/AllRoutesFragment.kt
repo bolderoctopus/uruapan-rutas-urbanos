@@ -1,5 +1,6 @@
 package com.rico.omarw.rutasuruapan
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -11,7 +12,9 @@ import android.widget.RelativeLayout
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rico.omarw.rutasuruapan.adapters.RouteListFilterableAdapter
@@ -43,6 +46,15 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     private lateinit var interactionsListener: InteractionsInterface
     private var shouldDisplayHowToShowRouteDialog = true
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is InteractionsInterface) {
+            interactionsListener = context
+        } else {
+            throw RuntimeException("$context must implement InteractionsInterface")
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -66,12 +78,14 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
             displayDialogWhenRecyclerShown()
 
 
-        lifecycleScope.launch {
-            routeViewModel.filterableRoutes.collect {
-                if (adapter.itemCount == 0) adapter.add(it)
-                else {
-                    adapter.replaceAll(it)
-                    recyclerView.scrollToPosition(0)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                routeViewModel.filterableRoutes.collect {
+                    if (adapter.itemCount == 0) adapter.add(it)
+                    else {
+                        adapter.replaceAll(it)
+                        recyclerView.scrollToPosition(0)
+                    }
                 }
             }
         }
@@ -140,8 +154,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         const val TAG = "AllRoutesFragment"
 
         @JvmStatic
-        fun newInstance(interactionListener: InteractionsInterface) = AllRoutesFragment().apply {
-            interactionsListener = interactionListener
+        fun newInstance() = AllRoutesFragment().apply {
             arguments = Bundle().apply {
             }
         }

@@ -171,8 +171,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         sheetBehavior.addBottomSheetCallback(sheetBehaviorCallback)
 
-        searchFragment = SearchFragment.newInstance(this)
-        allRoutesFragment = AllRoutesFragment.newInstance(this)
+        searchFragment = SearchFragment.newInstance()
+        allRoutesFragment = AllRoutesFragment.newInstance()
         supportFragmentManager.beginTransaction().add(R.id.fragment_container, searchFragment, SearchFragment.TAG).commit()
         supportFragmentManager.beginTransaction().add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG).hide(allRoutesFragment).commit()
         activeFragment = searchFragment
@@ -548,7 +548,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onSearch(origin: LatLng, destination: LatLng){
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(getLatLngBoundsFrom(destination, origin), CAMERA_PADDING_MARKER))
-        val fragment = ResultsFragment.newInstance(getSearchFragmentHeight(), origin, destination, this)
+        val fragment = ResultsFragment.newInstance(getSearchFragmentHeight(), origin, destination)
         resultsFragment = fragment
 
         supportFragmentManager.beginTransaction()
