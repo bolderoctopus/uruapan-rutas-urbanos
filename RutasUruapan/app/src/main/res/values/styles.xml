@@ -5,6 +5,7 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primaryDark</item>
         <item name="colorSecondary">@color/secondary</item>
+        <item name="android:windowLightStatusBar">true</item>
 
         <item name="windowActionBar">true</item>
         <item name="windowNoTitle">true</item>

@@ -1,18 +1,15 @@
 package com.rico.omarw.rutasuruapan
 
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
@@ -27,9 +24,15 @@ import com.rico.omarw.rutasuruapan.database.Route
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlinx.coroutines.*
 import kotlin.math.sqrt
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 
 class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
+    private val routeViewModel: RouteViewModel by activityViewModels()
     private lateinit var recyclerView: RecyclerView
     private lateinit var groupWalkMessage: LinearLayout
     private lateinit var originLatLng: LatLng
@@ -37,10 +40,17 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     private lateinit var progressBar: ProgressBar
     private lateinit var materialToolbar: MaterialToolbar
     private var height: Int? = null
-    private var listener: OnFragmentInteractionListener? = null
-    private var drawnRoutes: ArrayList<RouteModel>? = null
+    private lateinit var listener: OnFragmentInteractionListener
+    private var shouldDisplayHowToShowRouteDialog = true
 
-    private var uiScope = CoroutineScope(Dispatchers.Main)
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnFragmentInteractionListener) {
+            listener = context
+        } else {
+            throw RuntimeException("$context must implement OnFragmentInteractionListener")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,8 +60,6 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             destinationLatLng = getLanLngParcelable(it, DESTINATION_LATLNG_KEY)
         }
 
-        if(!uiScope.isActive)
-            uiScope = CoroutineScope(Dispatchers.Main)
     }
 
     private fun getLanLngParcelable(bundle: Bundle, key: String): LatLng {
@@ -81,8 +89,11 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, it)
         }
 
-        if ((activity as MainActivity).showInformativeDialog)
-            addRecyclerViewLayoutListener()
+        shouldDisplayHowToShowRouteDialog =
+            InformativeDialogs.shouldDisplayHowToShowRouteDialog(layoutInflater.context)
+
+        if (shouldDisplayHowToShowRouteDialog)
+            displayDialogWhenRecyclerShown()
 
         findRoutesAsync(originLatLng, destinationLatLng, getWalkDistLimit())
 
@@ -91,38 +102,26 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     fun backButtonPressed(){
         clearDrawnRoutes()
-        listener?.onBackFromResults(drawnRoutes)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
-        }
+        listener.onBackFromResults(null)
     }
 
     override fun onDetach() {
         clearDrawnRoutes()
-        uiScope.cancel()
-        listener = null
         super.onDetach()
     }
 
-    private fun addRecyclerViewLayoutListener(){
+    private fun displayDialogWhenRecyclerShown(){
         val listener = object : View.OnLayoutChangeListener {
             override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
-                if((activity as MainActivity).showInformativeDialog && isVisible && top != 0 && v!= null && (recyclerView.adapter?.itemCount ?: 0) > 0 ){
+                if(shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v!= null && (recyclerView.adapter?.itemCount ?: 0) > 0 && InformativeDialogs.shouldDisplayHowToShowRouteDialog(v.context)){
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
                     verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
 
-                    InformativeDialog.show(v.context,
-                            verticalOffset,
-                            InformativeDialog.Style.Left,
-                            R.string.how_to_show_routes_message,
-                            DialogInterface.OnDismissListener { (activity as MainActivity).informativeDialog1Shown() })
+                    InformativeDialogs.displayHowToShowRouteDialog(v.context, verticalOffset) {
+                        InformativeDialogs.howToShowRouteDialogDisplayed(v.context)
+                        shouldDisplayHowToShowRouteDialog = false
+                    }
                     recyclerView.removeOnLayoutChangeListener(this)
                 }
             }
@@ -142,12 +141,12 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
      * @param destinationLatLng End point
      * @param walkDistLimit How much the user is willing to walk between the route start/end point and the given origin/destination respectively
      */
-    private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){
+    private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){//todo: move to a separate class
         showProgressBar()
         if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
-        listener?.drawSquares(walkDistLimit)
+        listener.drawSquares(walkDistLimit)
 
-        uiScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val routesDao = AppDatabase.getInstance(requireContext())?.routesDAO()
             val commonRoutesIds: Set<Long>?
 
@@ -189,7 +188,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         }
     }
 
-    private fun clearDrawnRoutes() = drawnRoutes?.forEach{it.remove()}
+    private fun clearDrawnRoutes() = routeViewModel.clearDrawnRoutes()
 
     private fun displayRoutes(results: ArrayList<RouteModel>){
         groupWalkMessage.visibility = View.GONE
@@ -219,7 +218,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     }
 
     private fun hideProgressBar(){
-        if(progressBar.visibility == View.VISIBLE)
+        if(progressBar.isVisible)
             progressBar.animate().scaleY(0f).withEndAction { progressBar.visibility = View.GONE }.start()
     }
 
@@ -231,9 +230,8 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
     }
 
     override fun drawRouteResult(route: RouteModel) {
-        if(drawnRoutes == null) drawnRoutes = ArrayList()
-        drawnRoutes?.add(route)
-        listener?.drawRouteResult(route)
+        routeViewModel.addDrawnRoute(route)
+        listener.drawRouteResult(route)
     }
 
     fun startUpdate(){
@@ -248,7 +246,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
 
     private fun getWalkDistLimit() : Double {
-        val string = PreferenceManager.getDefaultSharedPreferences(context).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
+        val string = PreferenceManager.getDefaultSharedPreferences(requireContext()).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
         return if(string == null) WALK_DIST_LIMIT_DEFAULT * METER_IN_ANGULAR_LAT_LNG
                 else (string.toDouble()  * METER_IN_ANGULAR_LAT_LNG)
     }

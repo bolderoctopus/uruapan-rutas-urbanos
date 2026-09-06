@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.com.android.application)
     alias(libs.plugins.org.jetbrains.kotlin.android)
-    id 'kotlin-kapt'
+    alias(libs.plugins.com.dagger.hilt)
+    id 'com.google.devtools.ksp'
 }
 
 def apiKeysFile = rootProject.file("apikeys.properties")
@@ -10,14 +11,14 @@ apiKeysProperties.load(new FileInputStream(apiKeysFile))
 
 android {
     namespace 'com.rico.omarw.rutasuruapan'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.rico.omarw.rutasuruapan"
-        minSdk 21
-        targetSdk 34
-        versionCode 10
-        versionName "1.5.0"
+        minSdk 24
+        targetSdk 35
+        versionCode 11
+        versionName "1.5.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [mapsAndPlacesAPIKey:apiKeysProperties['mapsAndPlaces']]
     }
@@ -31,6 +32,13 @@ android {
         viewBinding true
         buildConfig true
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+    kotlinOptions {
+        jvmTarget = '21'
+    }
 }
 
 dependencies {
@@ -41,14 +49,24 @@ dependencies {
     implementation libs.androidx.room.runtime
     implementation libs.androidx.legacy.support.v4
     implementation libs.androidx.preference
+    implementation libs.androidx.fragment
     implementation libs.material
     implementation libs.places
     implementation libs.androidx.recyclerview
     implementation libs.kotlinx.coroutines.core
     implementation libs.kotlinx.coroutines.android
     implementation libs.androidx.room.ktx
+    implementation libs.hilt.android
 
 
-    kapt libs.androidx.room.compiler
+    ksp libs.androidx.room.compiler
+    ksp libs.hilt.android.compiler
+
+    testImplementation libs.junit
+    testImplementation libs.mockk
+    testImplementation libs.robolectric
+    testImplementation libs.turbine
+    testImplementation libs.androidx.test.core
+    testImplementation libs.kotlinx.coroutines.test
 
 }
