@@ -139,9 +139,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             binding.tablayout.updatePadding(top = systemBars.top)
-            binding.bottomSheet.updatePadding(bottom = maxOf(systemBars.bottom, ime.bottom))
             insets
         }
 

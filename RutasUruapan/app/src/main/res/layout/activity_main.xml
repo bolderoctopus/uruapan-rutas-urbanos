@@ -44,9 +44,8 @@
         android:orientation="vertical"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
         app:behavior_hideable="false"
-        app:behavior_peekHeight="@dimen/slide_indicator_height"
-
-        >
+        app:behavior_peekHeight="20dp"
+        app:paddingBottomSystemWindowInsets="true">
         <RelativeLayout
             android:background="@color/my_divider"
             android:layout_width="match_parent"
