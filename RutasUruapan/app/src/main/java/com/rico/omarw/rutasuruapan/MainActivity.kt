@@ -24,6 +24,7 @@ import android.view.animation.BounceInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -137,6 +138,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                resultsFragment?.let {
+                    if (it.isVisible) {
+                        it.backButtonPressed()
+                        return
+                    }
+                }
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+                isEnabled = true
+            }
+        })
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -642,13 +657,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
 
-    }
-
-    override fun onBackPressed() {
-        resultsFragment?.let {
-            if(it.isVisible) it.backButtonPressed()
-            else super.onBackPressed()
-        }
     }
 
     override fun onCameraMove() {

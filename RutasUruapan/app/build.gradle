@@ -11,12 +11,12 @@ apiKeysProperties.load(new FileInputStream(apiKeysFile))
 
 android {
     namespace 'com.rico.omarw.rutasuruapan'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.rico.omarw.rutasuruapan"
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode 11
         versionName "1.5.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
