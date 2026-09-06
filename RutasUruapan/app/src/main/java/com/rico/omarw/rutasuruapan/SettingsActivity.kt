@@ -2,7 +2,9 @@ package com.rico.omarw.rutasuruapan
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.ListPreference
@@ -27,7 +29,7 @@ import androidx.core.view.updatePadding
 class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        enableEdgeToEdge(statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT))
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
 
