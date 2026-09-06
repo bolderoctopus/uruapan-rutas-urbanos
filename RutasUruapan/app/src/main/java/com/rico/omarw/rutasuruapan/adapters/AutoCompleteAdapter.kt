@@ -29,6 +29,7 @@ import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 class AutoCompleteAdapter(
@@ -168,11 +169,15 @@ class AutoCompleteAdapter(
 
     }
 
-    //todo: test in different android versions
-    private val geocoderListener = @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    object : Geocoder.GeocodeListener {
-        override fun onGeocode(addresses: List<Address>) {
-            addAutocompleteItem(addresses)
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private object GeocoderApi33 {
+        fun getFromLocation(
+            geocoder: Geocoder,
+            latitude: Double,
+            longitude: Double,
+            onGeocode: (List<Address>) -> Unit
+        ) {
+            geocoder.getFromLocation(latitude, longitude, 1, Geocoder.GeocodeListener(onGeocode))
         }
     }
 
@@ -187,12 +192,26 @@ class AutoCompleteAdapter(
                 .setGranularity(Granularity.GRANULARITY_FINE)
                 .build(), null
         ).addOnSuccessListener { location ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                geocoder.getFromLocation(location.latitude, location.longitude, 1, geocoderListener)
-            else
-                coroutineScope.launch(Dispatchers.IO) {
-                    addAutocompleteItem(geocoder.getFromLocation(location.latitude, location.longitude, 1))
+            if (location != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    GeocoderApi33.getFromLocation(geocoder, location.latitude, location.longitude) { addresses ->
+                        coroutineScope.launch(Dispatchers.Main) {
+                            addAutocompleteItem(addresses)
+                        }
+                    }
+                } else {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        val addresses = try {
+                            geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                        } catch (_: Exception) {
+                            null
+                        }
+                        withContext(Dispatchers.Main) {
+                            addAutocompleteItem(addresses)
+                        }
+                    }
                 }
+            }
         }
 
     }
