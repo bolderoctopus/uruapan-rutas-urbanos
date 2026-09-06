@@ -133,25 +133,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private val routeViewModel: RouteViewModel by viewModels()
 
+    private val onBackPressedCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            resultsFragment?.backButtonPressed()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT))
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                resultsFragment?.let {
-                    if (it.isVisible) {
-                        it.backButtonPressed()
-                        return
-                    }
-                }
-                isEnabled = false
-                onBackPressedDispatcher.onBackPressed()
-                isEnabled = true
-            }
-        })
+        onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -234,6 +228,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
 
         activeFragment = newFragment
+        onBackPressedCallback.isEnabled = resultsFragment != null && activeFragment == resultsFragment
     }
 
     private fun setMarkerBounce(marker: Marker) {
@@ -571,6 +566,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                 .hide(searchFragment)
                 .commit()
         activeFragment = fragment
+        onBackPressedCallback.isEnabled = true
     }
 
     override fun getMapVerticalOffset(): Int {
@@ -640,6 +636,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         activeFragment = searchFragment
         resultsFragment = null
+        onBackPressedCallback.isEnabled = false
     }
 
     private val sheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
