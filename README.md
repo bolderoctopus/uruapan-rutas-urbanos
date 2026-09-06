@@ -13,6 +13,12 @@ Al hacer build en Android Studio gradle tomará de allí la API key para la inse
 
 
 ## Change log
+**1.5.1**
+- Refactorización de arquitectura a MVVM y adición de Hilt.
+- Actualización de SDK (targetSDK 35) y dependencias.
+- Implementación de interfaz Edge-to-Edge.
+- Correcciones de bugs y mejoras de estabilidad.
+
 **1.5.0**
 - Se actualiza el targetSDK a 34.
 - Se resuelve issue con el diálogo de permiso de ubicación.
