@@ -295,10 +295,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private fun setupSettingsButton(){
         val mainContent = findViewById<View>(R.id.main_content)
-        val locationButton = mainContent.findViewWithTag<ImageView>("GoogleMapMyLocationButton")
+        // findViewWithTag is a Java method, so Kotlin won't enforce a null check even though it
+        // returns null when the my-location button hasn't been created yet (e.g. location permission not granted).
+        val locationButton = mainContent.findViewWithTag<ImageView?>("GoogleMapMyLocationButton")
+        val mapControlsContainer = mainContent.findViewWithTag<View>("GoogleWatermark").parent as RelativeLayout
         val settingsButtonLayoutParams = RelativeLayout.LayoutParams(resources.getDimensionPixelSize(R.dimen.settings_button_size), resources.getDimensionPixelSize(R.dimen.settings_button_size)).apply {
             marginEnd = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
-            if(locationButton.isVisible){
+            if(locationButton != null && locationButton.isVisible){
                 addRule(RelativeLayout.ALIGN_TOP, locationButton.id)
                 addRule(RelativeLayout.START_OF, locationButton.id)
             }else{
@@ -308,11 +311,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
 
-        var settingsButton = mainContent.findViewWithTag<CustomImageButton>(CustomImageButton.TAG)
+        var settingsButton = mainContent.findViewWithTag<CustomImageButton?>(CustomImageButton.TAG)
         if(settingsButton == null) {
             settingsButton = CustomImageButton(this@MainActivity, settingsButtonLayoutParams).apply {
                 setOnClickListener { showSettings() }}
-            (locationButton.parent as RelativeLayout).addView(settingsButton)
+            mapControlsContainer.addView(settingsButton)
         }
         else
             settingsButton.layoutParams = settingsButtonLayoutParams
