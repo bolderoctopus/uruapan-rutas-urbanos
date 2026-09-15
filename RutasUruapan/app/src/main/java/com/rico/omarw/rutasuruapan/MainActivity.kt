@@ -293,7 +293,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         slideIndicator.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
     }
 
-    private fun setupSettingsButton(){
+    private fun setupSettingsButton() {
         val mainContent = findViewById<View>(R.id.main_content)
         // findViewWithTag is a Java method, so Kotlin won't enforce a null check even though it
         // returns null when the my-location button hasn't been created yet (e.g. location permission not granted).
@@ -303,12 +303,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         // locationButton.id and the button silently lands at (0,0).
         val controlsContainer = (locationButton?.parent as? RelativeLayout)
             ?: (mainContent.findViewWithTag<View>("GoogleWatermark").parent as RelativeLayout)
-        val settingsButtonLayoutParams = RelativeLayout.LayoutParams(resources.getDimensionPixelSize(R.dimen.settings_button_size), resources.getDimensionPixelSize(R.dimen.settings_button_size)).apply {
+        val settingsButtonLayoutParams = RelativeLayout.LayoutParams(
+            resources.getDimensionPixelSize(R.dimen.settings_button_size),
+            resources.getDimensionPixelSize(R.dimen.settings_button_size)
+        ).apply {
             marginEnd = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
-            if(locationButton != null && locationButton.isVisible){
+            if (locationButton != null && locationButton.isVisible) {
                 addRule(RelativeLayout.ALIGN_TOP, locationButton.id)
                 addRule(RelativeLayout.START_OF, locationButton.id)
-            }else{
+            } else {
                 topMargin = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
                 addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
                 addRule(RelativeLayout.ALIGN_PARENT_END, RelativeLayout.TRUE)
@@ -316,12 +319,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         }
 
         val settingsButton = mainContent.findViewWithTag<CustomImageButton?>(CustomImageButton.TAG)
-        if(settingsButton == null) {
-            val newSettingsButton = CustomImageButton(this@MainActivity, settingsButtonLayoutParams).apply {
-                setOnClickListener { showSettings() }}
+        if (settingsButton == null) {
+            val newSettingsButton =
+                CustomImageButton(this@MainActivity, settingsButtonLayoutParams).apply {
+                    setOnClickListener { showSettings() }
+                }
             controlsContainer.addView(newSettingsButton)
         } else {
-            if(settingsButton.parent !== controlsContainer){
+            if (settingsButton.parent !== controlsContainer) {
                 (settingsButton.parent as? RelativeLayout)?.removeView(settingsButton)
                 controlsContainer.addView(settingsButton)
             }
