@@ -298,7 +298,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         // findViewWithTag is a Java method, so Kotlin won't enforce a null check even though it
         // returns null when the my-location button hasn't been created yet (e.g. location permission not granted).
         val locationButton = mainContent.findViewWithTag<ImageView?>("GoogleMapMyLocationButton")
-        val mapControlsContainer = mainContent.findViewWithTag<View>("GoogleWatermark").parent as RelativeLayout
+        // The location button and the watermark don't share the same parent, so once the location
+        // button exists we must anchor to its own parent, or ALIGN_TOP/START_OF below can't resolve
+        // locationButton.id and the button silently lands at (0,0).
+        val controlsContainer = (locationButton?.parent as? RelativeLayout)
+            ?: (mainContent.findViewWithTag<View>("GoogleWatermark").parent as RelativeLayout)
         val settingsButtonLayoutParams = RelativeLayout.LayoutParams(resources.getDimensionPixelSize(R.dimen.settings_button_size), resources.getDimensionPixelSize(R.dimen.settings_button_size)).apply {
             marginEnd = resources.getDimensionPixelSize(R.dimen.settings_button_marginEnd)
             if(locationButton != null && locationButton.isVisible){
@@ -311,14 +315,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
 
-        var settingsButton = mainContent.findViewWithTag<CustomImageButton?>(CustomImageButton.TAG)
+        val settingsButton = mainContent.findViewWithTag<CustomImageButton?>(CustomImageButton.TAG)
         if(settingsButton == null) {
-            settingsButton = CustomImageButton(this@MainActivity, settingsButtonLayoutParams).apply {
+            val newSettingsButton = CustomImageButton(this@MainActivity, settingsButtonLayoutParams).apply {
                 setOnClickListener { showSettings() }}
-            mapControlsContainer.addView(settingsButton)
-        }
-        else
+            controlsContainer.addView(newSettingsButton)
+        } else {
+            if(settingsButton.parent !== controlsContainer){
+                (settingsButton.parent as? RelativeLayout)?.removeView(settingsButton)
+                controlsContainer.addView(settingsButton)
+            }
             settingsButton.layoutParams = settingsButtonLayoutParams
+        }
     }
 
     private fun showSettings(){
