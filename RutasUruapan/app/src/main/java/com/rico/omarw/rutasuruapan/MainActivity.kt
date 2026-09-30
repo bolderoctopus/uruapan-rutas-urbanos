@@ -59,7 +59,6 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.PolygonOptions
 import com.google.android.gms.maps.model.PolylineOptions
-import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
@@ -74,6 +73,7 @@ import com.rico.omarw.rutasuruapan.Constants.REFRESH_INTERVAL
 import com.rico.omarw.rutasuruapan.Constants.SEARCH_FRAGMENT_INDEX
 import com.rico.omarw.rutasuruapan.Constants.URUAPAN_LATLNG
 import com.rico.omarw.rutasuruapan.Constants.VIBRATION_DURATION
+import com.rico.omarw.rutasuruapan.Utils.getLatLng
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.customWidgets.CustomImageButton
 import com.rico.omarw.rutasuruapan.customWidgets.showOutOfBoundsSnack
@@ -131,6 +131,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
      */
     private var mapHeight: Int? = null
 
+    /**
+     * Marker positions saved before the activity was recreated. The map isn't available until
+     * onMapReady, so they're kept here until the markers can be drawn again.
+     */
+    private var restoredOriginPosition: LatLng? = null
+    private var restoredDestinationPosition: LatLng? = null
+
     private val routeViewModel: RouteViewModel by viewModels()
 
     private val onBackPressedCallback = object : OnBackPressedCallback(false) {
@@ -142,6 +149,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT))
         super.onCreate(savedInstanceState)
+        savedInstanceState?.let {
+            restoredOriginPosition = getLatLng(it, ORIGIN_POSITION_KEY)
+            restoredDestinationPosition = getLatLng(it, DESTINATION_POSITION_KEY)
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -152,12 +163,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             binding.tablayout.updatePadding(top = systemBars.top)
             insets
         }
-
-        if(!Places.isInitialized()){
-            val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
-            Places.initializeWithNewPlacesApiEnabled(this, requireNotNull(metaData.getString("com.google.android.geo.API_KEY")))
-        }
-
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -180,10 +185,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         sheetBehavior.addBottomSheetCallback(sheetBehaviorCallback)
 
-        searchFragment = SearchFragment.newInstance()
-        allRoutesFragment = AllRoutesFragment.newInstance()
-        supportFragmentManager.beginTransaction().add(R.id.fragment_container, searchFragment, SearchFragment.TAG).commit()
-        supportFragmentManager.beginTransaction().add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG).hide(allRoutesFragment).commit()
+        // Reuse fragments restored by the FragmentManager instead of adding duplicates on recreation
+        val fragmentManager = supportFragmentManager
+        searchFragment = fragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment ?: SearchFragment.newInstance()
+        allRoutesFragment = fragmentManager.findFragmentByTag(AllRoutesFragment.TAG) as? AllRoutesFragment ?: AllRoutesFragment.newInstance()
+        fragmentManager.beginTransaction().apply {
+            // Map markers and routes aren't restored, so start back at the search tab instead of showing stale results
+            fragmentManager.findFragmentByTag(ResultsFragment.TAG)?.let { remove(it) }
+            if (!searchFragment.isAdded) add(R.id.fragment_container, searchFragment, SearchFragment.TAG)
+            if (!allRoutesFragment.isAdded) add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG)
+            show(searchFragment)
+            hide(allRoutesFragment)
+            commit()
+        }
         activeFragment = searchFragment
 
         mapFragment.getMapAsync(this)
@@ -203,6 +217,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                     }
                     .show()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // If the map wasn't ready yet, keep the positions that are still waiting to be drawn
+        outState.putParcelable(ORIGIN_POSITION_KEY, originMarker?.position ?: restoredOriginPosition)
+        outState.putParcelable(DESTINATION_POSITION_KEY, destinationMarker?.position ?: restoredDestinationPosition)
     }
 
     override fun onDestroy() {
@@ -291,6 +312,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             }
         }
         slideIndicator.viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
+
+        restoredOriginPosition?.let {
+            drawMarker(it, getString(R.string.marker_title_origin), SearchFragment.MarkerType.Origin, animate = false, bounce = false)
+        }
+        restoredDestinationPosition?.let {
+            drawMarker(it, getString(R.string.marker_title_destination), SearchFragment.MarkerType.Destination, animate = false, bounce = false)
+        }
+        restoredOriginPosition = null
+        restoredDestinationPosition = null
     }
 
     private fun setupSettingsButton() {
@@ -774,5 +804,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     private fun clearSquares(){
         originSquare?.remove()
         destinationSquare?.remove()
+    }
+
+    companion object {
+        private const val ORIGIN_POSITION_KEY = "originposition"
+        private const val DESTINATION_POSITION_KEY = "destinationposition"
     }
 }
