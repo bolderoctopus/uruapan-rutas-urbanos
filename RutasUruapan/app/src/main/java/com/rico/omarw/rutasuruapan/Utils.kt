@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Typeface
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
+import android.os.Bundle
 import android.os.IBinder
 import android.text.SpannableString
 import android.text.Spanned
@@ -46,6 +48,14 @@ object Utils {
             else -> false
         }
     }
+
+    fun getLatLng(bundle: Bundle, key: String): LatLng? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            bundle.getParcelable(key, LatLng::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            bundle.getParcelable(key)
+        }
 }
 
 fun getSquareFrom(distance: Double, center: LatLng): List<LatLng>{

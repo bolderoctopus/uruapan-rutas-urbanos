@@ -26,6 +26,7 @@ import com.rico.omarw.rutasuruapan.Constants.COMPLETION_THRESHOLD
 import com.rico.omarw.rutasuruapan.Constants.DEBUG_TAG
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
 import com.rico.omarw.rutasuruapan.Utils.checkInternetConnection
+import com.rico.omarw.rutasuruapan.Utils.getLatLng
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
@@ -75,10 +76,23 @@ class SearchFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        savedInstanceState?.let {
+            originLatLng = getLatLng(it, ORIGIN_LATLNG_KEY)
+            destinationLatLng = getLatLng(it, DESTINATION_LATLNG_KEY)
+            currentLocationOwner = it.getString(CURRENT_LOCATION_OWNER_KEY)?.let(MarkerType::valueOf)
+        }
         if (context == null) return
         placesClient = Places.createClient(requireContext())
         shouldDisplayRemoveMarkerDialog =
             InformativeDialogs.shouldDisplayRemoveMarkerDialog(requireContext())
+    }
+
+    // The text of the AutoCompleteTextViews is restored by the views themselves, the coordinates they represent need to be saved here
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(ORIGIN_LATLNG_KEY, originLatLng)
+        outState.putParcelable(DESTINATION_LATLNG_KEY, destinationLatLng)
+        outState.putString(CURRENT_LOCATION_OWNER_KEY, currentLocationOwner?.name)
     }
 
     override fun onCreateView(
@@ -118,7 +132,8 @@ class SearchFragment : Fragment() {
                     locationClient,
                     placesClient,
                     uruapanBounds,
-                    includeCurrentLocation = true,
+                    // Keep "Use Current Location" hidden if it was already selected before the fragment was recreated
+                    includeCurrentLocation = currentLocationOwner == null,
                     includePickLocation = true
                 )
                 destinationAutocompleteTextview.setAdapter(autoCompleteAdapter)
@@ -458,6 +473,9 @@ class SearchFragment : Fragment() {
 
     companion object {
         const val TAG = "SearchFragment"
+        private const val ORIGIN_LATLNG_KEY = "originlatlng"
+        private const val DESTINATION_LATLNG_KEY = "destinationlatlng"
+        private const val CURRENT_LOCATION_OWNER_KEY = "currentlocationowner"
         val uruapanBounds = RectangularBounds.newInstance(
             LatLng(19.367936, -102.098275),
             LatLng(19.478144, -101.993454)
