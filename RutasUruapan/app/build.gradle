@@ -15,8 +15,6 @@ android {
 
 
 
-
-
     defaultConfig {
         applicationId "com.rico.omarw.rutasuruapan"
         minSdk 24
