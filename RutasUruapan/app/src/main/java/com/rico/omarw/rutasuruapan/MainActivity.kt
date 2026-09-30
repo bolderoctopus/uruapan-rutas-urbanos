@@ -59,7 +59,6 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polygon
 import com.google.android.gms.maps.model.PolygonOptions
 import com.google.android.gms.maps.model.PolylineOptions
-import com.google.android.libraries.places.api.Places
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
@@ -152,12 +151,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
             binding.tablayout.updatePadding(top = systemBars.top)
             insets
         }
-
-        if(!Places.isInitialized()){
-            val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
-            Places.initializeWithNewPlacesApiEnabled(this, requireNotNull(metaData.getString("com.google.android.geo.API_KEY")))
-        }
-
 
         locationClient = LocationServices.getFusedLocationProviderClient(this)
 
