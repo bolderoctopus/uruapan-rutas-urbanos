@@ -173,10 +173,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
         sheetBehavior.addBottomSheetCallback(sheetBehaviorCallback)
 
-        searchFragment = SearchFragment.newInstance()
-        allRoutesFragment = AllRoutesFragment.newInstance()
-        supportFragmentManager.beginTransaction().add(R.id.fragment_container, searchFragment, SearchFragment.TAG).commit()
-        supportFragmentManager.beginTransaction().add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG).hide(allRoutesFragment).commit()
+        // Reuse fragments restored by the FragmentManager instead of adding duplicates on recreation
+        val fragmentManager = supportFragmentManager
+        searchFragment = fragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment ?: SearchFragment.newInstance()
+        allRoutesFragment = fragmentManager.findFragmentByTag(AllRoutesFragment.TAG) as? AllRoutesFragment ?: AllRoutesFragment.newInstance()
+        fragmentManager.beginTransaction().apply {
+            // Map markers and routes aren't restored, so start back at the search tab instead of showing stale results
+            fragmentManager.findFragmentByTag(ResultsFragment.TAG)?.let { remove(it) }
+            if (!searchFragment.isAdded) add(R.id.fragment_container, searchFragment, SearchFragment.TAG)
+            if (!allRoutesFragment.isAdded) add(R.id.fragment_container, allRoutesFragment, AllRoutesFragment.TAG)
+            show(searchFragment)
+            hide(allRoutesFragment)
+            commit()
+        }
         activeFragment = searchFragment
 
         mapFragment.getMapAsync(this)
