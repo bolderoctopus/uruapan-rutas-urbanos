@@ -13,8 +13,6 @@ android {
     namespace 'com.rico.omarw.rutasuruapan'
     compileSdk 36
 
-
-
     defaultConfig {
         applicationId "com.rico.omarw.rutasuruapan"
         minSdk 24
