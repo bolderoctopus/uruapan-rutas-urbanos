@@ -12,7 +12,6 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
-import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.DONATION
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.PRIVACY_POLICY
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.RATE
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.SHOW_DIALOGS
@@ -63,7 +62,6 @@ class SettingsActivity : AppCompatActivity() {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
             findPreference<ListPreference>(WALK_DIST_LIMIT)?.summaryProvider = this
             findPreference<Preference>(SHOW_DIALOGS)?.onPreferenceClickListener = this
-            findPreference<Preference>(DONATION)?.onPreferenceClickListener = this
             findPreference<Preference>(RATE)?.onPreferenceClickListener = this
             findPreference<Preference>(PRIVACY_POLICY)?.onPreferenceClickListener = this
             findPreference<Preference>(SOURCE_CODE)?.onPreferenceClickListener = this
@@ -92,7 +90,6 @@ class SettingsActivity : AppCompatActivity() {
         override fun onPreferenceClick(preference: Preference): Boolean {
             when (preference.key) {
                 SHOW_DIALOGS -> deleteSomePreferences(preference.context)
-                DONATION -> openLink(getString(R.string.donation_link))
                 RATE -> openLink("https://play.google.com/store/apps/details?id=${preference.context.packageName}")
                 PRIVACY_POLICY -> openLink("https://github.com/bolderoctopus/uruapan-rutas-urbanos/blob/master/privacy%20policy.md")
                 SOURCE_CODE -> openLink("https://github.com/bolderoctopus/uruapan-rutas-urbanos")

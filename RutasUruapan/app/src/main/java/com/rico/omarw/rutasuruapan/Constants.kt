@@ -29,7 +29,6 @@ object Constants {
         const val DISCLAIMER_SHOWN = "has_disclaimer_been_shown"
 
         const val SHOW_DIALOGS = "show_dialogs_again"
-        const val DONATION = "donation"
         const val RATE = "rate"
         const val PRIVACY_POLICY = "privacy_policy"
         const val SOURCE_CODE = "source_code"
