@@ -19,6 +19,9 @@ robolectric = "4.14.1"
 turbine = "1.2.0"
 androidx-test-core = "1.6.1"
 kotlinx-coroutines-test = "1.7.3"
+ktlint-gradle = "14.2.0"
+ktlint-cli = "1.8.0"
+detekt = "1.23.8"
 
 [libraries]
 androidx-fragment = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment-version" }
@@ -49,5 +52,7 @@ com-android-application = { id = "com.android.application", version.ref = "com-a
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
 com-dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-version" }
+org-jlleitschuh-gradle-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
+io-gitlab-arturbosch-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 [bundles]
 

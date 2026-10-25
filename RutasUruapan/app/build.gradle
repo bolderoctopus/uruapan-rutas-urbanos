@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.com.dagger.hilt)
     id 'com.google.devtools.ksp'
+    alias(libs.plugins.org.jlleitschuh.gradle.ktlint)
+    alias(libs.plugins.io.gitlab.arturbosch.detekt)
 }
 
 // The API key comes from apikeys.properties locally, or the MAPS_API_KEY env var (e.g. CI).
@@ -44,7 +46,33 @@ android {
     kotlinOptions {
         jvmTarget = '21'
     }
+    lint {
+        // Existing issues live in lint-baseline.xml; only new ones fail the build.
+        baseline = file("lint-baseline.xml")
+        abortOnError = true
+        warningsAsErrors = false
+    }
 }
+
+// Formatting. Style rules come from the repo's .editorconfig.
+// ./gradlew ktlintCheck to verify, ./gradlew ktlintFormat to auto-fix.
+ktlint {
+    version = libs.versions.ktlint.cli.get()
+    android = true
+    filter {
+        exclude { it.file.path.contains("/build/") }
+    }
+}
+
+// Static analysis (code smells, complexity). ./gradlew detekt
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+    baseline = rootProject.file("config/detekt/baseline.xml")
+}
+// detekt 1.23 defaults to the JDK running Gradle, which can be newer than it supports.
+tasks.withType(io.gitlab.arturbosch.detekt.Detekt).configureEach { jvmTarget = "21" }
+tasks.withType(io.gitlab.arturbosch.detekt.DetektCreateBaselineTask).configureEach { jvmTarget = "21" }
 
 dependencies {
 
