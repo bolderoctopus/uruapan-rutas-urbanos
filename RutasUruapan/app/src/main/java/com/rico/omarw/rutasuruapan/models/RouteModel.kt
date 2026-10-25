@@ -1,10 +1,10 @@
 package com.rico.omarw.rutasuruapan.models
 
 import android.util.SparseArray
+import androidx.core.util.size
 import com.google.android.gms.maps.model.*
 import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.database.Route
-import androidx.core.util.size
 
 class RouteModel(val routeDb: Route) {
     var mainSegment: Polyline? = null
@@ -65,12 +65,9 @@ class RouteModel(val routeDb: Route) {
         return name == model.name && color == model.color
     }
 
-    fun getMainSegment(points: List<Point>) =
-        getRouteSegment(startPoint, endPoint, points)
+    fun getMainSegment(points: List<Point>) = getRouteSegment(startPoint, endPoint, points)
 
-    fun getSecondarySegment(points: List<Point>) =
-        getRouteSegment(endPoint, startPoint, points)
-
+    fun getSecondarySegment(points: List<Point>) = getRouteSegment(endPoint, startPoint, points)
 
     private fun getRouteSegment(start: Point?, end: Point?, points: List<Point>): Iterable<LatLng> {
         if (start == null || end == null) return emptyList()
@@ -94,15 +91,13 @@ class RouteModel(val routeDb: Route) {
         return segment
     }
 
-    fun getMainSegmentPoints(points: List<Point>) =
-        getRouteSegmentPoints(startPoint, endPoint, points)
+    fun getMainSegmentPoints(points: List<Point>) = getRouteSegmentPoints(startPoint, endPoint, points)
 
     private fun getRouteSegmentPoints(start: Point?, end: Point?, points: List<Point>): List<Point> {
         if (start == null || end == null) return emptyList()
 
         val startNumber = start.number
         val endNumber = end.number
-
 
         return if (startNumber > endNumber) {
             val part1 = points.filter { it.number >= startNumber }.sortedBy { it.number }
@@ -119,5 +114,4 @@ class RouteModel(val routeDb: Route) {
             add(Dash(20f))
         }
     }
-
 }

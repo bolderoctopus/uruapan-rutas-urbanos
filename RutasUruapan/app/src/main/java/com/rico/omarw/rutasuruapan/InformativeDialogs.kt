@@ -24,10 +24,9 @@ class InformativeDialogs {
 
     companion object {
 
-        fun shouldDisplayHowToShowRouteDialog(context: Context): Boolean {
-            return !PreferenceManager.getDefaultSharedPreferences(context)
+        fun shouldDisplayHowToShowRouteDialog(context: Context): Boolean =
+            !PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(PreferenceKeys.HOW_TO_SHOW_ROUTE_DIALOG_SHOWN, false)
-        }
 
         fun howToShowRouteDialogDisplayed(context: Context) {
             PreferenceManager.getDefaultSharedPreferences(context).edit {
@@ -35,19 +34,19 @@ class InformativeDialogs {
             }
         }
 
-        fun displayHowToShowRouteDialog(
-            context: Context, verticalOffset: Int, onDismissListener: OnDismissListener?
-        ) {
+        fun displayHowToShowRouteDialog(context: Context, verticalOffset: Int, onDismissListener: OnDismissListener?) {
             show(
-                context, verticalOffset, Style.Left,
-                R.string.how_to_show_routes_message, onDismissListener
+                context,
+                verticalOffset,
+                Style.Left,
+                R.string.how_to_show_routes_message,
+                onDismissListener
             )
         }
 
-        fun shouldDisplayRemoveMarkerDialog(context: Context): Boolean {
-            return !PreferenceManager.getDefaultSharedPreferences(context)
+        fun shouldDisplayRemoveMarkerDialog(context: Context): Boolean =
+            !PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(PreferenceKeys.REMOVE_MARKER_DIALOG_SHOWN, false)
-        }
 
         fun removeMarkerDialogDisplayed(context: Context) {
             PreferenceManager.getDefaultSharedPreferences(context).edit {
@@ -55,17 +54,15 @@ class InformativeDialogs {
             }
         }
 
-        fun displayHowToRemoveMarkersDialog(
-            context: Context,
-            verticalOffset: Int,
-            listener: OnDismissListener
-        ) {
+        fun displayHowToRemoveMarkersDialog(context: Context, verticalOffset: Int, listener: OnDismissListener) {
             show(
-                context, verticalOffset, Style.Center, R.string.how_to_move_markers_message,
+                context,
+                verticalOffset,
+                Style.Center,
+                R.string.how_to_move_markers_message,
                 listener
             )
         }
-
 
         fun show(
             context: Context,

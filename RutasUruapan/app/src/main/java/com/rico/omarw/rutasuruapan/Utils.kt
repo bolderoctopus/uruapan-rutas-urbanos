@@ -13,14 +13,14 @@ import android.text.style.StyleSpan
 import android.view.inputmethod.InputMethodManager
 import com.google.android.gms.maps.model.LatLng
 
-
 object Utils {
     fun hideKeyboard(context: Context, windowToken: IBinder?) {
-        if (windowToken != null)
+        if (windowToken != null) {
             (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(
                 windowToken,
                 0
             )
+        }
     }
 
     fun formatRouteTitle(name: String, shortName: String): SpannableString {
@@ -41,24 +41,24 @@ object Utils {
 
         return when {
             capabilities == null -> false
-            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                    && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-                -> true
+
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            -> true
 
             else -> false
         }
     }
 
-    fun getLatLng(bundle: Bundle, key: String): LatLng? =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            bundle.getParcelable(key, LatLng::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            bundle.getParcelable(key)
-        }
+    fun getLatLng(bundle: Bundle, key: String): LatLng? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        bundle.getParcelable(key, LatLng::class.java)
+    } else {
+        @Suppress("DEPRECATION")
+        bundle.getParcelable(key)
+    }
 }
 
-fun getSquareFrom(distance: Double, center: LatLng): List<LatLng>{
+fun getSquareFrom(distance: Double, center: LatLng): List<LatLng> {
     val points = ArrayList<LatLng>(4)
 
     points.add(LatLng(center.latitude - distance, center.longitude + distance))

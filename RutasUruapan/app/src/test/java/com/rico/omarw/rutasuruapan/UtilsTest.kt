@@ -14,7 +14,7 @@ class UtilsTest {
         val name = "Route A"
         val shortName = "10"
         val result = Utils.formatRouteTitle(name, shortName)
-        
+
         assertEquals("Route A #10", result.toString())
     }
 
@@ -23,7 +23,7 @@ class UtilsTest {
         val center = LatLng(19.4326, -102.0621)
         val distance = 0.001
         val points = getSquareFrom(distance, center)
-        
+
         assertEquals(4, points.size)
         // Verify one of the points
         assertEquals(center.latitude - distance, points[0].latitude, 0.0001)

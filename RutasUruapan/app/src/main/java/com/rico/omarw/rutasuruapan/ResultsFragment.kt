@@ -10,6 +10,11 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.model.LatLng
@@ -22,15 +27,12 @@ import com.rico.omarw.rutasuruapan.database.AppDatabase
 import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.database.Route
 import com.rico.omarw.rutasuruapan.models.RouteModel
-import kotlinx.coroutines.*
 import kotlin.math.sqrt
-import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
+import kotlinx.coroutines.*
 
-class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
+class ResultsFragment :
+    Fragment(),
+    RouteListAdapter.DrawRouteListener {
 
     private val routeViewModel: RouteViewModel by activityViewModels()
     private lateinit var recyclerView: RecyclerView
@@ -59,11 +61,10 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             originLatLng = getLanLngParcelable(it, ORIGIN_LATLNG_KEY)
             destinationLatLng = getLanLngParcelable(it, DESTINATION_LATLNG_KEY)
         }
-
     }
 
     private fun getLanLngParcelable(bundle: Bundle, key: String): LatLng {
-        val latlng = if(VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val latlng = if (VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             bundle.getParcelable(key, LatLng::class.java)
         } else {
             bundle.getParcelable(key)
@@ -79,7 +80,8 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
             setNavigationOnClickListener { backButtonPressed() }
         }
 
-        view.findViewById<TextView>(R.id.textview_increase_distance).text = getString(R.string.increase_distance_limit, getString(R.string.title_activity_settings))
+        view.findViewById<TextView>(R.id.textview_increase_distance).text =
+            getString(R.string.increase_distance_limit, getString(R.string.title_activity_settings))
 
         progressBar = view.findViewById(R.id.progressBar)
         groupWalkMessage = view.findViewById(R.id.group_walk_message)
@@ -92,15 +94,16 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         shouldDisplayHowToShowRouteDialog =
             InformativeDialogs.shouldDisplayHowToShowRouteDialog(layoutInflater.context)
 
-        if (shouldDisplayHowToShowRouteDialog)
+        if (shouldDisplayHowToShowRouteDialog) {
             displayDialogWhenRecyclerShown()
+        }
 
         findRoutesAsync(originLatLng, destinationLatLng, getWalkDistLimit())
 
         return view
     }
 
-    fun backButtonPressed(){
+    fun backButtonPressed() {
         clearDrawnRoutes()
         listener.onBackFromResults(null)
     }
@@ -110,10 +113,23 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         super.onDetach()
     }
 
-    private fun displayDialogWhenRecyclerShown(){
+    private fun displayDialogWhenRecyclerShown() {
         val listener = object : View.OnLayoutChangeListener {
-            override fun onLayoutChange(v: View?, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
-                if(shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v!= null && (recyclerView.adapter?.itemCount ?: 0) > 0 && InformativeDialogs.shouldDisplayHowToShowRouteDialog(v.context)){
+            override fun onLayoutChange(
+                v: View?,
+                left: Int,
+                top: Int,
+                right: Int,
+                bottom: Int,
+                oldLeft: Int,
+                oldTop: Int,
+                oldRight: Int,
+                oldBottom: Int
+            ) {
+                if (shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v != null &&
+                    (recyclerView.adapter?.itemCount ?: 0) > 0 &&
+                    InformativeDialogs.shouldDisplayHowToShowRouteDialog(v.context)
+                ) {
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
                     verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
@@ -141,43 +157,90 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
      * @param destinationLatLng End point
      * @param walkDistLimit How much the user is willing to walk between the route start/end point and the given origin/destination respectively
      */
-    private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double){//todo: move to a separate class
+    private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double) { // todo: move to a separate class
         showProgressBar()
-        if(walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
+        if (walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener.drawSquares(walkDistLimit)
 
         viewLifecycleOwner.lifecycleScope.launch {
             val routesDao = AppDatabase.getInstance(requireContext())?.routesDAO()
             val commonRoutesIds: Set<Long>?
 
-            val routesNearOrigin = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, originLatLng.latitude, originLatLng.longitude)}
-            val routesNearDest = async(Dispatchers.IO) { routesDao?.getRoutesIntercepting(walkDistLimit, destinationLatLng.latitude, destinationLatLng.longitude)}
+            val routesNearOrigin =
+                async(Dispatchers.IO) {
+                    routesDao?.getRoutesIntercepting(walkDistLimit, originLatLng.latitude, originLatLng.longitude)
+                }
+            val routesNearDest =
+                async(Dispatchers.IO) {
+                    routesDao?.getRoutesIntercepting(
+                        walkDistLimit,
+                        destinationLatLng.latitude,
+                        destinationLatLng.longitude
+                    )
+                }
             awaitAll(routesNearDest, routesNearOrigin)
             commonRoutesIds = routesNearOrigin.await()!!.intersect(routesNearDest.await()!!)
 
-            if(commonRoutesIds.isNullOrEmpty()){
-                 showNoResultsMessage()
-            }
-            else{
+            if (commonRoutesIds.isNullOrEmpty()) {
+                showNoResultsMessage()
+            } else {
                 val results = arrayListOf<RouteModel>()
-                for(routeId in commonRoutesIds){
-                    val route: Route? = withContext(Dispatchers.IO){ routesDao?.getRoute(routeId)}
+                for (routeId in commonRoutesIds) {
+                    val route: Route? = withContext(Dispatchers.IO) { routesDao?.getRoute(routeId) }
 
-                    val startPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(routeId, originLatLng.latitude, originLatLng.longitude, walkDistLimit)}
-                    val endPoint: Point? = withContext(Dispatchers.IO){routesDao?.getNearestPointTo(routeId, destinationLatLng.latitude, destinationLatLng.longitude, walkDistLimit)}
+                    val startPoint: Point? =
+                        withContext(Dispatchers.IO) {
+                            routesDao?.getNearestPointTo(
+                                routeId,
+                                originLatLng.latitude,
+                                originLatLng.longitude,
+                                walkDistLimit
+                            )
+                        }
+                    val endPoint: Point? =
+                        withContext(Dispatchers.IO) {
+                            routesDao?.getNearestPointTo(
+                                routeId,
+                                destinationLatLng.latitude,
+                                destinationLatLng.longitude,
+                                walkDistLimit
+                            )
+                        }
 
-                    val betterEndPoint: Point? = withContext(Dispatchers.IO){routesDao?.findBestEndPoint(routeId, destinationLatLng.latitude, destinationLatLng.longitude, startPoint!!.number, walkDistLimit)}
-                    val betterStartPoint: Point? = withContext(Dispatchers.IO){routesDao?.findBestStartPoint(routeId, originLatLng.latitude, originLatLng.longitude, endPoint!!.number, walkDistLimit)}
+                    val betterEndPoint: Point? =
+                        withContext(Dispatchers.IO) {
+                            routesDao?.findBestEndPoint(
+                                routeId,
+                                destinationLatLng.latitude,
+                                destinationLatLng.longitude,
+                                startPoint!!.number,
+                                walkDistLimit
+                            )
+                        }
+                    val betterStartPoint: Point? =
+                        withContext(Dispatchers.IO) {
+                            routesDao?.findBestStartPoint(
+                                routeId,
+                                originLatLng.latitude,
+                                originLatLng.longitude,
+                                endPoint!!.number,
+                                walkDistLimit
+                            )
+                        }
 
-                    val routeDist = withContext(Dispatchers.IO){ routesDao?.getRouteDist(routeId, betterStartPoint!!.number, betterEndPoint!!.number)} ?: 0
+                    val routeDist =
+                        withContext(Dispatchers.IO) {
+                            routesDao?.getRouteDist(routeId, betterStartPoint!!.number, betterEndPoint!!.number)
+                        } ?: 0
 
                     val routeModel = RouteModel(route!!)
                     routeModel.startPoint = betterStartPoint
                     routeModel.endPoint = betterEndPoint
-                    routeModel.walkDist = distanceBetweenPoints(originLatLng, betterStartPoint!!.getLatLng()) + distanceBetweenPoints(destinationLatLng, betterEndPoint!!.getLatLng())
+                    routeModel.walkDist =
+                        distanceBetweenPoints(originLatLng, betterStartPoint!!.getLatLng()) +
+                        distanceBetweenPoints(destinationLatLng, betterEndPoint!!.getLatLng())
                     routeModel.totalDist = routeModel.walkDist!! + routeDist
                     results.add(routeModel)
-
                 }
                 results.sortBy {
                     it.walkDist
@@ -190,7 +253,7 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
 
     private fun clearDrawnRoutes() = routeViewModel.clearDrawnRoutes()
 
-    private fun displayRoutes(results: ArrayList<RouteModel>){
+    private fun displayRoutes(results: ArrayList<RouteModel>) {
         groupWalkMessage.visibility = View.GONE
         hideProgressBar()
 
@@ -203,27 +266,30 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         updateTitle(results.size)
     }
 
-    private fun showNoResultsMessage(){
+    private fun showNoResultsMessage() {
         hideProgressBar()
         updateTitle(0)
         recyclerView.visibility = View.GONE
         groupWalkMessage.visibility = View.VISIBLE
     }
 
-    private fun updateTitle(amountOfResults: Int?){
-        if (amountOfResults == null)
+    private fun updateTitle(amountOfResults: Int?) {
+        if (amountOfResults == null) {
             materialToolbar.title = ""
-        else
-            materialToolbar.title = resources.getQuantityString(R.plurals.title_results, amountOfResults, amountOfResults)
+        } else {
+            materialToolbar.title =
+                resources.getQuantityString(R.plurals.title_results, amountOfResults, amountOfResults)
+        }
     }
 
-    private fun hideProgressBar(){
-        if(progressBar.isVisible)
+    private fun hideProgressBar() {
+        if (progressBar.isVisible) {
             progressBar.animate().scaleY(0f).withEndAction { progressBar.visibility = View.GONE }.start()
+        }
     }
 
-    private fun showProgressBar(){
-        if(progressBar.visibility != View.VISIBLE) {
+    private fun showProgressBar() {
+        if (progressBar.visibility != View.VISIBLE) {
             progressBar.visibility = View.VISIBLE
             progressBar.animate().scaleY(1f).start()
         }
@@ -234,23 +300,26 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         listener.drawRouteResult(route)
     }
 
-    fun startUpdate(){
+    fun startUpdate() {
         recyclerView.visibility = View.INVISIBLE
         clearDrawnRoutes()
         updateTitle(null)
     }
 
-    fun endUpdate(origin: LatLng, destination: LatLng){
+    fun endUpdate(origin: LatLng, destination: LatLng) {
         findRoutesAsync(origin, destination, getWalkDistLimit())
     }
 
-
-    private fun getWalkDistLimit() : Double {
-        val string = PreferenceManager.getDefaultSharedPreferences(requireContext()).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
-        return if(string == null) WALK_DIST_LIMIT_DEFAULT * METER_IN_ANGULAR_LAT_LNG
-                else (string.toDouble()  * METER_IN_ANGULAR_LAT_LNG)
+    private fun getWalkDistLimit(): Double {
+        val string = PreferenceManager.getDefaultSharedPreferences(
+            requireContext()
+        ).getString(PreferenceKeys.WALK_DIST_LIMIT, WALK_DIST_LIMIT_DEFAULT.toString())
+        return if (string == null) {
+            WALK_DIST_LIMIT_DEFAULT * METER_IN_ANGULAR_LAT_LNG
+        } else {
+            (string.toDouble() * METER_IN_ANGULAR_LAT_LNG)
+        }
     }
-
 
     interface OnFragmentInteractionListener {
         fun onBackFromResults(removedRoutes: List<RouteModel>?)
@@ -258,19 +327,19 @@ class ResultsFragment : Fragment(), RouteListAdapter.DrawRouteListener{
         fun drawSquares(walkingDistance: Double)
     }
 
-    companion object{
+    companion object {
         private const val HEIGHT_KEY = "height"
         private const val ORIGIN_LATLNG_KEY = "originlatlng"
         private const val DESTINATION_LATLNG_KEY = "destinationlatlng"
         const val TAG = "ResultsFragment"
+
         @JvmStatic
         fun newInstance(height: Int, originLatLng: LatLng, destinationLatLng: LatLng) = ResultsFragment().apply {
-                arguments = Bundle().apply{
-                    putInt(HEIGHT_KEY, height)
-                    putParcelable(ORIGIN_LATLNG_KEY, originLatLng)
-                    putParcelable(DESTINATION_LATLNG_KEY, destinationLatLng)
-                }
+            arguments = Bundle().apply {
+                putInt(HEIGHT_KEY, height)
+                putParcelable(ORIGIN_LATLNG_KEY, originLatLng)
+                putParcelable(DESTINATION_LATLNG_KEY, destinationLatLng)
+            }
         }
     }
-
 }

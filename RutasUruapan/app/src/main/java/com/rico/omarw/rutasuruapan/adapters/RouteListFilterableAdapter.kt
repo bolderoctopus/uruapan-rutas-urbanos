@@ -13,16 +13,19 @@ import com.rico.omarw.rutasuruapan.R
 import com.rico.omarw.rutasuruapan.Utils.formatRouteTitle
 import com.rico.omarw.rutasuruapan.models.RouteModel
 
-class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
-                                   private val comparator: Comparator<RouteModel>): RecyclerView.Adapter<RouteListFilterableAdapter.MyViewHolder>(){
+class RouteListFilterableAdapter(
+    private val callback: DrawRouteListener?,
+    private val comparator: Comparator<RouteModel>
+) : RecyclerView.Adapter<RouteListFilterableAdapter.MyViewHolder>() {
     private val sortedListCallback = object : SortedListAdapterCallback<RouteModel>(this) {
         override fun onInserted(position: Int, count: Int) = notifyItemRangeInserted(position, count)
-        override fun onRemoved(position: Int, count: Int) =  notifyItemRangeRemoved(position, count)
+        override fun onRemoved(position: Int, count: Int) = notifyItemRangeRemoved(position, count)
         override fun onMoved(fromPosition: Int, toPosition: Int) = notifyItemMoved(fromPosition, toPosition)
         override fun onChanged(position: Int, count: Int) = notifyItemRangeChanged(position, count)
         override fun areItemsTheSame(item1: RouteModel?, item2: RouteModel?): Boolean = item1?.id == item2?.id
         override fun compare(o1: RouteModel?, o2: RouteModel?): Int = comparator.compare(o1, o2)
-        override fun areContentsTheSame(oldItem: RouteModel?, newItem: RouteModel?): Boolean = oldItem?.equals(newItem) ?: false
+        override fun areContentsTheSame(oldItem: RouteModel?, newItem: RouteModel?): Boolean =
+            oldItem?.equals(newItem) ?: false
     }
     private val sortedList = SortedList<RouteModel>(RouteModel::class.java, sortedListCallback)
 
@@ -30,12 +33,13 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
 
     fun add(list: List<RouteModel>) = sortedList.addAll(list)
 
-    fun replaceAll(newItems: List<RouteModel>){
+    fun replaceAll(newItems: List<RouteModel>) {
         sortedList.beginBatchedUpdates()
-        for (x in sortedList.size()-1 downTo 0 step 1){
+        for (x in sortedList.size() - 1 downTo 0 step 1) {
             val model = sortedList[x]
-            if(!newItems.contains(model))
+            if (!newItems.contains(model)) {
                 sortedList.remove(model)
+            }
         }
         sortedList.addAll(newItems)
         sortedList.endBatchedUpdates()
@@ -50,7 +54,10 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
 
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
         holder.model = sortedList[p]
-        holder.checkBox.setText(formatRouteTitle(holder.model.routeDb.name, holder.model.routeDb.shortName), TextView.BufferType.SPANNABLE)
+        holder.checkBox.setText(
+            formatRouteTitle(holder.model.routeDb.name, holder.model.routeDb.shortName),
+            TextView.BufferType.SPANNABLE
+        )
         holder.colorTag.setBackgroundColor(Color.parseColor(holder.model.color))
         holder.checkBox.isChecked = holder.model.isDrawn
 
@@ -59,13 +66,13 @@ class RouteListFilterableAdapter  (private val callback: DrawRouteListener?,
         }
     }
 
-    class  MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+    class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         lateinit var model: RouteModel
         var colorTag: View = itemView.findViewById(R.id.view_colorTag)
         var checkBox: CheckBox = itemView.findViewById(R.id.route_name)
     }
 
-    interface DrawRouteListener{
+    interface DrawRouteListener {
         fun drawRoute(route: RouteModel)
     }
 }

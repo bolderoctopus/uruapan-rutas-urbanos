@@ -11,8 +11,8 @@ import com.rico.omarw.rutasuruapan.R
 import com.rico.omarw.rutasuruapan.Utils.formatRouteTitle
 import com.rico.omarw.rutasuruapan.models.RouteModel
 
-class RouteListAdapter  (private val items: List<RouteModel>,
-                         private val callback: DrawRouteListener?): RecyclerView.Adapter<RouteListAdapter.MyViewHolder>(){
+class RouteListAdapter(private val items: List<RouteModel>, private val callback: DrawRouteListener?) :
+    RecyclerView.Adapter<RouteListAdapter.MyViewHolder>() {
 
     fun getItems() = items
 
@@ -24,7 +24,10 @@ class RouteListAdapter  (private val items: List<RouteModel>,
     override fun getItemCount() = items.size
 
     override fun onBindViewHolder(holder: MyViewHolder, p: Int) {
-        holder.checkBox.setText(formatRouteTitle(items[p].routeDb.name, items[p].routeDb.shortName), TextView.BufferType.SPANNABLE)
+        holder.checkBox.setText(
+            formatRouteTitle(items[p].routeDb.name, items[p].routeDb.shortName),
+            TextView.BufferType.SPANNABLE
+        )
         holder.checkBox.isChecked = items[p].isDrawn
         holder.colorTag.setBackgroundColor(Color.parseColor(items[p].color))
         holder.checkBox.setOnClickListener {
@@ -32,12 +35,12 @@ class RouteListAdapter  (private val items: List<RouteModel>,
         }
     }
 
-    class  MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+    class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var checkBox: CheckBox = itemView.findViewById(R.id.route_name)
         var colorTag: View = itemView.findViewById(R.id.view_colorTag)
     }
 
-    interface DrawRouteListener{
+    interface DrawRouteListener {
         fun drawRouteResult(route: RouteModel)
     }
 }

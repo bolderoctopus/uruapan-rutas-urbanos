@@ -6,17 +6,15 @@ import com.rico.omarw.rutasuruapan.database.RouteDAO
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import java.util.Locale.getDefault
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale.getDefault
 
 @HiltViewModel
-class RouteViewModel @Inject constructor(
-    private val routeDAO: RouteDAO
-) : ViewModel() {
+class RouteViewModel @Inject constructor(private val routeDAO: RouteDAO) : ViewModel() {
 
     private var routes: List<RouteModel> = emptyList()
     private val _filterableRoutes: MutableStateFlow<List<RouteModel>> = MutableStateFlow(routes)
@@ -46,7 +44,6 @@ class RouteViewModel @Inject constructor(
                 val name = it.name.lowercase(getDefault())
                 name.contains(query) || it.routeDb.shortName.contains(query)
             }
-
         }
     }
 
@@ -62,6 +59,4 @@ class RouteViewModel @Inject constructor(
         _drawnRoutes.value.forEach { it.remove() }
         _drawnRoutes.value = emptySet()
     }
-
-
 }
