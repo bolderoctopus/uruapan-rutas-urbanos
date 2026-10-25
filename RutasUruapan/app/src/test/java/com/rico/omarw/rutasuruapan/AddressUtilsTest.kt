@@ -10,10 +10,6 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class AddressUtilsTest {
 
-    private fun helperFunctionFixture(): Any{
-        return "Hello world"
-    }
-
     @Test
     fun `getShortAddress returns featureName when it is not street number`() {
         val address = Address(Locale.getDefault()).apply {
@@ -21,7 +17,7 @@ class AddressUtilsTest {
             subThoroughfare = "123"
         }
         val result = AddressUtils.getShortAddress(address)
-        assertEquals("My Businesds", result)
+        assertEquals("My Business", result)
     }
 
     @Test
