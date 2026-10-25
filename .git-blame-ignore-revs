@@ -1,0 +1,5 @@
+# Commits that only reformat code. git blame skips them and shows who really wrote each line.
+# GitHub uses this file automatically. Locally: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: apply ktlintFormat to the codebase (PR #13)
+e06373b328246afa4a5680dfaf4b9c3e0989e20e

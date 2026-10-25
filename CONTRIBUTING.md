@@ -1,0 +1,93 @@
+# Contributing
+
+How work flows through this repository. It's a small project, so the rules are light, but they are followed on every change.
+
+## Branching strategy: trunk-based
+
+- `master` is the only long-lived branch. It must always build and pass checks, and it reflects what can be released.
+- All work happens on **short-lived branches** cut from the latest `master` and merged back through a pull request, ideally within a few days.
+- Nobody pushes to `master` directly. Branch protection requires a PR, linear history, and no force pushes.
+- There is no `development` or `release` branch. Releases are tags on `master` (see [Releases](#releases)).
+
+```bash
+git switch master && git pull
+git switch -c fix/settings-button-npe
+```
+
+## Branch names
+
+Format: `<type>/<short-kebab-case-description>`
+
+| Type | Use for | Example |
+|---|---|---|
+| `feat/` | New user-facing functionality | `feat/favorite-routes` |
+| `fix/` | Bug fixes | `fix/places-not-initialized-on-restore` |
+| `refactor/` | Code changes with no behavior change | `refactor/move-route-search-to-viewmodel` |
+| `test/` | Adding or improving tests only | `test/route-dao` |
+| `docs/` | Documentation only | `docs/contributing-guide` |
+| `ci/` | GitHub Actions and other CI configuration | `ci/add-pr-workflow` |
+| `chore/` | Build, tooling, dependencies, version bumps | `chore/bump-version-1.5.5` |
+
+Rules:
+- Lowercase, words separated by `-`, no spaces or underscores.
+- Describe the change, not the person or date (`fix/route-list-crash`, not `omar-fixes-oct`).
+- One topic per branch. If you find something unrelated, note it and use another branch.
+
+## Commit messages and PR titles
+
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(optional scope): <summary in imperative mood>
+```
+
+- Types match the branch types: `feat`, `fix`, `refactor`, `test`, `docs`, `ci`, `chore`, plus `style` for formatting-only changes.
+- Examples: `fix: prevent NPE in settings button when location is denied`, `chore(release): 1.5.5`.
+- Summary in English, imperative ("add", not "added"), no trailing period, about 72 characters max.
+- Add a body when the *why* isn't obvious from the summary.
+
+The **PR title** follows the same format, because it becomes the commit message on `master`.
+
+## Pull requests
+
+1. Push the branch and open a PR against `master`. Fill in what changed, why, and how it was tested.
+2. Run the checks locally first (see below). CI runs them again on the PR.
+3. **Review your own diff** in GitHub's "Files changed" tab before merging. It's the review step of a solo project.
+4. Resolve any review comments, including automated ones.
+5. Merge:
+   - **Squash and merge** (default): the whole PR becomes one commit titled with the PR title.
+   - **Rebase and merge**: only when the individual commits should stay separate on `master`, for example a mechanical reformat that is listed in `.git-blame-ignore-revs`.
+6. Delete the branch after merging.
+
+## Checks to run locally
+
+From `RutasUruapan/`:
+
+```bash
+./gradlew ktlintCheck detekt lintDebug testDebugUnitTest
+```
+
+- `./gradlew ktlintFormat` auto-fixes most formatting issues. Style rules live in the root `.editorconfig`.
+- Existing findings are recorded in `config/detekt/baseline.xml` and `app/lint-baseline.xml`. Fix new findings instead of adding them to a baseline.
+
+## Releases
+
+1. Open a `chore/bump-version-X.Y.Z` branch and bump `versionCode` (+1) and `versionName` in `RutasUruapan/app/build.gradle`. Add the changes to the change log.
+2. Title the PR `chore(release): X.Y.Z`, then merge it.
+3. Tag the merge commit on `master` with the version name and push the tag:
+   ```bash
+   git switch master && git pull
+   git tag -a 1.5.5 -m "1.5.5"
+   git push origin 1.5.5
+   ```
+4. Build the signed bundle and upload it to Google Play by hand.
+
+Versioning follows [SemVer](https://semver.org/): `MAJOR.MINOR.PATCH`. Bump PATCH for fixes, MINOR for new features, and MAJOR for breaking or very large changes.
+
+## Git blame and reformat commits
+
+Commits that only reformat code are listed in `.git-blame-ignore-revs`, so `git blame` points at the real author of a line. GitHub uses that file automatically. To use it locally, run once:
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```

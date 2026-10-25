@@ -13,6 +13,10 @@ At the beginning of each session always greet me with "Hi there Sir, 🐤"
 
 Repo foundations (testing, CI, linting, conventions) are tracked in [docs/repo-foundations-plan.md](docs/repo-foundations-plan.md). Read it before working on any of those areas, and mark a phase as done in the same PR that completes it.
 
+## Conventions
+
+Branching, branch names, commit and PR title format, merge strategy and releases are in [CONTRIBUTING.md](CONTRIBUTING.md). Follow them for every branch, commit and PR.
+
 ## Build & test
 
 Run from `RutasUruapan/`:
