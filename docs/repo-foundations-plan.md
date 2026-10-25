@@ -34,7 +34,7 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
   - `UseAppTint` in `current_location_list_item.xml`: switch to `app:tint` and check the icon tint on a device.
   - detekt: `RouteModel` overrides `equals` without `hashCode`, unused `Point.pointId` / `SearchFragment.routeViewModel`, empty secondary constructor in `Point`.
 
-### Phase 2 — CI workflow  (`ci/add-pr-workflow`)
+### Phase 2 — CI workflow  (`ci/add-pr-workflow`) ✅ Done
 - `.github/workflows/ci.yml`, triggered on `pull_request` and `push` to `master`:
   - `actions/checkout`, `actions/setup-java` (temurin 21), `gradle/actions/setup-gradle` (caching), `working-directory: RutasUruapan`.
   - Jobs: `lint` (ktlintCheck + detekt + lintDebug) and `test` (testDebugUnitTest + assembleDebug), in parallel.
@@ -42,6 +42,7 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
 - `.github/workflows/pr-title.yml`: `amannn/action-semantic-pull-request` checks Conventional Commits types.
 - Optional: `gradle/actions/wrapper-validation`.
 - Verify: open the PR itself and watch both workflows go green. Push a bad commit to see one fail.
+- **As built:** checkout@v7, setup-java@v6 (temurin 21), gradle/actions/setup-gradle@v6 with `cache-provider: basic` (the default "enhanced" cache is a commercial service) and its built-in wrapper validation, upload-artifact@v7, amannn/action-semantic-pull-request@v6. The PR-title check uses `pull_request`, not `pull_request_target`, because the repo has no fork contributors and `pull_request_target` would only run once the workflow is on `master`. The title summary must start lowercase. Actions are pinned to major tags; Dependabot (Phase 3) keeps them current.
 
 ### Phase 3 — Repo rules & conventions  (`docs/repo-conventions`, plus GitHub settings)
 - ✅ `CONTRIBUTING.md` (done early, in `docs/contributing-guide`): trunk-based flow, branch naming, Conventional Commits, PR and merge rules, local checks, releases (tags match `versionName` with no `v` prefix, as the existing tags do), and `.git-blame-ignore-revs`. When CI and the PR-title check land, update its "Pull requests" section to say they are required.

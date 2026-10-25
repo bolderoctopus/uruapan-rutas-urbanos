@@ -43,15 +43,19 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 - Types match the branch types: `feat`, `fix`, `refactor`, `test`, `docs`, `ci`, `chore`, plus `style` for formatting-only changes.
 - Examples: `fix: prevent NPE in settings button when location is denied`, `chore(release): 1.5.5`.
-- Summary in English, imperative ("add", not "added"), no trailing period, about 72 characters max.
+- Summary in English, imperative ("add", not "added"), starting lowercase, no trailing period, about 72 characters max.
 - Add a body when the *why* isn't obvious from the summary.
 
-The **PR title** follows the same format, because it becomes the commit message on `master`.
+The **PR title** follows the same format, because it becomes the commit message on `master`. The `pr-title` check ([`.github/workflows/pr-title.yml`](.github/workflows/pr-title.yml)) fails if it doesn't. Editing the title re-runs the check.
 
 ## Pull requests
 
 1. Push the branch and open a PR against `master`. Fill in what changed, why, and how it was tested.
-2. Run the checks locally first (see below). CI runs them again on the PR.
+2. Run the checks locally first (see below). CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs them again on every PR and every push to `master`:
+   - `lint`: ktlint, detekt and Android Lint
+   - `test`: unit tests and a debug build
+
+   If a job fails, its reports can be downloaded from the run's **Artifacts** section.
 3. **Review your own diff** in GitHub's "Files changed" tab before merging. It's the review step of a solo project.
 4. Resolve any review comments, including automated ones.
 5. Merge:
