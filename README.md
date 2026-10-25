@@ -1,4 +1,6 @@
 # Rutas Uruapan
+[![CI](https://github.com/bolderoctopus/uruapan-rutas-urbanos/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/bolderoctopus/uruapan-rutas-urbanos/actions/workflows/ci.yml)
+
 Aplicación android para encontrar la ruta de transporte urbano más cercana en la ciudad de Uruapan, México.
 Puedes descargarla en [Google Play](https://play.google.com/store/apps/details?id=com.rico.omarw.rutasuruapan).
 
@@ -16,25 +18,4 @@ Al hacer build en Android Studio gradle tomará de allí la API key para la inse
 
 
 ## Change log
-**1.5.1**
-- Refactorización de arquitectura a MVVM y adición de Hilt.
-- Actualización de SDK (targetSDK 35) y dependencias.
-- Implementación de interfaz Edge-to-Edge.
-- Correcciones de bugs y mejoras de estabilidad.
-
-**1.5.0**
-- Se actualiza el targetSDK a 34.
-- Se resuelve issue con el diálogo de permiso de ubicación.
-
-**1.2.0-beta**
-- TopMargin de GoogleMapsCompass modificado.
-
-**1.1.0-beta**
-- Links para Política de Privacidad y Código Fuente agregados.
-- Nombre de versión agregado en Configuración.
-
-**1.0.1-beta**
-- Cambio en el almacenamiento del API key.
-
-**1.0.0-beta** 
-- Versión inicial.
+El historial de versiones está en [CHANGELOG.md](CHANGELOG.md).

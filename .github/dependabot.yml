@@ -1,0 +1,49 @@
+# Weekly dependency update PRs. Each PR runs CI like any other.
+# The "chore(deps)" prefix keeps Dependabot's PR titles valid for the pr-title check.
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: /RutasUruapan
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # KSP versions are tied to the Kotlin version, so they must move together.
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin*"
+          - "com.google.devtools.ksp*"
+      androidx:
+        patterns:
+          - "androidx.*"
+      google-play-services:
+        patterns:
+          - "com.google.android.gms*"
+          - "com.google.android.libraries.places*"
+      testing:
+        patterns:
+          - "junit*"
+          - "io.mockk*"
+          - "org.robolectric*"
+          - "app.cash.turbine*"
+          - "org.jetbrains.kotlinx:kotlinx-coroutines-test"
+      lint-tools:
+        patterns:
+          - "org.jlleitschuh.gradle.ktlint*"
+          - "io.gitlab.arturbosch.detekt*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns:
+          - "*"
