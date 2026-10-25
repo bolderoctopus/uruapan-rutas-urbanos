@@ -2,7 +2,12 @@ package com.rico.omarw.rutasuruapan.models
 
 import android.util.SparseArray
 import androidx.core.util.size
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.Dash
+import com.google.android.gms.maps.model.Gap
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.PatternItem
+import com.google.android.gms.maps.model.Polyline
 import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.database.Route
 

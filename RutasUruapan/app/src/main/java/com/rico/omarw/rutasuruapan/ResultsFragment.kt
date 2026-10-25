@@ -28,7 +28,11 @@ import com.rico.omarw.rutasuruapan.database.Point
 import com.rico.omarw.rutasuruapan.database.Route
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import kotlin.math.sqrt
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ResultsFragment :
     Fragment(),
@@ -157,7 +161,8 @@ class ResultsFragment :
      * @param destinationLatLng End point
      * @param walkDistLimit How much the user is willing to walk between the route start/end point and the given origin/destination respectively
      */
-    private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double) { // todo: move to a separate class
+    // todo: move to a separate class
+    private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double) {
         showProgressBar()
         if (walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
         listener.drawSquares(walkDistLimit)

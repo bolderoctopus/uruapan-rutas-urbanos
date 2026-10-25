@@ -12,12 +12,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun routesDAO(): RouteDAO
 
     companion object {
-        private var INSTANCE: AppDatabase? = null
+        private var instance: AppDatabase? = null
 
         fun getInstance(context: Context): AppDatabase? {
-            if (INSTANCE == null) {
+            if (instance == null) {
                 synchronized(AppDatabase::class) {
-                    INSTANCE =
+                    instance =
                         Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "routes_database")
                             .createFromAsset("databases/pre_packaged_routes.db")
                             .fallbackToDestructiveMigration()
@@ -25,14 +25,16 @@ abstract class AppDatabase : RoomDatabase() {
                             .build()
                 }
             }
-            return INSTANCE
+            return instance
         }
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     "CREATE TABLE bestPoints( " +
-                        "pointId INTEGER PRIMARY KEY NOT NULL, routeId INTEGER NOT NULL, lat REAL NOT NULL, lng REAL NOT NULL, number INTEGER NOT NULL, distanceToNextPoint INTEGER NOT NULL, " +
+                        "pointId INTEGER PRIMARY KEY NOT NULL, routeId INTEGER NOT NULL, " +
+                        "lat REAL NOT NULL, lng REAL NOT NULL, " +
+                        "number INTEGER NOT NULL, distanceToNextPoint INTEGER NOT NULL, " +
                         "wd REAL NULL, rd REAL NULL, rt REAL NULL);"
                 )
             }
