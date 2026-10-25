@@ -17,7 +17,7 @@ class AddressUtilsTest {
             subThoroughfare = "123"
         }
         val result = AddressUtils.getShortAddress(address)
-        assertEquals("My Business", result)
+        assertEquals("My Businesds", result)
     }
 
     @Test
