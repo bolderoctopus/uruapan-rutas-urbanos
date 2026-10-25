@@ -6,14 +6,17 @@ import com.google.android.libraries.places.api.Places
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class App: Application() {
+class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
         // Initialized here so it's ready before fragments are restored after process death
-        if(!Places.isInitialized()){
+        if (!Places.isInitialized()) {
             val metaData = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData
-            Places.initializeWithNewPlacesApiEnabled(this, requireNotNull(metaData.getString("com.google.android.geo.API_KEY")))
+            Places.initializeWithNewPlacesApiEnabled(
+                this,
+                requireNotNull(metaData.getString("com.google.android.geo.API_KEY"))
+            )
         }
     }
 }

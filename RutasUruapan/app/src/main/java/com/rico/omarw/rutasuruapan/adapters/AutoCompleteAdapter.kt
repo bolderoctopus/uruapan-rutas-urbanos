@@ -26,11 +26,11 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.rico.omarw.rutasuruapan.AddressUtils
 import com.rico.omarw.rutasuruapan.R
 import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
 
 class AutoCompleteAdapter(
     context: Context,
@@ -44,7 +44,8 @@ class AutoCompleteAdapter(
     context,
     R.layout.current_location_list_item,
     android.R.id.text1
-), Filterable {
+),
+    Filterable {
 
     enum class ViewTypes(val id: Int) {
         CurrentLocation(0),
@@ -58,8 +59,9 @@ class AutoCompleteAdapter(
     var ignoreFiltering = false
 
     init {
-        if (includeCurrentLocation)
+        if (includeCurrentLocation) {
             addCurrentLocation()
+        }
         if (includePickLocation) {
             resultsList.add(
                 AutocompleteItemModel(
@@ -73,12 +75,11 @@ class AutoCompleteAdapter(
 
     override fun getCount() = resultsList.size
     override fun getItem(pos: Int): AutocompleteItemModel = resultsList[pos]
-    override fun getItemViewType(position: Int): Int =
-        when (resultsList[position].kind) {
-            AutocompleteItemModel.ItemKind.CurrentLocation -> ViewTypes.CurrentLocation.id
-            AutocompleteItemModel.ItemKind.AutocompletePrediction -> ViewTypes.AutocompletePrediction.id
-            AutocompleteItemModel.ItemKind.PickLocation -> ViewTypes.PickLocation.id
-        }
+    override fun getItemViewType(position: Int): Int = when (resultsList[position].kind) {
+        AutocompleteItemModel.ItemKind.CurrentLocation -> ViewTypes.CurrentLocation.id
+        AutocompleteItemModel.ItemKind.AutocompletePrediction -> ViewTypes.AutocompletePrediction.id
+        AutocompleteItemModel.ItemKind.PickLocation -> ViewTypes.PickLocation.id
+    }
 
     // use only one kind of view if things cause problems with some devices
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -113,12 +114,12 @@ class AutoCompleteAdapter(
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): FilterResults {
-
                 val results = FilterResults()
                 var filterData: MutableList<AutocompletePrediction>? = null
 
-                if (constraint != null)
+                if (constraint != null) {
                     filterData = getAutocomplete(constraint.toString())
+                }
 
                 results.values = filterData
                 results.count = filterData?.count() ?: 0
@@ -137,12 +138,13 @@ class AutoCompleteAdapter(
             }
 
             override fun convertResultToString(resultValue: Any?): CharSequence {
-                if (resultValue is AutocompleteItemModel)
+                if (resultValue is AutocompleteItemModel) {
                     return when (resultValue.kind) {
                         AutocompleteItemModel.ItemKind.AutocompletePrediction -> resultValue.primaryText
                         AutocompleteItemModel.ItemKind.CurrentLocation -> resultValue.secondaryText
                         AutocompleteItemModel.ItemKind.PickLocation -> " "
                     }
+                }
                 return super.convertResultToString(resultValue)
             }
         }
@@ -166,7 +168,6 @@ class AutoCompleteAdapter(
         } catch (error: Exception) {
             null
         }
-
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -184,13 +185,15 @@ class AutoCompleteAdapter(
     fun addCurrentLocation() {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED
-        )
+        ) {
             return
+        }
 
         locationClient.getCurrentLocation(
             CurrentLocationRequest.Builder()
                 .setGranularity(Granularity.GRANULARITY_FINE)
-                .build(), null
+                .build(),
+            null
         ).addOnSuccessListener { location ->
             if (location != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -213,7 +216,6 @@ class AutoCompleteAdapter(
                 }
             }
         }
-
     }
 
     private fun addAutocompleteItem(addresses: List<Address>?) {
@@ -221,7 +223,8 @@ class AutoCompleteAdapter(
         val address = addresses.first()
 
         resultsList.add(
-            0, AutocompleteItemModel(
+            0,
+            AutocompleteItemModel(
                 AutocompleteItemModel.ItemKind.CurrentLocation,
                 context.getString(R.string.current_location_primary),
                 AddressUtils.getShortAddress(address),
@@ -241,5 +244,4 @@ class AutoCompleteAdapter(
             }
         }
     }
-
 }

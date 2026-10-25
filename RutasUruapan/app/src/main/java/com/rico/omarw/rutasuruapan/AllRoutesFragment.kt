@@ -23,7 +23,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListener {
+class AllRoutesFragment :
+    Fragment(),
+    RouteListFilterableAdapter.DrawRouteListener {
     private val routeViewModel: RouteViewModel by activityViewModels()
 
     private val comparator =
@@ -55,11 +57,7 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_all_routes, container, false)
 
         recyclerView = view.findViewById(R.id.recyclerView_all_routes)
@@ -74,15 +72,16 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
         shouldDisplayHowToShowRouteDialog =
             InformativeDialogs.shouldDisplayHowToShowRouteDialog(layoutInflater.context)
 
-        if (shouldDisplayHowToShowRouteDialog)
+        if (shouldDisplayHowToShowRouteDialog) {
             displayDialogWhenRecyclerShown()
-
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 routeViewModel.filterableRoutes.collect {
-                    if (adapter.itemCount == 0) adapter.add(it)
-                    else {
+                    if (adapter.itemCount == 0) {
+                        adapter.add(it)
+                    } else {
                         adapter.replaceAll(it)
                         recyclerView.scrollToPosition(0)
                     }
@@ -105,7 +104,9 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
                 oldRight: Int,
                 oldBottom: Int
             ) {
-                if (shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v != null && InformativeDialogs.shouldDisplayHowToShowRouteDialog(v.context)) {
+                if (shouldDisplayHowToShowRouteDialog && isVisible && top != 0 && v != null &&
+                    InformativeDialogs.shouldDisplayHowToShowRouteDialog(v.context)
+                ) {
                     var verticalOffset = recyclerView.height
                     verticalOffset -= resources.getDimension(R.dimen.collapsed_panel_height).toInt()
                     verticalOffset -= resources.getDimension(R.dimen.toolbar_height).toInt()
@@ -127,7 +128,6 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
                 searchView.context.resources.getIdentifier("android:id/search_plate", null, null)
             val searchPlate = searchView.findViewById<View>(searchPlateId)
             searchPlate.setBackgroundColor(Color.TRANSPARENT)
-
         } catch (exception: Exception) {
             Log.e(TAG, "Error on removeSearchViewBackground", exception)
         }
@@ -161,5 +161,4 @@ class AllRoutesFragment : Fragment(), RouteListFilterableAdapter.DrawRouteListen
     }
 
     interface InteractionsInterface : RouteListFilterableAdapter.DrawRouteListener
-
 }

@@ -1,11 +1,11 @@
 package com.rico.omarw.rutasuruapan
 
 import android.location.Address
+import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.util.Locale
 
 @RunWith(RobolectricTestRunner::class)
 class AddressUtilsTest {

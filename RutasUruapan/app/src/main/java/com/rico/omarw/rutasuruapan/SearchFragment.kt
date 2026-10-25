@@ -13,6 +13,7 @@ import android.widget.AutoCompleteTextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -29,16 +30,15 @@ import com.rico.omarw.rutasuruapan.Utils.checkInternetConnection
 import com.rico.omarw.rutasuruapan.Utils.getLatLng
 import com.rico.omarw.rutasuruapan.Utils.hideKeyboard
 import com.rico.omarw.rutasuruapan.adapters.AutoCompleteAdapter
-import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
-import kotlin.collections.ArrayList
-import androidx.preference.PreferenceManager
 import com.rico.omarw.rutasuruapan.databinding.FragmentSearchBinding
+import com.rico.omarw.rutasuruapan.models.AutocompleteItemModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
+import kotlin.collections.ArrayList
+import kotlin.getValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
-import kotlin.getValue
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
@@ -50,7 +50,7 @@ class SearchFragment : Fragment() {
         Destination
     }
 
-    //todo: move to viewmodel or controller
+    // todo: move to viewmodel or controller
     private var originLatLng: LatLng? = null
     private var destinationLatLng: LatLng? = null
 
@@ -95,11 +95,7 @@ class SearchFragment : Fragment() {
         outState.putString(CURRENT_LOCATION_OWNER_KEY, currentLocationOwner?.name)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
 
         binding.apply {
@@ -255,17 +251,11 @@ class SearchFragment : Fragment() {
                     )
                 }
             }
-
         }
         findPlaceByLatLng(markerType, latLng)
     }
 
-    private fun onAutoCompleteItemClick(
-        parent: AdapterView<*>?,
-        view: View?,
-        position: Int,
-        id: Long
-    ) {
+    private fun onAutoCompleteItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         val markerType: MarkerType
         val item = autoCompleteAdapter.getItem(position)
         val title: String
@@ -275,9 +265,9 @@ class SearchFragment : Fragment() {
                 title = getString(R.string.marker_title_origin)
                 originTextInput.error = null
                 markerType = MarkerType.Origin
-                if (item.kind != AutocompleteItemModel.ItemKind.PickLocation)
+                if (item.kind != AutocompleteItemModel.ItemKind.PickLocation) {
                     destinationAutocompleteTextview.requestFocus()
-                else {
+                } else {
                     originAutocompleteTextview.clearFocus()
                     hideKeyboard(requireContext(), originAutocompleteTextview.windowToken)
                 }
@@ -290,18 +280,20 @@ class SearchFragment : Fragment() {
         }
 
         when (item.kind) {
-            AutocompleteItemModel.ItemKind.AutocompletePrediction -> {// request coordinates from place id
+            AutocompleteItemModel.ItemKind.AutocompletePrediction -> { // request coordinates from place id
                 val fetchPlaceRequest =
                     FetchPlaceRequest.builder(item.autocompletePrediction!!.placeId, PlaceFields)
                         .setSessionToken(AutocompleteSessionToken.newInstance()).build()
                 placesClient.fetchPlace(fetchPlaceRequest).addOnCompleteListener {
-                    if (it.isSuccessful && it.result != null) drawMarker(
-                        markerType,
-                        it.result?.place?.location,
-                        title,
-                        true,
-                        false
-                    )
+                    if (it.isSuccessful && it.result != null) {
+                        drawMarker(
+                            markerType,
+                            it.result?.place?.location,
+                            title,
+                            true,
+                            false
+                        )
+                    }
                 }
             }
 
@@ -314,7 +306,7 @@ class SearchFragment : Fragment() {
                 drawMarker(markerType, item.currentLatLng, title, true, false)
                 currentLocationOwner = markerType
                 // Si la opcion de "Use Current Location" es seleccionada en un textView esta ya no se mostrara hasta que se presione el boton de limpiar o cambie de ubicacion el marcador
-                //correspondiente al textview
+                // correspondiente al textview
                 autoCompleteAdapter.removeCurrentLocation()
             }
         }
@@ -327,10 +319,11 @@ class SearchFragment : Fragment() {
 
     private fun findPlaceByLatLng(markerType: MarkerType, latLng: LatLng) {
         if (!PreferenceManager.getDefaultSharedPreferences(requireContext())
-                .getBoolean(PreferenceKeys.RESOLVE_LOCATIONS_TO_ADDRESSES, true)
-            || (context != null && !checkInternetConnection(requireContext()))
-        )
+                .getBoolean(PreferenceKeys.RESOLVE_LOCATIONS_TO_ADDRESSES, true) ||
+            (context != null && !checkInternetConnection(requireContext()))
+        ) {
             return
+        }
 
         if (!::geocoder.isInitialized) geocoder = Geocoder(requireContext(), Locale.getDefault())
 
@@ -343,7 +336,7 @@ class SearchFragment : Fragment() {
                         1
                     )
                 }
-                if (!addresses.isNullOrEmpty())
+                if (!addresses.isNullOrEmpty()) {
                     when (markerType) {
                         MarkerType.Origin -> binding.originAutocompleteTextview.setText(
                             AddressUtils.getShortAddress(
@@ -355,6 +348,7 @@ class SearchFragment : Fragment() {
                             AddressUtils.getShortAddress(addresses[0])
                         )
                     }
+                }
             } catch (exception: java.lang.Exception) {
                 Log.e(TAG, "findPlaceByLatLng", exception)
             }
@@ -407,17 +401,12 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private fun drawMarker(
-        markerType: MarkerType,
-        latLng: LatLng?,
-        title: String,
-        animate: Boolean,
-        bounce: Boolean
-    ) {
-        if (markerType == MarkerType.Origin)
+    private fun drawMarker(markerType: MarkerType, latLng: LatLng?, title: String, animate: Boolean, bounce: Boolean) {
+        if (markerType == MarkerType.Origin) {
             originLatLng = latLng
-        else
+        } else {
             destinationLatLng = latLng
+        }
         listener.drawMarker(latLng, title, markerType, animate, bounce)
     }
 
@@ -459,13 +448,7 @@ class SearchFragment : Fragment() {
 
     interface OnFragmentInteractionListener {
         fun onSearch(origin: LatLng, destination: LatLng)
-        fun drawMarker(
-            position: LatLng?,
-            title: String,
-            markerType: MarkerType,
-            animate: Boolean,
-            bounce: Boolean
-        )
+        fun drawMarker(position: LatLng?, title: String, markerType: MarkerType, animate: Boolean, bounce: Boolean)
 
         fun clearMarker(markerType: MarkerType)
         fun getMapVerticalOffset(): Int

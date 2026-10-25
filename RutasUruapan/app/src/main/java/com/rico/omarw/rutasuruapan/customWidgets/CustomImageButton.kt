@@ -8,7 +8,8 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.rico.omarw.rutasuruapan.R
 
-class CustomImageButton(c: Context, layoutParams: RelativeLayout.LayoutParams): androidx.appcompat.widget.AppCompatImageView(c) {
+class CustomImageButton(c: Context, layoutParams: RelativeLayout.LayoutParams) :
+    androidx.appcompat.widget.AppCompatImageView(c) {
     companion object {
         const val TAG = "SettingsButton"
     }
@@ -20,23 +21,24 @@ class CustomImageButton(c: Context, layoutParams: RelativeLayout.LayoutParams): 
         contentDescription = c.getString(R.string.title_activity_settings)
         setImageResource(R.drawable.settings_button)
         setLayoutParams(layoutParams)
-        setPadding(0,0,0,0)
+        setPadding(0, 0, 0, 0)
         setOnTouchListener(this::onTouchEvent)
     }
 
     private fun onTouchEvent(view: View?, event: MotionEvent?): Boolean {
         val imageButton = view as ImageView
-        when(event?.action){
-            MotionEvent.ACTION_DOWN ->{
+        when (event?.action) {
+            MotionEvent.ACTION_DOWN -> {
                 imageButton.drawable.setColorFilter(0x44000000, PorterDuff.Mode.SRC_ATOP)
             }
-            MotionEvent.ACTION_UP ->{
+
+            MotionEvent.ACTION_UP -> {
                 imageButton.drawable.clearColorFilter()
             }
+
             MotionEvent.ACTION_CANCEL -> {
                 imageButton.clearColorFilter()
             }
-
         }
         invalidate()
         return false

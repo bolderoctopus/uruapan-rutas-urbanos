@@ -7,6 +7,12 @@ import android.os.Bundle
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
+import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -18,12 +24,6 @@ import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.SHOW_DIALOGS
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.SOURCE_CODE
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.VERSION
 import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys.WALK_DIST_LIMIT
-import androidx.core.content.edit
-import androidx.core.net.toUri
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -56,7 +56,9 @@ class SettingsActivity : AppCompatActivity() {
         return true
     }
 
-    class SettingsFragment : PreferenceFragmentCompat(), Preference.SummaryProvider<ListPreference>,
+    class SettingsFragment :
+        PreferenceFragmentCompat(),
+        Preference.SummaryProvider<ListPreference>,
         Preference.OnPreferenceClickListener {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
@@ -66,11 +68,13 @@ class SettingsActivity : AppCompatActivity() {
             findPreference<Preference>(PRIVACY_POLICY)?.onPreferenceClickListener = this
             findPreference<Preference>(SOURCE_CODE)?.onPreferenceClickListener = this
 
-            preferenceScreen.addPreference(Preference(requireContext()).apply {
-                isEnabled = false
-                summary = BuildConfig.VERSION_NAME
-                key = VERSION
-            })
+            preferenceScreen.addPreference(
+                Preference(requireContext()).apply {
+                    isEnabled = false
+                    summary = BuildConfig.VERSION_NAME
+                    key = VERSION
+                }
+            )
         }
 
         private fun deleteSomePreferences(c: Context) {
@@ -82,24 +86,31 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         private fun openLink(link: String) {
-            startActivity(Intent(Intent.ACTION_VIEW).apply {
-                data = link.toUri()
-            })
+            startActivity(
+                Intent(Intent.ACTION_VIEW).apply {
+                    data = link.toUri()
+                }
+            )
         }
 
         override fun onPreferenceClick(preference: Preference): Boolean {
             when (preference.key) {
                 SHOW_DIALOGS -> deleteSomePreferences(preference.context)
+
                 RATE -> openLink("https://play.google.com/store/apps/details?id=${preference.context.packageName}")
-                PRIVACY_POLICY -> openLink("https://github.com/bolderoctopus/uruapan-rutas-urbanos/blob/master/privacy%20policy.md")
+
+                PRIVACY_POLICY -> openLink(
+                    "https://github.com/bolderoctopus/uruapan-rutas-urbanos/blob/master/privacy%20policy.md"
+                )
+
                 SOURCE_CODE -> openLink("https://github.com/bolderoctopus/uruapan-rutas-urbanos")
+
                 else -> return false
             }
             return true
         }
 
-        override fun provideSummary(preference: ListPreference): CharSequence {
-            return getString(R.string.preference_summary_limit_distance, preference.entry)
-        }
+        override fun provideSummary(preference: ListPreference): CharSequence =
+            getString(R.string.preference_summary_limit_distance, preference.entry)
     }
 }

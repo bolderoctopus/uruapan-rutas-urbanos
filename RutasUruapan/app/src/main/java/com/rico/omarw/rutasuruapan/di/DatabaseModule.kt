@@ -20,13 +20,12 @@ object DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(context.applicationContext,  AppDatabase::class.java, "routes_database")
+    fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
+        Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "routes_database")
             .createFromAsset("databases/pre_packaged_routes.db")
             .fallbackToDestructiveMigration(true)
             .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
-    }
 
     @Provides
     fun provideRouteDao(appDb: AppDatabase): RouteDAO = appDb.routesDAO()
