@@ -1,0 +1,23 @@
+# Overrides on top of detekt's default config (buildUponDefaultConfig = true in app/build.gradle).
+# Only list rules here that we deliberately change. Full defaults:
+# https://github.com/detekt/detekt/blob/v1.23.8/detekt-core/src/main/resources/default-detekt-config.yml
+#
+# Existing findings are recorded in baseline.xml. To refresh it after fixing some:
+#   ./gradlew detektBaseline
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+style:
+  # Constants.kt and unit conversions use plain numbers; flagging every one is noise.
+  MagicNumber:
+    active: false
+  # Formatting is ktlint's job.
+  MaxLineLength:
+    active: false
+  # Also covered by ktlint; keep a single tool reporting each formatting issue.
+  NewLineAtEndOfFile:
+    active: false
+  WildcardImport:
+    active: false
