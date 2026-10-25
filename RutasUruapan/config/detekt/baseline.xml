@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:AllRoutesFragment.kt$AllRoutesFragment.&lt;no name provided&gt;$shouldDisplayHowToShowRouteDialog &amp;&amp; isVisible &amp;&amp; top != 0 &amp;&amp; v != null &amp;&amp; InformativeDialogs.shouldDisplayHowToShowRouteDialog(v.context)</ID>
+    <ID>ComplexCondition:ResultsFragment.kt$ResultsFragment.&lt;no name provided&gt;$shouldDisplayHowToShowRouteDialog &amp;&amp; isVisible &amp;&amp; top != 0 &amp;&amp; v != null &amp;&amp; (recyclerView.adapter?.itemCount ?: 0) &gt; 0 &amp;&amp; InformativeDialogs.shouldDisplayHowToShowRouteDialog(v.context)</ID>
+    <ID>EmptySecondaryConstructor:Point.kt$Point${ }</ID>
+    <ID>EqualsWithHashCodeExist:RouteModel.kt$RouteModel</ID>
+    <ID>LargeClass:MainActivity.kt$MainActivity : AppCompatActivityOnMapReadyCallbackOnMarkerDragListenerOnMapLongClickListenerInteractionsInterfaceOnFragmentInteractionListenerOnFragmentInteractionListenerOnCameraMoveListenerOnTabSelectedListener</ID>
+    <ID>LongMethod:ResultsFragment.kt$ResultsFragment$private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double)</ID>
+    <ID>LongParameterList:AutoCompleteAdapter.kt$AutoCompleteAdapter$( context: Context, private val coroutineScope: CoroutineScope, private val locationClient: FusedLocationProviderClient, private val placesClient: PlacesClient, private val bounds: RectangularBounds, includeCurrentLocation: Boolean, includePickLocation: Boolean )</ID>
+    <ID>NestedBlockDepth:MainActivity.kt$MainActivity$private fun drawDirectionalMarkers(sourcePoints: List&lt;Point&gt;, color: Int): SparseArray&lt;Iterable&lt;Marker&gt;&gt;</ID>
+    <ID>NestedBlockDepth:MainActivity.kt$MainActivity$private fun updateShownDirectionalArrows( currentZoomLvl: Int, newZoomLvl: Int, route: RouteModel, routeVisible: Boolean = true )</ID>
+    <ID>ReturnCount:AutoCompleteAdapter.kt$AutoCompleteAdapter$private fun getAutocomplete(query: String): MutableList&lt;AutocompletePrediction&gt;?</ID>
+    <ID>ReturnCount:MainActivity.kt$MainActivity$override fun drawSquares(walkingDistance: Double)</ID>
+    <ID>SwallowedException:AutoCompleteAdapter.kt$AutoCompleteAdapter$error: Exception</ID>
+    <ID>TooGenericExceptionCaught:AllRoutesFragment.kt$AllRoutesFragment$exception: Exception</ID>
+    <ID>TooGenericExceptionCaught:AutoCompleteAdapter.kt$AutoCompleteAdapter$error: Exception</ID>
+    <ID>TooGenericExceptionCaught:SearchFragment.kt$SearchFragment$error: Exception</ID>
+    <ID>TooGenericExceptionThrown:AllRoutesFragment.kt$AllRoutesFragment$throw RuntimeException("$context must implement InteractionsInterface")</ID>
+    <ID>TooGenericExceptionThrown:ResultsFragment.kt$ResultsFragment$throw Exception("walkDistLimit must be a greater than 0")</ID>
+    <ID>TooGenericExceptionThrown:ResultsFragment.kt$ResultsFragment$throw RuntimeException("$context must implement OnFragmentInteractionListener")</ID>
+    <ID>TooGenericExceptionThrown:SearchFragment.kt$SearchFragment$throw RuntimeException("$context must implement OnFragmentInteractionListener")</ID>
+    <ID>TooManyFunctions:MainActivity.kt$MainActivity : AppCompatActivityOnMapReadyCallbackOnMarkerDragListenerOnMapLongClickListenerInteractionsInterfaceOnFragmentInteractionListenerOnFragmentInteractionListenerOnCameraMoveListenerOnTabSelectedListener</ID>
+    <ID>TooManyFunctions:ResultsFragment.kt$ResultsFragment : FragmentDrawRouteListener</ID>
+    <ID>TooManyFunctions:RouteDAO.kt$RouteDAO</ID>
+    <ID>TooManyFunctions:SearchFragment.kt$SearchFragment : Fragment</ID>
+    <ID>UnusedParameter:SearchFragment.kt$SearchFragment$id: Long</ID>
+    <ID>UnusedParameter:SearchFragment.kt$SearchFragment$parent: AdapterView&lt;*&gt;?</ID>
+    <ID>UnusedParameter:SearchFragment.kt$SearchFragment$view: View?</ID>
+    <ID>UnusedPrivateProperty:Point.kt$Point$pointId: Int</ID>
+    <ID>UnusedPrivateProperty:SearchFragment.kt$SearchFragment$private val routeViewModel: RouteViewModel by activityViewModels()</ID>
+  </CurrentIssues>
+</SmellBaseline>

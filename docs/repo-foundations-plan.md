@@ -17,18 +17,22 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
 
 ## Phases (each phase is one PR, so every step practices the new workflow)
 
-### Phase 0 — Make the build CI-friendly  (`chore/ci-friendly-build`)
+### Phase 0 — Make the build CI-friendly  (`chore/ci-friendly-build`) ✅ Done in #11
 - `app/build.gradle`: load `apikeys.properties` only if it exists, else fall back to the `MAPS_API_KEY` env var, else `""`. Unit tests don't need a real key.
 - Root `.gitignore`: add `.DS_Store`. Optionally remove the unused catalog entries and the Jetifier flag.
 - Verify: `mv apikeys.properties /tmp && ./gradlew testDebugUnitTest assembleDebug` succeeds, then restore the file.
 
-### Phase 1 — Lint & formatting  (`chore/add-linters`)
+### Phase 1 — Lint & formatting  (`chore/add-linters`) ✅ Done
 - `.editorconfig` at the repo root (Kotlin official style, 4-space indent, ktlint rules such as `ktlint_code_style = android_studio`).
 - ktlint via the `org.jlleitschuh.gradle.ktlint` plugin (adds `ktlintCheck` / `ktlintFormat`). Run `ktlintFormat` once in its own commit so the reformat is isolated.
 - detekt via the `io.gitlab.arturbosch.detekt` plugin with `config/detekt/detekt.yml` (`buildUponDefaultConfig = true`) and `detektBaseline` to grandfather existing issues (MainActivity's complexity).
 - Android Lint: `lint { abortOnError true; warningsAsErrors false; baseline file("lint-baseline.xml") }`, then generate the baseline.
 - All plugin versions go in `gradle/libs.versions.toml`.
 - Verify: `./gradlew ktlintCheck detekt lintDebug` passes, and a deliberate violation fails it.
+- **As built:** ktlint plugin 14.2.0 (ktlint 1.8.0), detekt 1.23.8 (JVM target pinned to 21), `max_line_length = 120`. detekt rules that overlap ktlint (`NewLineAtEndOfFile`, `WildcardImport`, `MaxLineLength`) and `MagicNumber` are off. Baselines: `config/detekt/baseline.xml` (28 findings), `app/lint-baseline.xml` (45 issues). After merging, add the merged reformat commit SHA to a root `.git-blame-ignore-revs` file (SHAs change on merge, so it can't be done in the PR itself).
+- **Follow-ups found by the linters** (left in baselines on purpose):
+  - `UseAppTint` in `current_location_list_item.xml`: switch to `app:tint` and check the icon tint on a device.
+  - detekt: `RouteModel` overrides `equals` without `hashCode`, unused `Point.pointId` / `SearchFragment.routeViewModel`, empty secondary constructor in `Point`.
 
 ### Phase 2 — CI workflow  (`ci/add-pr-workflow`)
 - `.github/workflows/ci.yml`, triggered on `pull_request` and `push` to `master`:
