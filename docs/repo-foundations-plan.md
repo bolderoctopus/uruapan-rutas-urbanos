@@ -29,7 +29,7 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
 - Android Lint: `lint { abortOnError true; warningsAsErrors false; baseline file("lint-baseline.xml") }`, then generate the baseline.
 - All plugin versions go in `gradle/libs.versions.toml`.
 - Verify: `./gradlew ktlintCheck detekt lintDebug` passes, and a deliberate violation fails it.
-- **As built:** ktlint plugin 14.2.0 (ktlint 1.8.0), detekt 1.23.8 (JVM target pinned to 21), `max_line_length = 120`. detekt rules that overlap ktlint (`NewLineAtEndOfFile`, `WildcardImport`, `MaxLineLength`) and `MagicNumber` are off. Baselines: `config/detekt/baseline.xml` (28 findings), `app/lint-baseline.xml` (45 issues). After merging, add the merged reformat commit SHA to a root `.git-blame-ignore-revs` file (SHAs change on merge, so it can't be done in the PR itself).
+- **As built:** ktlint plugin 14.2.0 (ktlint 1.8.0), detekt 1.23.8 (JVM target pinned to 21), `max_line_length = 120`. detekt rules that overlap ktlint (`NewLineAtEndOfFile`, `WildcardImport`, `MaxLineLength`) and `MagicNumber` are off. Baselines: `config/detekt/baseline.xml` (28 findings), `app/lint-baseline.xml` (45 issues). The merged reformat commit is listed in `.git-blame-ignore-revs` (added after the merge, because merging changes SHAs).
 - **Follow-ups found by the linters** (left in baselines on purpose):
   - `UseAppTint` in `current_location_list_item.xml`: switch to `app:tint` and check the icon tint on a device.
   - detekt: `RouteModel` overrides `equals` without `hashCode`, unused `Point.pointId` / `SearchFragment.routeViewModel`, empty secondary constructor in `Point`.
@@ -44,12 +44,7 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
 - Verify: open the PR itself and watch both workflows go green. Push a bad commit to see one fail.
 
 ### Phase 3 — Repo rules & conventions  (`docs/repo-conventions`, plus GitHub settings)
-- `CONTRIBUTING.md` covers:
-  - Branch naming: `<type>/<short-kebab-desc>` (`feat/`, `fix/`, `chore/`, `docs/`, `ci/`, `refactor/`, `test/`).
-  - Commits and PR titles in Conventional Commits (`fix: prevent NPE in settings button`).
-  - Flow: branch from master → PR → CI green → squash merge → branch auto-deleted.
-  - Releases: bump `versionCode`/`versionName` in a `chore(release): x.y.z` PR, tag `vX.Y.Z` on master, upload to Play by hand, and update the changelog.
-  - How to run checks locally.
+- ✅ `CONTRIBUTING.md` (done early, in `docs/contributing-guide`): trunk-based flow, branch naming, Conventional Commits, PR and merge rules, local checks, releases (tags match `versionName` with no `v` prefix, as the existing tags do), and `.git-blame-ignore-revs`. When CI and the PR-title check land, update its "Pull requests" section to say they are required.
 - `.github/pull_request_template.md` (what/why, how tested, checklist).
 - `.github/ISSUE_TEMPLATE/bug_report.yml` and `feature_request.yml`.
 - `.github/dependabot.yml`: weekly `gradle` (directory `/RutasUruapan`, grouped AndroidX/Kotlin) plus `github-actions`.

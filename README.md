@@ -2,6 +2,9 @@
 Aplicación android para encontrar la ruta de transporte urbano más cercana en la ciudad de Uruapan, México.
 Puedes descargarla en [Google Play](https://play.google.com/store/apps/details?id=com.rico.omarw.rutasuruapan).
 
+## Contribuir
+El flujo de trabajo (ramas, nombres de ramas, mensajes de commit, pull requests y releases) está documentado en [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Antes de compilar
 Para que funcione correctamente la aplicación debes contar con una API key de Google Cloud Platform con Maps SDK for Android y 
 Places API habilitados.
