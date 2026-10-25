@@ -5,9 +5,14 @@ plugins {
     id 'com.google.devtools.ksp'
 }
 
+// The API key comes from apikeys.properties locally, or the MAPS_API_KEY env var (e.g. CI).
+// When neither is present the build still works; maps and places just won't load at runtime.
 def apiKeysFile = rootProject.file("apikeys.properties")
 def apiKeysProperties = new Properties()
-apiKeysProperties.load(new FileInputStream(apiKeysFile))
+if (apiKeysFile.exists()) {
+    apiKeysFile.withInputStream { apiKeysProperties.load(it) }
+}
+def mapsAndPlacesApiKey = apiKeysProperties['mapsAndPlaces'] ?: System.getenv("MAPS_API_KEY") ?: ""
 
 android {
     namespace 'com.rico.omarw.rutasuruapan'
@@ -20,7 +25,7 @@ android {
         versionCode 15
         versionName "1.5.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders = [mapsAndPlacesAPIKey:apiKeysProperties['mapsAndPlaces']]
+        manifestPlaceholders = [mapsAndPlacesAPIKey: mapsAndPlacesApiKey]
     }
     buildTypes {
         release {

@@ -61,3 +61,6 @@ fastlane/readme.md
 RutasUruapan/.idea/
 *.aab
 RutasUruapan/apikeys.properties
+
+# macOS
+.DS_Store
