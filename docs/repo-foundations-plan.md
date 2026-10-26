@@ -44,16 +44,16 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
 - Verify: open the PR itself and watch both workflows go green. Push a bad commit to see one fail.
 - **As built:** checkout@v7, setup-java@v6 (temurin 21), gradle/actions/setup-gradle@v6 with `cache-provider: basic` (the default "enhanced" cache is a commercial service) and its built-in wrapper validation, upload-artifact@v7, amannn/action-semantic-pull-request@v6. The PR-title check uses `pull_request`, not `pull_request_target`, because the repo has no fork contributors and `pull_request_target` would only run once the workflow is on `master`. The title summary must start lowercase. Actions are pinned to major tags; Dependabot (Phase 3) keeps them current.
 
-### Phase 3 — Repo rules & conventions  (`chore/repo-conventions`, plus GitHub settings)
+### Phase 3 — Repo rules & conventions  (`chore/repo-conventions`, plus GitHub settings) ✅ Done
 - ✅ `CONTRIBUTING.md` (done early, in `docs/contributing-guide`): trunk-based flow, branch naming, Conventional Commits, PR and merge rules, local checks, releases (tags match `versionName` with no `v` prefix, as the existing tags do), and `.git-blame-ignore-revs`. When CI and the PR-title check land, update its "Pull requests" section to say they are required.
 - ✅ `.github/pull_request_template.md` (what/why, how tested, checklist).
 - ✅ `.github/ISSUE_TEMPLATE/bug_report.yml` and `feature_request.yml`, bilingual Spanish/English because the app's users speak Spanish.
 - ✅ `.github/dependabot.yml`: weekly `gradle` (directory `/RutasUruapan`; groups kotlin+ksp, androidx, play services, testing, lint tools) plus `github-actions`. A `chore(deps)` / `ci(deps)` prefix keeps PR titles valid for the `pr-title` check.
 - ✅ `CHANGELOG.md` (Spanish, Keep a Changelog), moved out of the README, with 1.5.2–1.5.4 filled in from git history. CI badge added to the README.
-- GitHub settings, done with `gh api` after you confirm each one:
-  - Disable merge commits (keep squash, plus rebase for reformat PRs, per CONTRIBUTING), set the squash commit title to the PR title, and enable `delete_branch_on_merge`.
-  - Branch protection: add required status checks `lint`, `test`, `pr-title`, with "require branches up to date".
-  - Delete the stale branches (`development`, `bug-fix`, and merged ones) once you confirm.
+- ✅ GitHub settings (applied 2026-10-26 with `gh api`, after confirmation):
+  - Merge commits off. Squash (title = PR title, body = PR description) and rebase on. Branches are deleted automatically after merging.
+  - `master` protection: required checks `lint`, `test`, `pr-title` (strict: branch must be up to date), required conversation resolution, PR required with 0 approvals (solo maintainer), linear history, admins included, no force pushes or deletions.
+- ✅ Stale branches deleted: the remote and local branches of merged PRs #5–#15, including `development`. Local `bug-fix` ("fix by gemini", never pushed, no PR) was kept for review.
 
 ### Phase 4 — Testing foundations  (`test/...`, iterative)
 - Add JaCoCo (or Kover, which is simpler for Kotlin) with a `koverHtmlReport`, uploaded as a CI artifact. Report only, no threshold yet.

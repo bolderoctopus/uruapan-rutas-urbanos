@@ -6,7 +6,7 @@ How work flows through this repository. It's a small project, so the rules are l
 
 - `master` is the only long-lived branch. It must always build and pass checks, and it reflects what can be released.
 - All work happens on **short-lived branches** cut from the latest `master` and merged back through a pull request, ideally within a few days.
-- Nobody pushes to `master` directly. Branch protection requires a PR, linear history, and no force pushes.
+- Nobody pushes to `master` directly, admins included. Branch protection requires a PR, passing `lint`, `test` and `pr-title` checks, a branch up to date with `master`, resolved review conversations, linear history, and no force pushes.
 - There is no `development` or `release` branch. Releases are tags on `master` (see [Releases](#releases)).
 
 ```bash
@@ -55,13 +55,13 @@ The **PR title** follows the same format, because it becomes the commit message 
    - `lint`: ktlint, detekt and Android Lint
    - `test`: unit tests and a debug build
 
-   If a job fails, its reports can be downloaded from the run's **Artifacts** section.
+   If a job fails, its reports can be downloaded from the run's **Artifacts** section. All three checks (`lint`, `test`, `pr-title`) are required before merging. If GitHub says the branch is out of date, use **Update branch** and let CI run again.
 3. **Review your own diff** in GitHub's "Files changed" tab before merging. It's the review step of a solo project.
-4. Resolve any review comments, including automated ones.
+4. Resolve any review comments, including automated ones. Merging is blocked until every conversation is resolved.
 5. Merge:
-   - **Squash and merge** (default): the whole PR becomes one commit titled with the PR title.
+   - **Squash and merge** (default): the whole PR becomes one commit, with the PR title as its message and the PR description as its body.
    - **Rebase and merge**: only when the individual commits should stay separate on `master`, for example a mechanical reformat that is listed in `.git-blame-ignore-revs`.
-6. Delete the branch after merging.
+6. GitHub deletes the branch after merging. Locally, run `git switch master && git pull && git fetch --prune` and delete the local branch with `git branch -D <name>`. Squash-merged branches need `-D`.
 
 ## Dependency updates
 
