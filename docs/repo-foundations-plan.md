@@ -56,7 +56,9 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
 - ✅ Stale branches deleted: the remote and local branches of merged PRs #5–#15, including `development`. Local `bug-fix` ("fix by gemini", never pushed, no PR) was kept for review.
 
 ### Phase 4 — Testing foundations  (`test/...`, iterative)
-- Add JaCoCo (or Kover, which is simpler for Kotlin) with a `koverHtmlReport`, uploaded as a CI artifact. Report only, no threshold yet.
+- ✅ Kover 0.9.11 (`chore/add-kover`): generated code excluded (Room `_Impl`, Hilt/Dagger, view binding, `R`, `BuildConfig`). CI prints the total in the job summary and uploads the HTML report. Report only.
+  - Baseline on 2026-10-28: **3.4% line coverage**. Covered: `AddressUtils`, `RouteViewModel`, part of `Utils`/`RouteModel`. The biggest uncovered classes are `MainActivity` (385 lines), `SearchFragment` (212), `ResultsFragment` and `AutoCompleteAdapter` (83 each).
+  - Threshold plan: no gate while coverage is this low. After the DAO and logic tests, enforce a minimum a few points below the measured total (ratchet), and raise it as coverage grows. Target about 60–70% for non-UI code (database, models, ViewModels, utils) rather than an app-wide number.
 - Add Room DAO tests with Robolectric plus an in-memory DB (`RouteDAO` queries are core logic and good candidates).
 - Extend ViewModel tests. Note business logic still sitting in `MainActivity`/`SearchFragment` as refactor candidates, so it can be moved and tested later.
 - Later, optional: one instrumented smoke test using an emulator in CI (`reactivecircus/android-emulator-runner`).

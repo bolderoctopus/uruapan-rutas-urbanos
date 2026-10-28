@@ -67,8 +67,23 @@ jobs:
           cache-provider: basic
 
       # No Maps API key in CI: the build falls back to an empty key, which unit tests don't need.
-      - name: Unit tests and debug build
-        run: ./gradlew testDebugUnitTest assembleDebug
+      - name: Unit tests, coverage and debug build
+        run: ./gradlew testDebugUnitTest koverHtmlReportDebug koverLogDebug assembleDebug
+
+      # Report only for now: no minimum is enforced. Shows the total on the run's summary page.
+      - name: Coverage summary
+        run: |
+          {
+            echo "### Test coverage (Kover)"
+            ./gradlew -q koverLogDebug | grep -i "coverage"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: RutasUruapan/app/build/reports/kover/htmlDebug/
+          retention-days: 14
 
       - name: Upload test reports
         if: failure()

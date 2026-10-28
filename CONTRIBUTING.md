@@ -81,6 +81,7 @@ From `RutasUruapan/`:
 
 - `./gradlew ktlintFormat` auto-fixes most formatting issues. Style rules live in the root `.editorconfig`.
 - Existing findings are recorded in `config/detekt/baseline.xml` and `app/lint-baseline.xml`. Fix new findings instead of adding them to a baseline.
+- `./gradlew koverHtmlReportDebug` builds a test coverage report at `app/build/reports/kover/htmlDebug/index.html` (`koverLogDebug` prints the total). CI shows the total on each run's summary page and uploads the HTML report as the `coverage-report` artifact. No minimum is enforced yet.
 
 ## Releases
 
