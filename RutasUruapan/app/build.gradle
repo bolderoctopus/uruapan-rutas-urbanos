@@ -5,6 +5,7 @@ plugins {
     id 'com.google.devtools.ksp'
     alias(libs.plugins.org.jlleitschuh.gradle.ktlint)
     alias(libs.plugins.io.gitlab.arturbosch.detekt)
+    alias(libs.plugins.org.jetbrains.kotlinx.kover)
 }
 
 // The API key comes from apikeys.properties locally, or the MAPS_API_KEY env var (e.g. CI).
@@ -102,4 +103,32 @@ dependencies {
     testImplementation libs.androidx.test.core
     testImplementation libs.kotlinx.coroutines.test
 
+}
+
+// Test coverage. ./gradlew koverHtmlReportDebug, report in app/build/reports/kover/htmlDebug/
+kover {
+    reports {
+        filters {
+            excludes {
+                // Generated code: Room DAO implementations, Hilt/Dagger glue, view binding, resources.
+                classes(
+                    "*.BuildConfig",
+                    "*.R",
+                    "*.R\$*",
+                    "*_Impl",
+                    "*_Impl\$*",
+                    "*_Factory",
+                    "*_Factory\$*",
+                    "*_MembersInjector",
+                    "*Hilt_*",
+                    "*_HiltModules*",
+                    "*_HiltComponents*",
+                    "*_GeneratedInjector",
+                    "*_ComponentTreeDeps",
+                    "*.databinding.*",
+                )
+                packages("dagger.hilt.internal.aggregatedroot.codegen", "hilt_aggregated_deps")
+            }
+        }
+    }
 }

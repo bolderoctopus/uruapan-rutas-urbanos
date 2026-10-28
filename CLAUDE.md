@@ -23,6 +23,7 @@ Run from `RutasUruapan/`:
 
 - `./gradlew assembleDebug`: build the debug APK
 - `./gradlew testDebugUnitTest`: run unit tests (JUnit4, MockK, Turbine, Robolectric)
+- `./gradlew koverHtmlReportDebug` / `koverLogDebug`: test coverage (Kover). Generated code is excluded in `app/build.gradle`.
 - `./gradlew ktlintCheck detekt lintDebug`: lint checks. `./gradlew ktlintFormat` auto-fixes formatting. Style comes from the root `.editorconfig`.
 - New lint findings must be fixed, not added to the baselines (`config/detekt/baseline.xml`, `app/lint-baseline.xml`), unless there is a stated reason.
 - The Maps/Places key comes from `RutasUruapan/apikeys.properties` (`mapsAndPlaces=KEY`, gitignored), as described in the README.
