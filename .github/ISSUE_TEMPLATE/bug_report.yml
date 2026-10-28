@@ -1,0 +1,44 @@
+name: Reporte de error / Bug report
+description: Algo no funciona como debería. / Something isn't working.
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: ¿Qué pasó? / What happened?
+      description: Describe el problema. / Describe the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducirlo / Steps to reproduce
+      placeholder: |
+        1. Abrir la app
+        2. Buscar una ruta desde ... hasta ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: ¿Qué esperabas que pasara? / Expected behavior
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: Versión de la app / App version
+      description: Configuración → Versión. / Settings → Version.
+      placeholder: "1.5.4"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Teléfono y versión de Android / Device and Android version
+      placeholder: "Pixel 7, Android 15"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Capturas o información extra / Screenshots or extra info
