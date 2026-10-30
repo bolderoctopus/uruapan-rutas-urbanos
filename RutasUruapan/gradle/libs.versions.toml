@@ -1,6 +1,6 @@
 [versions]
 appcompat = "1.8.0"
-com-android-application = "8.11.0"
+com-android-application = "9.5.0"
 constraintlayout = "2.2.2"
 kotlinx-coroutines-core = "1.7.3"
 legacy-support-v4 = "1.0.0"
