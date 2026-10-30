@@ -11,12 +11,31 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    # Held back until the AGP 9 migration: Hilt 2.59+ needs AGP 9, Kotlin 2.4 needs Hilt 2.59+,
+    # and Places 6 needs Kotlin 2.4. Remove these rules as part of that migration.
+    ignore:
+      - dependency-name: "com.android.application"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jetbrains.kotlin.android"
+        versions: [">= 2.4.0"]
+      - dependency-name: "org.jetbrains.kotlin:*"
+        versions: [">= 2.4.0"]
+      - dependency-name: "com.google.dagger*"
+        versions: [">= 2.59"]
+      - dependency-name: "com.google.android.libraries.places*"
+        versions: [">= 6.0.0"]
     groups:
-      # KSP versions are tied to the Kotlin version, so they must move together.
+      # KSP and Hilt read Kotlin compiler output, so they must move with the Kotlin version.
       kotlin:
         patterns:
-          - "org.jetbrains.kotlin*"
+          - "org.jetbrains.kotlin.android"
+          - "org.jetbrains.kotlin:*"
           - "com.google.devtools.ksp*"
+          - "com.google.dagger*"
+      # Core and test must stay on the same version.
+      coroutines:
+        patterns:
+          - "org.jetbrains.kotlinx:kotlinx-coroutines*"
       androidx:
         patterns:
           - "androidx.*"
@@ -30,11 +49,11 @@ updates:
           - "io.mockk*"
           - "org.robolectric*"
           - "app.cash.turbine*"
-          - "org.jetbrains.kotlinx:kotlinx-coroutines-test"
       lint-tools:
         patterns:
           - "org.jlleitschuh.gradle.ktlint*"
           - "io.gitlab.arturbosch.detekt*"
+          - "org.jetbrains.kotlinx.kover*"
 
   - package-ecosystem: github-actions
     directory: /
