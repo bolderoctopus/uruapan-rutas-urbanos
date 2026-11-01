@@ -12,8 +12,10 @@ updates:
       prefix: chore
       include: scope
     # Held back until the AGP 9 migration: Hilt 2.59+ needs AGP 9, Kotlin 2.4 needs Hilt 2.59+,
-    # and Places 6 needs Kotlin 2.4. Remove these rules as part of that migration.
+    # Places 6 needs Kotlin 2.4, and AGP 8 breaks on Gradle 9.6+. Remove these rules as part of that migration.
     ignore:
+      - dependency-name: "gradle-wrapper"
+        versions: [">= 9.6.0"]
       - dependency-name: "com.android.application"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.jetbrains.kotlin.android"
