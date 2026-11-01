@@ -79,6 +79,7 @@ dependencies {
 
     implementation libs.androidx.appcompat
     implementation libs.play.services.maps
+    implementation libs.play.services.location
     implementation libs.androidx.constraintlayout
     implementation libs.androidx.room.runtime
     implementation libs.androidx.legacy.support.v4

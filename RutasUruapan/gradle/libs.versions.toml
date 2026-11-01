@@ -1,24 +1,25 @@
 [versions]
 appcompat = "1.8.0"
-com-android-application = "8.11.0"
+com-android-application = "8.13.2"
 constraintlayout = "2.2.2"
-kotlinx-coroutines-core = "1.7.3"
+kotlinx-coroutines-core = "1.11.0"
 legacy-support-v4 = "1.0.0"
 material = "1.12.0"
-org-jetbrains-kotlin-android = "2.2.0"
+org-jetbrains-kotlin-android = "2.3.21"
 places = "5.3.0"
 play-services-maps = "19.0.0"
+play-services-location = "21.3.0"
 preference = "1.2.1"
 recyclerview = "1.4.0"
 room-runtime = "2.8.5"
-hilt-version = "2.56.2"
+hilt-version = "2.58"
 fragment-version = "1.9.1"
 junit = "4.13.2"
 mockk = "1.13.17"
 robolectric = "4.14.1"
 turbine = "1.2.0"
 androidx-test-core = "1.6.1"
-kotlinx-coroutines-test = "1.7.3"
+kotlinx-coroutines-test = "1.11.0"
 ktlint-gradle = "14.2.0"
 ktlint-cli = "1.8.0"
 detekt = "1.23.8"
@@ -41,6 +42,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 material = { module = "com.google.android.material:material", version.ref = "material" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "play-services-maps" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
@@ -51,7 +53,7 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 [plugins]
 com-android-application = { id = "com.android.application", version.ref = "com-android-application" }
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
-com-google-devtools-ksp = { id = "com.google.devtools.ksp", version = "2.2.0-2.0.2" }
+com-google-devtools-ksp = { id = "com.google.devtools.ksp", version = "2.3.12" }
 com-dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-version" }
 org-jlleitschuh-gradle-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
 io-gitlab-arturbosch-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

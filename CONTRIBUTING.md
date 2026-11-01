@@ -65,7 +65,7 @@ The **PR title** follows the same format, because it becomes the commit message 
 
 ## Dependency updates
 
-Dependabot ([`.github/dependabot.yml`](.github/dependabot.yml)) opens PRs every Monday for Gradle dependencies and GitHub Actions. Related libraries are grouped, for example Kotlin with KSP and all AndroidX. Treat them like any other PR: wait for CI, read the release notes for major versions, and squash-merge. Dependabot does not track the ktlint version (`ktlint-cli` in `libs.versions.toml`), so check it by hand now and then.
+Dependabot ([`.github/dependabot.yml`](.github/dependabot.yml)) opens PRs every Monday for Gradle dependencies and GitHub Actions. Related libraries are grouped, for example Kotlin with KSP and Hilt, and all AndroidX. Some versions are held back with `ignore` rules (AGP 9, Kotlin 2.4, Hilt 2.59+, Places 6) because they need the AGP 9 migration; remove those rules when doing it. Treat them like any other PR: wait for CI, read the release notes for major versions, and squash-merge. Dependabot does not track the ktlint version (`ktlint-cli` in `libs.versions.toml`), so check it by hand now and then.
 
 ## Issues
 
