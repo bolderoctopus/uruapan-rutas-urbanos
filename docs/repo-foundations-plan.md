@@ -60,7 +60,15 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
   - Baseline on 2026-10-28: **3.4% line coverage**. Covered: `AddressUtils`, `RouteViewModel`, part of `Utils`/`RouteModel`. The biggest uncovered classes are `MainActivity` (385 lines), `SearchFragment` (212), `ResultsFragment` and `AutoCompleteAdapter` (83 each).
   - Threshold plan: no gate while coverage is this low. After the DAO and logic tests, enforce a minimum a few points below the measured total (ratchet), and raise it as coverage grows. Target about 60–70% for non-UI code (database, models, ViewModels, utils) rather than an app-wide number.
 - ✅ `RouteDAOTest` (`test/route-dao`): 10 tests running the real SQL on an in-memory Room database with Robolectric. They cover route lookup, nearest point, ride distance including wrap-around, and best start/end point (the walk vs. ride weighting). A deliberate mutation (removing `clearResultsTable()`) is caught. Coverage 3.4% → 4.6%: the SQL runs in the generated `RouteDAO_Impl`, which Kover excludes, so these tests count for little in the total.
-- Extend ViewModel tests. Note business logic still sitting in `MainActivity`/`SearchFragment` as refactor candidates, so it can be moved and tested later.
+- ✅ `RouteViewModelTest` extended and `RouteModelTest` added (`test/viewmodels`): route filtering, drawn-route tracking, segment order including wrap-around, and removing map objects. Four deliberate mutations are caught. Coverage 4.6% → 8.9%.
+- Refactor candidates, logic that can't be unit tested where it sits now. Each one is its own PR, with tests:
+  1. `ResultsFragment.findRoutesAsync`: the route search itself (common routes, best start/end point, walking distance, sorting). It already has a "move to a separate class" TODO. Move it to a `RouteSearch` class or ViewModel that takes `RouteDAO`. This is the most valuable one. It's also where to fix the empty-result crash.
+  2. `MainActivity.drawDirectionalMarkers` / `updateShownDirectionalArrows`: which arrows to show at which zoom level. Separate the calculation from the map calls.
+  3. `SearchFragment`: origin/destination state and search validation (`search`, `onAutoCompleteItemClick`, `findPlaceByLatLng`). Move to a ViewModel.
+  4. `AppDatabase.getInstance` calls in `ResultsFragment` and `MainActivity`: inject `RouteDAO` instead, which items 1 and 2 need anyway.
+- Bugs and follow-ups found while writing these tests, not fixed yet:
+  - Route search is case-sensitive: `filterRoutes` lowercases the route name but not the query, and doesn't lowercase the short name. Typing "Zap" finds nothing.
+  - `RouteModel.totalDist` adds degrees (`walkDist`) to meters (`routeDist`). Nothing reads it, so it can be fixed or deleted.
 - Later, optional: one instrumented smoke test using an emulator in CI (`reactivecircus/android-emulator-runner`).
 
 ### Phase 5 — Optional extras for later
@@ -68,6 +76,9 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
 - `CODEOWNERS`, `SECURITY.md`, CodeQL workflow (free for public repos).
 - Release automation (signed AAB on tag, then Play upload) once you want CD.
 - Update `CLAUDE.md` with the new commands and conventions.
+
+### Toolchain status
+Updated on 2026-11-06 with the Dependabot queue (#18, #24–#31): AGP 8.13.2, Gradle 9.5.1, Kotlin 2.3.21, KSP 2.3.13, Hilt 2.58. These are the newest versions that work on AGP 8. The **AGP 9 migration** is a separate task: Gradle 9.6+, AGP 9.5, built-in Kotlin, Hilt 2.60, Kotlin 2.4 and Places 6, then remove the `ignore` rules in `.github/dependabot.yml`. Test it on a device.
 
 ## How I'll guide you
 For each phase, I'll create the branch, make the changes with an explanation of each file, run the checks locally, then open the PR so you can see CI in action. You review and merge. GitHub settings changes are made only after you confirm each one.
