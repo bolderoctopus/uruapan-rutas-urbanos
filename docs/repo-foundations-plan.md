@@ -66,9 +66,8 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
   2. `MainActivity.drawDirectionalMarkers` / `updateShownDirectionalArrows`: which arrows to show at which zoom level. Separate the calculation from the map calls.
   3. `SearchFragment`: origin/destination state and search validation (`search`, `onAutoCompleteItemClick`, `findPlaceByLatLng`). Move to a ViewModel.
   4. `AppDatabase.getInstance` calls in `ResultsFragment` and `MainActivity`: inject `RouteDAO` instead, which items 1 and 2 need anyway.
-- Bugs and follow-ups found while writing these tests, not fixed yet:
-  - Route search is case-sensitive: `filterRoutes` lowercases the route name but not the query, and doesn't lowercase the short name. Typing "Zap" finds nothing.
-  - `RouteModel.totalDist` adds degrees (`walkDist`) to meters (`routeDist`). Nothing reads it, so it can be fixed or deleted.
+- ✅ Route search made case-insensitive (`fix/route-search-case`), a bug found while writing these tests.
+- Still open from these tests: `RouteModel.totalDist` adds degrees (`walkDist`) to meters (`routeDist`). Nothing reads it, so it can be fixed or deleted.
 - Later, optional: one instrumented smoke test using an emulator in CI (`reactivecircus/android-emulator-runner`).
 
 ### Phase 5 — Optional extras for later

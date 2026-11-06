@@ -6,7 +6,6 @@ import com.rico.omarw.rutasuruapan.database.RouteDAO
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
-import java.util.Locale.getDefault
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,8 +40,7 @@ class RouteViewModel @Inject constructor(private val routeDAO: RouteDAO) : ViewM
     fun filterRoutes(query: String) {
         viewModelScope.launch {
             _filterableRoutes.value = routes.filter {
-                val name = it.name.lowercase(getDefault())
-                name.contains(query) || it.routeDb.shortName.contains(query)
+                it.name.contains(query, ignoreCase = true) || it.routeDb.shortName.contains(query, ignoreCase = true)
             }
         }
     }
