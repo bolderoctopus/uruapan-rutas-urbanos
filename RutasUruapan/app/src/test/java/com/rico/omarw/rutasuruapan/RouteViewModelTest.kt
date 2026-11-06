@@ -86,8 +86,19 @@ class RouteViewModelTest {
     fun `filterRoutes should match the short name`() = runTest {
         val viewModel = loadedViewModel()
 
-        filter(viewModel, "c1")
+        filter(viewModel, "C1")
 
+        assertEquals(listOf("Centro"), viewModel.filterableRoutes.value.map { it.name })
+    }
+
+    @Test
+    fun `filterRoutes should ignore case in names and short names`() = runTest {
+        val viewModel = loadedViewModel()
+
+        filter(viewModel, "ZAP")
+        assertEquals(listOf("Zapata"), viewModel.filterableRoutes.value.map { it.name })
+
+        filter(viewModel, "c1")
         assertEquals(listOf("Centro"), viewModel.filterableRoutes.value.map { it.name })
     }
 
@@ -143,8 +154,8 @@ class RouteViewModelTest {
 
     private suspend fun loadedViewModel(): RouteViewModel {
         coEvery { routeDAO.getRoutes() } returns listOf(
-            Route("Zapata", "Color1", "z1"),
-            Route("Centro", "Color2", "c1")
+            Route("Zapata", "Color1", "Z1"),
+            Route("Centro", "Color2", "C1")
         )
         return RouteViewModel(routeDAO).also { viewModel ->
             viewModel.filterableRoutes.first { it.isNotEmpty() }
