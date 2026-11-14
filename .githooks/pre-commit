@@ -1,0 +1,20 @@
+#!/bin/sh
+# Runs ktlint before each commit that touches Kotlin files. Installed by any local Gradle build
+# (task installGitHooks). Skip once with `git commit --no-verify`; CI runs the same check anyway.
+#
+# ktlint checks the files as they are on disk, not only what is staged.
+
+if ! git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.kts?$'; then
+    exit 0
+fi
+
+echo "pre-commit: running ktlintCheck..."
+cd "$(git rev-parse --show-toplevel)/RutasUruapan" || exit 1
+
+if ! ./gradlew --quiet ktlintCheck; then
+    echo ""
+    echo "pre-commit: ktlint found style problems. Fix them with:"
+    echo "  cd RutasUruapan && ./gradlew ktlintFormat"
+    echo "then stage the changes and commit again."
+    exit 1
+fi
