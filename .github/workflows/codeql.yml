@@ -62,5 +62,5 @@ jobs:
             | .locations[]?.physicalLocation.artifactLocation.uri' "$RUNNER_TEMP"/codeql-results/*.sarif)
           total=$(echo "$files" | grep -c . || true)
           kotlin=$(echo "$files" | grep -c '\.kt$' || true)
-          echo "### CodeQL: $kotlin Kotlin files scanned ($total files in total)" >> "$GITHUB_STEP_SUMMARY"
+          echo "### CodeQL: $kotlin Kotlin files scanned ($total files in total)" | tee -a "$GITHUB_STEP_SUMMARY"
           test "$kotlin" -gt 0
