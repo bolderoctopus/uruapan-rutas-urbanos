@@ -70,11 +70,19 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
 - Still open from these tests: `RouteModel.totalDist` adds degrees (`walkDist`) to meters (`routeDist`). Nothing reads it, so it can be fixed or deleted.
 - Later, optional: one instrumented smoke test using an emulator in CI (`reactivecircus/android-emulator-runner`).
 
-### Phase 5 — Optional extras for later
-- Pre-commit git hook running `ktlintCheck` (via a Gradle task that installs `.githooks`).
-- `CODEOWNERS`, `SECURITY.md`, CodeQL workflow (free for public repos).
-- Release automation (signed AAB on tag, then Play upload) once you want CD.
-- Update `CLAUDE.md` with the new commands and conventions.
+### Phase 5 — Guardrails for automated contributions
+The end goal (Phase 6) is an agent that takes tickets from the Notion backlog, implements and tests them, and opens PRs. This phase adds the checks and rules that make those PRs safe to review. Ordered by value for that goal.
+- CodeQL workflow (`ci/codeql`): security scanning on every PR and weekly, free for public repos. Starts as report only, then becomes a required check once the first runs are clean.
+- `CODEOWNERS` and `SECURITY.md`: CODEOWNERS automatically requests your review on every PR, including the agent's.
+- Pre-commit hook running `ktlintCheck` (via a Gradle task that installs `.githooks`). Fast local feedback for you and for agents running locally. CI still has the final word.
+- Release automation (signed AAB on tag, then Play upload). Last, because it needs the signing key as a secret and isn't needed for the agent workflow.
+
+### Phase 6 — Agent workflow from the Notion backlog (draft)
+Decisions to make when we get here:
+- **Where the agent runs:** the Claude Code GitHub Action (`anthropics/claude-code-action`) started by a label or a manual run, or a scheduled Claude Code session that reads Notion through its connector. The GitHub Action authors PRs as a bot, so you can approve them yourself. That makes "1 required approval" possible, which a solo author can't use today.
+- **Ticket format:** a Definition of Ready in Notion (problem, acceptance criteria, out of scope) and a status flow such as Ready → In progress → In review → Done, updated by the agent.
+- **Guardrails:** the agent never merges, only opens PRs. Required checks plus your approval gate the merge. `CLAUDE.md` holds the definition of done: tests for every change, no new baseline entries, changelog entry for user-visible changes.
+- **What the agent can't verify:** UI behavior on a device. The optional emulator smoke test (Phase 4) and moving logic out of the UI become more valuable here, because the agent can only prove what tests cover.
 
 ### Toolchain status
 Updated on 2026-11-06 with the Dependabot queue (#18, #24–#31): AGP 8.13.2, Gradle 9.5.1, Kotlin 2.3.21, KSP 2.3.13, Hilt 2.58. These are the newest versions that work on AGP 8. The **AGP 9 migration** is a separate task: Gradle 9.6+, AGP 9.5, built-in Kotlin, Hilt 2.60, Kotlin 2.4 and Places 6, then remove the `ignore` rules in `.github/dependabot.yml`. Test it on a device.

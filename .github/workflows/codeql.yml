@@ -1,0 +1,53 @@
+# Security scanning. Findings show up in the repo's Security tab and as PR annotations.
+name: CodeQL
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  # Weekly, so new CodeQL queries also run against code that hasn't changed.
+  schedule:
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: codeql
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          # Kotlin needs a real compile for CodeQL to see the code.
+          build-mode: manual
+
+      # --no-build-cache so every Kotlin and Java file is compiled while CodeQL watches.
+      - name: Build
+        working-directory: RutasUruapan
+        run: ./gradlew --no-build-cache assembleDebug
+
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:java-kotlin
