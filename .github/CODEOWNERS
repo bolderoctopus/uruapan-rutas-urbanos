@@ -1,0 +1,3 @@
+# Every PR asks the owner for a review. GitHub doesn't request a review from the PR's own author,
+# so this matters for PRs opened by others, including bots and automated agents.
+* @bolderoctopus

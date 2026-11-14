@@ -72,8 +72,8 @@ _Snapshot taken on 2026-10-25, before Phase 0. Later phases change some of these
 
 ### Phase 5 — Guardrails for automated contributions
 The end goal (Phase 6) is an agent that takes tickets from the Notion backlog, implements and tests them, and opens PRs. This phase adds the checks and rules that make those PRs safe to review. Ordered by value for that goal.
-- CodeQL workflow (`ci/codeql`): security scanning on every PR and weekly, free for public repos. Starts as report only, then becomes a required check once the first runs are clean.
-- `CODEOWNERS` and `SECURITY.md`: CODEOWNERS automatically requests your review on every PR, including the agent's.
+- ✅ CodeQL workflow (#35): security scanning on every PR, on pushes to `master` and weekly. Fails if no Kotlin files were scanned (27 on the first run). Report only; make `codeql` a required check once a few runs are clean.
+- ✅ `CODEOWNERS` and `SECURITY.md` (`chore/codeowners-security`): CODEOWNERS requests your review on PRs opened by others, including the agent's. SECURITY.md sends reports to GitHub's private vulnerability reporting (turned on 2026-11-14), and the issue chooser links to it. Requiring code owner review is a branch protection setting for Phase 6, once PRs come from a bot.
 - Pre-commit hook running `ktlintCheck` (via a Gradle task that installs `.githooks`). Fast local feedback for you and for agents running locally. CI still has the final word.
 - Release automation (signed AAB on tag, then Play upload). Last, because it needs the signing key as a secret and isn't needed for the agent workflow.
 

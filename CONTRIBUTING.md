@@ -69,7 +69,7 @@ Dependabot ([`.github/dependabot.yml`](.github/dependabot.yml)) opens PRs every 
 
 ## Issues
 
-Use the issue templates: **Reporte de error / Bug report** or **Sugerencia / Feature request**. They are bilingual because most app users speak Spanish.
+Use the issue templates: **Reporte de error / Bug report** or **Sugerencia / Feature request**. They are bilingual because most app users speak Spanish. Security problems are reported privately instead, as described in [`SECURITY.md`](SECURITY.md).
 
 ## Checks to run locally
 
