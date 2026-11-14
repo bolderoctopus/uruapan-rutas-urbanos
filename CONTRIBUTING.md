@@ -55,7 +55,7 @@ The **PR title** follows the same format, because it becomes the commit message 
    - `lint`: ktlint, detekt and Android Lint
    - `test`: unit tests and a debug build
 
-   If a job fails, its reports can be downloaded from the run's **Artifacts** section. All three checks (`lint`, `test`, `pr-title`) are required before merging. If GitHub says the branch is out of date, use **Update branch** and let CI run again.
+   If a job fails, its reports can be downloaded from the run's **Artifacts** section. All three checks (`lint`, `test`, `pr-title`) are required before merging. CodeQL ([`.github/workflows/codeql.yml`](.github/workflows/codeql.yml)) also scans every PR for security issues and reports findings in the PR and the repo's **Security** tab. It isn't required yet. If GitHub says the branch is out of date, use **Update branch** and let CI run again.
 3. **Review your own diff** in GitHub's "Files changed" tab before merging. It's the review step of a solo project.
 4. Resolve any review comments, including automated ones. Merging is blocked until every conversation is resolved.
 5. Merge:

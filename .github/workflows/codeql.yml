@@ -1,0 +1,66 @@
+# Security scanning. Findings show up in the repo's Security tab and as PR annotations.
+name: CodeQL
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  # Weekly, so new CodeQL queries also run against code that hasn't changed.
+  schedule:
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: codeql
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          # Kotlin needs a real compile for CodeQL to see the code.
+          build-mode: manual
+
+      # --no-build-cache so every Kotlin and Java file is compiled while CodeQL watches.
+      - name: Build
+        working-directory: RutasUruapan
+        run: ./gradlew --no-build-cache assembleDebug
+
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:java-kotlin
+          output: ${{ runner.temp }}/codeql-results
+
+      # CodeQL skips Kotlin it can't read (for example, a Kotlin version newer than it supports)
+      # without failing. Fail instead, so a scan that saw no Kotlin can't pass as a clean result.
+      - name: Check Kotlin files were scanned
+        run: |
+          files=$(jq -r '.runs[].invocations[]?.toolExecutionNotifications[]?
+            | select(.descriptor.id == "java/diagnostics/successfully-extracted-files")
+            | .locations[]?.physicalLocation.artifactLocation.uri' "$RUNNER_TEMP"/codeql-results/*.sarif)
+          total=$(echo "$files" | grep -c . || true)
+          kotlin=$(echo "$files" | grep -c '\.kt$' || true)
+          echo "### CodeQL: $kotlin Kotlin files scanned ($total files in total)" | tee -a "$GITHUB_STEP_SUMMARY"
+          test "$kotlin" -gt 0
