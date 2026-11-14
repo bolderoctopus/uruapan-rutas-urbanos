@@ -55,6 +55,9 @@ android {
     }
 }
 
+// Local builds install the repo's git hooks (see installGitHooks in the root build.gradle).
+tasks.named("preBuild") { dependsOn(rootProject.tasks.named("installGitHooks")) }
+
 // Formatting. Style rules come from the repo's .editorconfig.
 // ./gradlew ktlintCheck to verify, ./gradlew ktlintFormat to auto-fix.
 ktlint {

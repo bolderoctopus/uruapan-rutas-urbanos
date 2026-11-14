@@ -8,3 +8,12 @@ plugins {
     alias(libs.plugins.io.gitlab.arturbosch.detekt) apply false
     alias(libs.plugins.org.jetbrains.kotlinx.kover) apply false
 }
+// Points git at the repo's versioned hooks in .githooks/, so the pre-commit ktlint check is set up
+// by the first local build. Skipped on CI, and never fails the build (for example without git).
+tasks.register("installGitHooks", Exec) {
+    description = "Uses the repo's .githooks/ folder for git hooks."
+    workingDir = rootProject.projectDir
+    commandLine "git", "config", "core.hooksPath", ".githooks"
+    ignoreExitValue = true
+    onlyIf { System.getenv("CI") == null }
+}
