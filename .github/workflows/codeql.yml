@@ -51,3 +51,16 @@ jobs:
       - uses: github/codeql-action/analyze@v4
         with:
           category: /language:java-kotlin
+          output: ${{ runner.temp }}/codeql-results
+
+      # CodeQL skips Kotlin it can't read (for example, a Kotlin version newer than it supports)
+      # without failing. Fail instead, so a scan that saw no Kotlin can't pass as a clean result.
+      - name: Check Kotlin files were scanned
+        run: |
+          files=$(jq -r '.runs[].invocations[]?.toolExecutionNotifications[]?
+            | select(.descriptor.id == "java/diagnostics/successfully-extracted-files")
+            | .locations[]?.physicalLocation.artifactLocation.uri' "$RUNNER_TEMP"/codeql-results/*.sarif)
+          total=$(echo "$files" | grep -c . || true)
+          kotlin=$(echo "$files" | grep -c '\.kt$' || true)
+          echo "### CodeQL: $kotlin Kotlin files scanned ($total files in total)" >> "$GITHUB_STEP_SUMMARY"
+          test "$kotlin" -gt 0
