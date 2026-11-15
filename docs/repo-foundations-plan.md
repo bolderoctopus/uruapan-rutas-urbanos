@@ -77,12 +77,15 @@ The end goal (Phase 6) is an agent that takes tickets from the Notion backlog, i
 - ✅ Pre-commit hook (`chore/pre-commit-hook`): `.githooks/pre-commit` runs `ktlintCheck` when Kotlin files are staged, about 2 seconds with a warm Gradle daemon. The root `installGitHooks` task sets `core.hooksPath` and runs before every local build, skipped on CI. It checks files as they are on disk, not only the staged version.
 - Release automation (signed AAB on tag, then Play upload). Last, because it needs the signing key as a secret and isn't needed for the agent workflow.
 
-### Phase 6 — Agent workflow from the Notion backlog (draft)
-Decisions to make when we get here:
-- **Where the agent runs:** the Claude Code GitHub Action (`anthropics/claude-code-action`) started by a label or a manual run, or a scheduled Claude Code session that reads Notion through its connector. The GitHub Action authors PRs as a bot, so you can approve them yourself. That makes "1 required approval" possible, which a solo author can't use today.
-- **Ticket format:** a Definition of Ready in Notion (problem, acceptance criteria, out of scope) and a status flow such as Ready → In progress → In review → Done, updated by the agent.
-- **Guardrails:** the agent never merges, only opens PRs. Required checks plus your approval gate the merge. `CLAUDE.md` holds the definition of done: tests for every change, no new baseline entries, changelog entry for user-visible changes.
-- **What the agent can't verify:** UI behavior on a device. The optional emulator smoke test (Phase 4) and moving logic out of the UI become more valuable here, because the agent can only prove what tests cover.
+### Phase 6 — Agent workflow from the Notion backlog
+Built in stages, so the instructions are tried and improved while you watch before anything runs unattended.
+
+- **Notion Tasks database** (updated 2026-11-14): new statuses **Ready** (the only tickets the agent takes), **In review** (PR open) and **Needs info** (the agent asked questions in a comment), and a **PR** URL property. Existing tickets keep their values. A ticket template with *Problem*, *Acceptance criteria* and *Out of scope* has to be added by hand in Notion, because the connector can't create database templates.
+- ✅ **Stage 1, local `/ticket` command** (`chore/ticket-skill`): `.claude/skills/ticket/SKILL.md`. It reads one ticket, checks it's ready, branches, writes a failing test first, implements, runs the checks, opens the PR and updates the ticket. It never merges. The definition of done lives in `CLAUDE.md`. Next: run it on a real ticket and improve the instructions from what happens.
+- **Stage 2, GitHub Action** started by hand with a ticket ID (`anthropics/claude-code-action`), reusing the same instructions. Needs: the Claude GitHub app, an Anthropic API key or subscription token as a secret, and a Notion integration token shared only with the Tasks database. Check whether the PRs it opens are authored by the bot. If so, a ruleset can require your approval on bot PRs while you can still merge your own.
+- **Stage 3, scheduled runs** that pick up Ready tickets by themselves.
+- **Guardrails:** only you write tickets. The repo is public, so the agent never starts from public issues or comments. It never merges. Required checks plus your review gate every merge.
+- **What the agent can't verify:** UI behavior on a device. Start with tickets that unit tests can prove. The emulator smoke test (Phase 4) and moving logic out of the UI widen what it can take on.
 
 ### Toolchain status
 Updated on 2026-11-06 with the Dependabot queue (#18, #24–#31): AGP 8.13.2, Gradle 9.5.1, Kotlin 2.3.21, KSP 2.3.13, Hilt 2.58. These are the newest versions that work on AGP 8. The **AGP 9 migration** is a separate task: Gradle 9.6+, AGP 9.5, built-in Kotlin, Hilt 2.60, Kotlin 2.4 and Places 6, then remove the `ignore` rules in `.github/dependabot.yml`. Test it on a device.
