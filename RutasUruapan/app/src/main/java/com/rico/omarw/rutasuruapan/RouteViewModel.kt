@@ -6,6 +6,7 @@ import com.rico.omarw.rutasuruapan.database.RouteDAO
 import com.rico.omarw.rutasuruapan.models.RouteModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import java.text.Normalizer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,11 +40,16 @@ class RouteViewModel @Inject constructor(private val routeDAO: RouteDAO) : ViewM
 
     fun filterRoutes(query: String) {
         viewModelScope.launch {
+            val plainQuery = query.withoutAccents()
             _filterableRoutes.value = routes.filter {
-                it.name.contains(query, ignoreCase = true) || it.routeDb.shortName.contains(query, ignoreCase = true)
+                it.name.withoutAccents().contains(plainQuery, ignoreCase = true) ||
+                    it.routeDb.shortName.withoutAccents().contains(plainQuery, ignoreCase = true)
             }
         }
     }
+
+    private fun String.withoutAccents(): String =
+        Normalizer.normalize(this, Normalizer.Form.NFD).replace(COMBINING_MARKS, "")
 
     fun addDrawnRoute(route: RouteModel) {
         _drawnRoutes.value = _drawnRoutes.value + route
@@ -56,5 +62,9 @@ class RouteViewModel @Inject constructor(private val routeDAO: RouteDAO) : ViewM
     fun clearDrawnRoutes() {
         _drawnRoutes.value.forEach { it.remove() }
         _drawnRoutes.value = emptySet()
+    }
+
+    private companion object {
+        val COMBINING_MARKS = Regex("\\p{Mn}+")
     }
 }
