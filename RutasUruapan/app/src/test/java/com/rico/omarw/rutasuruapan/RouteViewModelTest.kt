@@ -103,6 +103,31 @@ class RouteViewModelTest {
     }
 
     @Test
+    fun `filterRoutes should ignore accents in the query and the route names`() = runTest {
+        val viewModel = loadedViewModel(
+            Route("Cuba - México", "Color1", "1-S"),
+            Route("Purhépechas", "Color2", "2-S"),
+            Route("PEMEX - Taximácuaro", "Color3", "3-S"),
+            Route("Quirindavara - Taximácuaro", "Color4", "4-S")
+        )
+
+        filter(viewModel, "mexico")
+        assertEquals(listOf("Cuba - México"), viewModel.filterableRoutes.value.map { it.name })
+
+        filter(viewModel, "purhepechas")
+        assertEquals(listOf("Purhépechas"), viewModel.filterableRoutes.value.map { it.name })
+
+        filter(viewModel, "taximacuaro")
+        assertEquals(
+            listOf("PEMEX - Taximácuaro", "Quirindavara - Taximácuaro"),
+            viewModel.filterableRoutes.value.map { it.name }
+        )
+
+        filter(viewModel, "méxico")
+        assertEquals(listOf("Cuba - México"), viewModel.filterableRoutes.value.map { it.name })
+    }
+
+    @Test
     fun `filterRoutes should return nothing when no route matches`() = runTest {
         val viewModel = loadedViewModel()
 
@@ -152,11 +177,13 @@ class RouteViewModelTest {
         assertTrue(viewModel.drawnRoutes.value.isEmpty())
     }
 
-    private suspend fun loadedViewModel(): RouteViewModel {
-        coEvery { routeDAO.getRoutes() } returns listOf(
+    private suspend fun loadedViewModel(
+        vararg routes: Route = arrayOf(
             Route("Zapata", "Color1", "Z1"),
             Route("Centro", "Color2", "C1")
         )
+    ): RouteViewModel {
+        coEvery { routeDAO.getRoutes() } returns routes.toList()
         return RouteViewModel(routeDAO).also { viewModel ->
             viewModel.filterableRoutes.first { it.isNotEmpty() }
         }
