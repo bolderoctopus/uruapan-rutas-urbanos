@@ -47,10 +47,10 @@ interface RouteDAO {
             "ORDER BY ((:latitude - lat)*(:latitude - lat) + (:longitude - lng)*(:longitude - lng)) ASC " +
             "LIMIT 1"
     )
-    suspend fun getNearestPointTo(rId: Long, latitude: Double, longitude: Double, distance: Double): Point
+    suspend fun getNearestPointTo(rId: Long, latitude: Double, longitude: Double, distance: Double): Point?
 
     @Query("SELECT * FROM Routes WHERE routeId = :rId")
-    suspend fun getRoute(rId: Long): Route
+    suspend fun getRoute(rId: Long): Route?
 
     @Query(
         "SELECT SUM(distanceToNextPoint) FROM Points WHERE routeId = :rId AND ( ((:startPoint > :endPoint) AND (number >= :startPoint OR number <= :endPoint)) OR ((:startPoint < :endPoint) AND (number BETWEEN :startPoint AND :endPoint)))"
@@ -114,7 +114,7 @@ interface RouteDAO {
     @Query(
         "SELECT pointId, routeId, lat, lng, number, distanceToNextPoint  FROM bestPoints WHERE rt IS NOT NULL AND rd  IS NOT NULL ORDER BY rt ASC LIMIT 1"
     )
-    suspend fun getBestPoint(): Point
+    suspend fun getBestPoint(): Point?
 
     @Transaction
     suspend fun findBestStartPoint(
@@ -123,7 +123,7 @@ interface RouteDAO {
         longitude: Double,
         endPoint: Int,
         distance: Double
-    ): Point {
+    ): Point? {
         clearResultsTable()
         fillResultsTableStartPoint(rId, latitude, longitude, endPoint, distance)
         updateResultsTable()
@@ -137,7 +137,7 @@ interface RouteDAO {
         longitude: Double,
         startPoint: Int,
         distance: Double
-    ): Point {
+    ): Point? {
         clearResultsTable()
         fillResultsTableEndPoint(rId, latitude, longitude, startPoint, distance)
         updateResultsTable()

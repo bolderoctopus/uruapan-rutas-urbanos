@@ -65,7 +65,7 @@ class RouteDAOTest {
         val farId = dao.insertRoute(Route("Far", "#00FF00", "F"))
 
         assertEquals(listOf("Loop", "Far"), dao.getRoutes().map { it.name })
-        assertEquals("Far", dao.getRoute(farId).name)
+        assertEquals("Far", dao.getRoute(farId)?.name)
     }
 
     @Test
@@ -93,7 +93,7 @@ class RouteDAOTest {
         // #4 is 0.0002° away; #6 is slightly further because of the back lane offset.
         val nearest = dao.getNearestPointTo(loopId, 0.0032, 0.0, 0.0005)
 
-        assertEquals(4, nearest.number)
+        assertEquals(4, nearest?.number)
     }
 
     @Test
@@ -113,7 +113,7 @@ class RouteDAOTest {
         // Boarding at #1, #4 is a shorter ride than #6.
         val best = dao.findBestEndPoint(loopId, 0.003, BACK_LANE / 2, startPoint = 1, distance = 0.0005)
 
-        assertEquals(4, best.number)
+        assertEquals(4, best?.number)
     }
 
     @Test
@@ -122,7 +122,7 @@ class RouteDAOTest {
         // Getting off at #5: from #2 it's #2..#5, from #8 it wraps around #8, #9, #1..#5.
         val best = dao.findBestStartPoint(loopId, 0.001, BACK_LANE / 2, endPoint = 5, distance = 0.0005)
 
-        assertEquals(2, best.number)
+        assertEquals(2, best?.number)
     }
 
     @Test
@@ -131,7 +131,7 @@ class RouteDAOTest {
         val second = dao.findBestEndPoint(loopId, 0.000, 0.0, startPoint = 3, distance = 0.0005)
 
         // Only #1 and #9 are near the second destination; #4 from the first search must be gone.
-        assertEquals(9, second.number)
+        assertEquals(9, second?.number)
     }
 
     @Test
