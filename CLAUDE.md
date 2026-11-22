@@ -41,4 +41,4 @@ Every change, by a person or an agent, is done when:
 
 ## Backlog tickets
 
-The backlog is the **Tasks** database in Notion (Proyectos de software → Rutas Uruapan). `/ticket RU-123` works on one ticket, from reading it to an open PR, following `.claude/skills/ticket/SKILL.md`. Statuses: Not started → Ready → In progress → In review → Done, plus Needs info when the ticket can't be done as written.
+The backlog is the **Tasks** database in Notion (Proyectos de software → Rutas Uruapan). `/ticket RU-123` works on one ticket, from reading it to an open PR: the skill in `.claude/skills/ticket/SKILL.md` handles Notion and the user, and hands the coding to the `ticket-implementer` subagent in `.claude/agents/`. Statuses: Not started → Ready → In progress → In review → Done, plus Needs info when the ticket can't be done as written.

@@ -69,7 +69,7 @@ Dependabot ([`.github/dependabot.yml`](.github/dependabot.yml)) opens PRs every 
 
 ## Backlog and the `/ticket` command
 
-Work is tracked in the **Tasks** database in Notion. In Claude Code, `/ticket RU-123` takes a ticket marked **Ready** through to an open PR, following [`.claude/skills/ticket/SKILL.md`](.claude/skills/ticket/SKILL.md) and the definition of done in [`CLAUDE.md`](CLAUDE.md). Its PRs are reviewed and merged like any other.
+Work is tracked in the **Tasks** database in Notion. In Claude Code, `/ticket RU-123` takes a ticket marked **Ready** through to an open PR, following [`.claude/skills/ticket/SKILL.md`](.claude/skills/ticket/SKILL.md). The skill hands the coding to the [`ticket-implementer`](.claude/agents/ticket-implementer.md) subagent, which works to the definition of done in [`CLAUDE.md`](CLAUDE.md). Its PRs are reviewed and merged like any other.
 
 ## Issues
 
