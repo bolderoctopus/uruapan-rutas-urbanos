@@ -24,13 +24,8 @@ import com.rico.omarw.rutasuruapan.Constants.PreferenceKeys
 import com.rico.omarw.rutasuruapan.Constants.WALK_DIST_LIMIT_DEFAULT
 import com.rico.omarw.rutasuruapan.adapters.RouteListAdapter
 import com.rico.omarw.rutasuruapan.database.AppDatabase
-import com.rico.omarw.rutasuruapan.database.Point
-import com.rico.omarw.rutasuruapan.database.Route
 import com.rico.omarw.rutasuruapan.models.RouteModel
-import kotlin.math.sqrt
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -149,19 +144,12 @@ class ResultsFragment :
         recyclerView.addOnLayoutChangeListener(listener)
     }
 
-    private fun distanceBetweenPoints(p1: LatLng, p2: LatLng): Double {
-        val d1 = (p1.latitude - p2.latitude)
-        val d2 = (p1.longitude - p2.longitude)
-        return sqrt(d1 * d1 + d2 * d2)
-    }
-
     /**
      *
      * @param originLatLng Start point
      * @param destinationLatLng End point
      * @param walkDistLimit How much the user is willing to walk between the route start/end point and the given origin/destination respectively
      */
-    // todo: move to a separate class
     private fun findRoutesAsync(originLatLng: LatLng, destinationLatLng: LatLng, walkDistLimit: Double) {
         showProgressBar()
         if (walkDistLimit <= 0) throw Exception("walkDistLimit must be a greater than 0")
@@ -169,88 +157,13 @@ class ResultsFragment :
 
         viewLifecycleOwner.lifecycleScope.launch {
             val routesDao = AppDatabase.getInstance(requireContext())?.routesDAO()
-            val commonRoutesIds: Set<Long>?
+            val results = withContext(Dispatchers.IO) {
+                RouteSearch.findRoutes(routesDao, originLatLng, destinationLatLng, walkDistLimit)
+            }
 
-            val routesNearOrigin =
-                async(Dispatchers.IO) {
-                    routesDao?.getRoutesIntercepting(walkDistLimit, originLatLng.latitude, originLatLng.longitude)
-                }
-            val routesNearDest =
-                async(Dispatchers.IO) {
-                    routesDao?.getRoutesIntercepting(
-                        walkDistLimit,
-                        destinationLatLng.latitude,
-                        destinationLatLng.longitude
-                    )
-                }
-            awaitAll(routesNearDest, routesNearOrigin)
-            commonRoutesIds = routesNearOrigin.await()!!.intersect(routesNearDest.await()!!)
-
-            if (commonRoutesIds.isNullOrEmpty()) {
+            if (results.isEmpty()) {
                 showNoResultsMessage()
             } else {
-                val results = arrayListOf<RouteModel>()
-                for (routeId in commonRoutesIds) {
-                    val route: Route? = withContext(Dispatchers.IO) { routesDao?.getRoute(routeId) }
-
-                    val startPoint: Point? =
-                        withContext(Dispatchers.IO) {
-                            routesDao?.getNearestPointTo(
-                                routeId,
-                                originLatLng.latitude,
-                                originLatLng.longitude,
-                                walkDistLimit
-                            )
-                        }
-                    val endPoint: Point? =
-                        withContext(Dispatchers.IO) {
-                            routesDao?.getNearestPointTo(
-                                routeId,
-                                destinationLatLng.latitude,
-                                destinationLatLng.longitude,
-                                walkDistLimit
-                            )
-                        }
-
-                    val betterEndPoint: Point? =
-                        withContext(Dispatchers.IO) {
-                            routesDao?.findBestEndPoint(
-                                routeId,
-                                destinationLatLng.latitude,
-                                destinationLatLng.longitude,
-                                startPoint!!.number,
-                                walkDistLimit
-                            )
-                        }
-                    val betterStartPoint: Point? =
-                        withContext(Dispatchers.IO) {
-                            routesDao?.findBestStartPoint(
-                                routeId,
-                                originLatLng.latitude,
-                                originLatLng.longitude,
-                                endPoint!!.number,
-                                walkDistLimit
-                            )
-                        }
-
-                    val routeDist =
-                        withContext(Dispatchers.IO) {
-                            routesDao?.getRouteDist(routeId, betterStartPoint!!.number, betterEndPoint!!.number)
-                        } ?: 0
-
-                    val routeModel = RouteModel(route!!)
-                    routeModel.startPoint = betterStartPoint
-                    routeModel.endPoint = betterEndPoint
-                    routeModel.walkDist =
-                        distanceBetweenPoints(originLatLng, betterStartPoint!!.getLatLng()) +
-                        distanceBetweenPoints(destinationLatLng, betterEndPoint!!.getLatLng())
-                    routeModel.totalDist = routeModel.walkDist!! + routeDist
-                    results.add(routeModel)
-                }
-                results.sortBy {
-                    it.walkDist
-                }
-
                 displayRoutes(results)
             }
         }
@@ -258,7 +171,7 @@ class ResultsFragment :
 
     private fun clearDrawnRoutes() = routeViewModel.clearDrawnRoutes()
 
-    private fun displayRoutes(results: ArrayList<RouteModel>) {
+    private fun displayRoutes(results: List<RouteModel>) {
         groupWalkMessage.visibility = View.GONE
         hideProgressBar()
 
