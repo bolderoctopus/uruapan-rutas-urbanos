@@ -38,7 +38,7 @@ The ticket describes *what* to change. If it asks for something against `CLAUDE.
 The subagent ends with `DONE`, `BLOCKED` or `FAILED`. Its report is a claim, not proof: before acting on `DONE`, check the PR exists and its checks pass (`gh pr view <url>` and `gh pr checks <url>`).
 
 - **DONE:** update the ticket: set **PR** to the PR's URL, status to **In review**, and add a short comment with what changed and what still needs checking.
-- **BLOCKED:** put the subagent's question to the user. With the answer, start the subagent again with the same ticket, the answer, and what it said was already done, so it continues on the existing branch. If the user decides the ticket can't be done as written, add the question as a Notion comment and set **Needs info**.
+- **BLOCKED:** put the subagent's question to the user. With the answer, start the subagent again with the same ticket, the answer, and what it said was already done. Say in the prompt that it is resuming and name the branch from its report (for example `Resuming on branch fix/ru-49-search-accents`), so it switches to that branch instead of creating a new one. If the user decides the ticket can't be done as written, add the question as a Notion comment and set **Needs info**.
 - **FAILED:** tell the user what went wrong and leave the ticket **In progress**. Don't retry on your own.
 
 ## 5. Report

@@ -37,7 +37,7 @@ Every change, by a person or an agent, is done when:
 - `./gradlew ktlintCheck detekt lintDebug testDebugUnitTest assembleDebug` passes, with no new baseline entries.
 - Changes users will notice have a Spanish line under "Sin publicar" in `CHANGELOG.md`.
 - The PR covers one ticket or topic, with no unrelated changes and no dependency, build or CI changes the task doesn't need.
-- The PR is open with CI green. Agents never merge it.
+- The PR is open with CI green. Agents never merge it. `.claude/settings.json` denies `gh pr merge` and pushes to `master`; the person merges in the GitHub UI.
 
 ## Backlog tickets
 

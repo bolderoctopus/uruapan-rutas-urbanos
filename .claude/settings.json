@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(gh pr merge)",
+      "Bash(gh pr merge *)",
+      "Bash(gh api *merge*)",
+      "Bash(git push origin master)",
+      "Bash(git push origin master *)",
+      "Bash(git push origin HEAD:master)",
+      "Bash(git push origin HEAD:master *)"
+    ]
+  }
+}
