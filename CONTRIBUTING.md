@@ -67,6 +67,10 @@ The **PR title** follows the same format, because it becomes the commit message 
 
 Dependabot ([`.github/dependabot.yml`](.github/dependabot.yml)) opens PRs every Monday for Gradle dependencies and GitHub Actions. Related libraries are grouped, for example Kotlin with KSP and Hilt, and all AndroidX. Some versions are held back with `ignore` rules (AGP 9, Gradle 9.6+, Kotlin 2.4, Hilt 2.59+, Places 6) because they need the AGP 9 migration; remove those rules when doing it. Treat them like any other PR: wait for CI, read the release notes for major versions, and squash-merge. Dependabot does not track the ktlint version (`ktlint-cli` in `libs.versions.toml`), so check it by hand now and then.
 
+## Backlog and the `/ticket` command
+
+Work is tracked in the **Tasks** database in Notion. In Claude Code, `/ticket RU-123` takes a ticket marked **Ready** through to an open PR, following [`.claude/skills/ticket/SKILL.md`](.claude/skills/ticket/SKILL.md). The skill hands the coding to the [`ticket-implementer`](.claude/agents/ticket-implementer.md) subagent, which works to the definition of done in [`CLAUDE.md`](CLAUDE.md). Its PRs are reviewed and merged like any other.
+
 ## Issues
 
 Use the issue templates: **Reporte de error / Bug report** or **Sugerencia / Feature request**. They are bilingual because most app users speak Spanish. Security problems are reported privately instead, as described in [`SECURITY.md`](SECURITY.md).
