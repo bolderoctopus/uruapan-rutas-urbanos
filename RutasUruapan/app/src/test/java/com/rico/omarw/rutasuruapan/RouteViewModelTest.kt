@@ -122,6 +122,34 @@ class RouteViewModelTest {
     }
 
     @Test
+    fun `filterRoutes should ignore accents in route names`() = runTest {
+        val viewModel = loadedViewModel(accentedRoutes)
+
+        filter(viewModel, "mexico")
+        assertEquals(listOf("Cuba - México"), viewModel.filterableRoutes.value.map { it.name })
+
+        filter(viewModel, "purhepechas")
+        assertEquals(listOf("Purhépechas"), viewModel.filterableRoutes.value.map { it.name })
+
+        filter(viewModel, "taximacuaro")
+        assertEquals(
+            listOf("PEMEX - Taximácuaro", "Quirindavara - Taximácuaro"),
+            viewModel.filterableRoutes.value.map { it.name }
+        )
+    }
+
+    @Test
+    fun `filterRoutes should still match queries typed with accents`() = runTest {
+        val viewModel = loadedViewModel(accentedRoutes)
+
+        filter(viewModel, "méxico")
+        assertEquals(listOf("Cuba - México"), viewModel.filterableRoutes.value.map { it.name })
+
+        filter(viewModel, "PURHÉPECHAS")
+        assertEquals(listOf("Purhépechas"), viewModel.filterableRoutes.value.map { it.name })
+    }
+
+    @Test
     fun `drawn routes should track added and removed routes`() = runTest {
         val viewModel = loadedViewModel()
         val (zapata, centro) = viewModel.filterableRoutes.value
@@ -152,11 +180,21 @@ class RouteViewModelTest {
         assertTrue(viewModel.drawnRoutes.value.isEmpty())
     }
 
-    private suspend fun loadedViewModel(): RouteViewModel {
-        coEvery { routeDAO.getRoutes() } returns listOf(
+    private val accentedRoutes = listOf(
+        Route("Cuba - México", "Color1", "4"),
+        Route("Purhépechas", "Color2", "15"),
+        Route("PEMEX - Taximácuaro", "Color3", "21"),
+        Route("Quirindavara - Taximácuaro", "Color4", "22"),
+        Route("Centro", "Color5", "C1")
+    )
+
+    private suspend fun loadedViewModel(
+        routes: List<Route> = listOf(
             Route("Zapata", "Color1", "Z1"),
             Route("Centro", "Color2", "C1")
         )
+    ): RouteViewModel {
+        coEvery { routeDAO.getRoutes() } returns routes
         return RouteViewModel(routeDAO).also { viewModel ->
             viewModel.filterableRoutes.first { it.isNotEmpty() }
         }
