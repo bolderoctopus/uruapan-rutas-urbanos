@@ -6,6 +6,8 @@ Las fechas de 1.5.x son las del commit que subió la versión.
 
 ## [Sin publicar]
 
+## [1.5.5] - 2026-11-26
+
 ### Corregido
 - La búsqueda en "Todas las rutas" ya no distingue entre mayúsculas y minúsculas.
 - La búsqueda en "Todas las rutas" ya no distingue acentos: "mexico" encuentra "Cuba - México".
