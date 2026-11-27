@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -178,6 +179,29 @@ class RouteViewModelTest {
         verify { polyline.remove() }
         assertFalse(route.isDrawn)
         assertTrue(viewModel.drawnRoutes.value.isEmpty())
+    }
+
+    @Test
+    fun `clearDrawnRoutes should leave routes ready to be drawn again`() = runTest {
+        val viewModel = loadedViewModel()
+        val (zapata, centro) = viewModel.filterableRoutes.value
+        zapata.apply {
+            polyline = mockk(relaxUnitFun = true)
+            isDrawn = true
+        }
+        centro.apply {
+            mainSegment = mockk(relaxUnitFun = true)
+            secondarySegment = mockk(relaxUnitFun = true)
+            isDrawn = true
+        }
+        viewModel.addDrawnRoute(zapata)
+        viewModel.addDrawnRoute(centro)
+
+        viewModel.clearDrawnRoutes()
+
+        assertNull(zapata.polyline)
+        assertNull(centro.mainSegment)
+        assertNull(centro.secondarySegment)
     }
 
     private val accentedRoutes = listOf(

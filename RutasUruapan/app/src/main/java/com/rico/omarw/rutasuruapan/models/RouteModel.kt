@@ -58,6 +58,15 @@ class RouteModel(val routeDb: Route) {
             }
         }
 
+        // Removed map objects can't be shown again, so forget them and let the route be drawn from scratch
+        startMarker = null
+        endMarker = null
+        mainSegment = null
+        secondarySegment = null
+        polyline = null
+        mainSegmentMarkers = null
+        directionalMarkers = null
+
         isDrawn = false
     }
 

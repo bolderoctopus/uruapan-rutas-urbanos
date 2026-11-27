@@ -10,6 +10,7 @@ import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -99,6 +100,26 @@ class RouteModelTest {
         verify { secondarySegment.remove() }
         verify { segmentMarker.remove() }
         verify { arrow.remove() }
+    }
+
+    @Test
+    fun `remove forgets the removed map objects so the route can be drawn again`() {
+        val model = RouteModel(route()).apply {
+            polyline = mockk(relaxUnitFun = true)
+            mainSegment = mockk(relaxUnitFun = true)
+            secondarySegment = mockk(relaxUnitFun = true)
+            mainSegmentMarkers = listOf(mockk(relaxUnitFun = true))
+            directionalMarkers = SparseArray<Iterable<Marker>>().apply { put(13, listOf(mockk(relaxUnitFun = true))) }
+            isDrawn = true
+        }
+
+        model.remove()
+
+        assertNull(model.polyline)
+        assertNull(model.mainSegment)
+        assertNull(model.secondarySegment)
+        assertNull(model.mainSegmentMarkers)
+        assertNull(model.directionalMarkers)
     }
 
     @Test
