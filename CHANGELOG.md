@@ -10,6 +10,7 @@ Las fechas de 1.5.x son las del commit que subió la versión.
 - La búsqueda en "Todas las rutas" ya no distingue entre mayúsculas y minúsculas.
 - La búsqueda en "Todas las rutas" ya no distingue acentos: "mexico" encuentra "Cuba - México".
 - La búsqueda de rutas ya no se cierra inesperadamente cuando una ruta cercana no tiene una parada adecuada para subir o bajar; esa ruta se omite y, si no queda ninguna, se muestra el mensaje de "sin resultados".
+- Después de mantener presionado el mapa para borrar los marcadores y las rutas dibujadas, las rutas de "Todas las rutas" y de los resultados de búsqueda se muestran sin marcar y se pueden volver a dibujar.
 
 ### Interno
 - Base del repositorio: CI con GitHub Actions, ktlint, detekt y Android Lint, guía de contribución, plantillas de PR e issues, y Dependabot. Sin cambios visibles para el usuario.

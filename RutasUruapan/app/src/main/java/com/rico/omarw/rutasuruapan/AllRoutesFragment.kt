@@ -88,6 +88,14 @@ class AllRoutesFragment :
                 }
             }
         }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // When the map is cleared, uncheck the routes that are no longer drawn
+                routeViewModel.drawnRoutes.collect {
+                    if (it.isEmpty()) adapter.notifyItemRangeChanged(0, adapter.itemCount)
+                }
+            }
+        }
         return view
     }
 
